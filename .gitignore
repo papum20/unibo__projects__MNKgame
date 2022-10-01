@@ -1,0 +1,5 @@
+#VS CODE SETTINGS
+.vscode/*
+
+#JAVA FILES
+*.class
