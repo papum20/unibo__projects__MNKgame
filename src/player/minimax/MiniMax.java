@@ -9,8 +9,8 @@ import java.sql.Struct;
 import java.util.Calendar;
 import java.util.concurrent.ForkJoinPool.ManagedBlocker;
 import mnkgame.MNKCell;
-
-
+import mnkgame.MNKCellState;
+ 
 
 
 
@@ -26,11 +26,16 @@ public class MiniMax implements MNKPlayer {
 	protected float time_start;					//turn start (milliseconds)
 	protected Move<MiniMax_score> bestMove;		//best move for current turn
 	protected int it_freeCells;					//iterator for FC
+	private MNKCellState[][] Board;				//saves board for efficiency in checkGameEnded()
 	
 	
 	//MOVE, WITH POSITION AND SCORE
-	protected class Move<S> {
+	protected class Move<S extends Comparable<S>> {
 		public MNKCell position;	//move target
+		public S score;				//score
+	}
+	//INFORMATION ABOUT A GAME-TREE NODE
+	protected class Node<S extends Comparable<S>> {
 		public S score;				//score
 	}
 	//FINAL SCORE
@@ -51,6 +56,9 @@ public class MiniMax implements MNKPlayer {
 			this.K = K;
 			this.first = first;
 			this.timeout_in_secs = timeout_in_secs;
+			this.Board = new MNKCellState[M][N];
+			for(int y = 0; y < M; y++)
+				for(int x = 0; x < N; x++) Board[y][x] = MNKCellState.FREE;
 		}
 
 		
@@ -60,9 +68,19 @@ public class MiniMax implements MNKPlayer {
 			time_start = System.currentTimeMillis();
 			//recursive call for each possible move
 			it_freeCells = 0;
-			visit(FC, true);
+			visit(FC, MC, true);
 			
-			return getBestMove();
+			MNKCell res = getBestMove();
+			MNKCell opponent_move = MC[MC.length - 1];
+			if(first) {
+				Board[res.i][res.j] = MNKCellState.P1;
+				Board[opponent_move.i][opponent_move.j] = MNKCellState.P2;
+			} else {
+				Board[res.i][res.j] = MNKCellState.P2;
+				Board[opponent_move.i][opponent_move.j] = MNKCellState.P1;
+			}
+			return res;
+
 		}
 		
 		//Returns the player name
@@ -74,28 +92,39 @@ public class MiniMax implements MNKPlayer {
 
 
 
-	//#region AUXILIARY
-	
-		//returns the next free cell to visit and rearranges FC for the next iteration
-		//PRECONDITION: FC.length > 0
-		protected MNKCell iterateFreeCells(MNKCell[] FC) {
-			it_freeCells++;
-			return FC[it_freeCells - 1];
-		}
-		//recursive call for each possible move; returns final score obtained from current position, assuming both player make their best moves
-		protected MiniMax_score visit(MNKCell[] FC, boolean own_turn) {
+	//#region ALGORITHM
+
+	//returns the next free cell to visit and rearranges FC for the next iteration
+	//PRECONDITION: FC.length > 0
+	protected MNKCell iterateFreeCells(MNKCell[] FC) {
+		it_freeCells++;
+		return FC[it_freeCells - 1];
+	}
+	//recursive call for each possible move; returns final score obtained from current position, assuming both player make their best moves
+	protected MiniMax_score visit(MNKCell[] FC, MNKCell[] MC, boolean own_turn) {
+		//check if someone won or there was a draw
+		MiniMax_score state_score = checkGameEnded(MC);
+		//else make a move
+		if(state_score == null) {
 			//final score obtained from current position, assuming both player make their best moves
-			MiniMax_score state_score;
 			if(own_turn) state_score = MiniMax_score.P2;
 			else state_score = MiniMax_score.P1;
 			//try all moves and updarte state_score
 			while(it_freeCells < FC.length && !isTimeEnded()) {
-				MNKCell next = iterateFreeCells(FC);				//get next move
-				MiniMax_score next_score = visit(FC, !own_turn);	//calculate score for next move
+				MNKCell next = iterateFreeCells(FC);					//get next move
+				MiniMax_score next_score = visit(FC, MC, !own_turn);	//calculate score for next move
 				setBestMove(next, next_score);
+				if(!own_turn) state_score = max(state_score, next_score);
+				else state_score = min(state_score, next_score);
 			}
 		}
-		
+		return state_score;
+	}
+	//#endregion ALGORITHM
+
+
+
+	//#region AUXILIARY
 
 		//swaps two elements in an array
 		protected <T> void swap(T[] V, int a, int b) {
@@ -103,19 +132,30 @@ public class MiniMax implements MNKPlayer {
 			V[a] = V[b];
 			V[b] = tmp;
 		}
+		protected <T extends Comparable<T>> T max(T a, T b) {
+			return a.compareTo(b) >= 0 ? a : b;
+		}
+		protected <T extends Comparable<T>> T min(T a, T b) {
+			return a.compareTo(b) <= 0 ? a : b;
+		}
+		//checks if either a player won or it's a draw and returns the winner, else returns null
+		protected MiniMax_score checkGameEnded(MNKCell[] MC) {
+			
+			return null;
+		}
 
 		//returns true if it's time to end the turn
 		protected Boolean isTimeEnded() {
 			return (System.currentTimeMillis() - time_start) * 1000 >= timeout_in_secs;
 		}
 		//returns move to make on this turn
-		protected Boolean getBestMove() {
-			return bestMove;
+		protected MNKCell getBestMove() {
+			return bestMove.position;
 		}
 		protected void setBestMove(MNKCell move, MiniMax_score score) {
-			if(score.compareTo(bestScore) > 0) {
-				bestMove = move;
-				bestScore = score;
+			if(score.compareTo(bestMove.score) > 0) {
+				bestMove.position = move;
+				bestMove.score = score;
 			}
 		}
 
