@@ -5,9 +5,6 @@
 package player.minimax;
 
 import mnkgame.MNKPlayer;
-import java.sql.Struct;
-import java.util.Calendar;
-import java.util.concurrent.ForkJoinPool.ManagedBlocker;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
  
@@ -23,10 +20,13 @@ public class MiniMax implements MNKPlayer {
 	protected Boolean first;
 	protected int timeout_in_secs;
 
+	private MNKCellState player_own;
+	private MNKCellState player_opponent;
+
 	protected float time_start;					//turn start (milliseconds)
 	protected Move<MiniMax_score> bestMove;		//best move for current turn
 	protected int it_freeCells;					//iterator for FC
-	private MNKCellState[][] Board;				//saves board for efficiency in checkGameEnded()
+	private MNKCellState[][] board;				//saves board for efficiency in checkGameEnded()
 	
 	
 	//MOVE, WITH POSITION AND SCORE
@@ -56,9 +56,16 @@ public class MiniMax implements MNKPlayer {
 			this.K = K;
 			this.first = first;
 			this.timeout_in_secs = timeout_in_secs;
-			this.Board = new MNKCellState[M][N];
+			this.board = new MNKCellState[M][N];
 			for(int y = 0; y < M; y++)
-				for(int x = 0; x < N; x++) Board[y][x] = MNKCellState.FREE;
+				for(int x = 0; x < N; x++) board[y][x] = MNKCellState.FREE;
+			if(first) {
+				player_own = MNKCellState.P1;
+				player_opponent = MNKCellState.P2;
+			} else {
+				player_own = MNKCellState.P2;
+				player_opponent = MNKCellState.P1;
+			}
 		}
 
 		
@@ -72,20 +79,15 @@ public class MiniMax implements MNKPlayer {
 			
 			MNKCell res = getBestMove();
 			MNKCell opponent_move = MC[MC.length - 1];
-			if(first) {
-				Board[res.i][res.j] = MNKCellState.P1;
-				Board[opponent_move.i][opponent_move.j] = MNKCellState.P2;
-			} else {
-				Board[res.i][res.j] = MNKCellState.P2;
-				Board[opponent_move.i][opponent_move.j] = MNKCellState.P1;
-			}
+			board[res.i][res.j] = player_own;
+			board[opponent_move.i][opponent_move.j] = player_opponent;
 			return res;
 
 		}
 		
 		//Returns the player name
 		public String playerName() {
-			return null;
+			return ".";
 		}
 	
 	//#endregion PLAYER
