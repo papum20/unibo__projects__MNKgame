@@ -94,7 +94,7 @@ public class QuasiRandomPlayer implements MNKPlayer {
 		B.markCell(c.i,c.j); // mark the random position	
 		for(int k = 0; k < FC.length; k++) {
 			// If time is running out, return the randomly selected  cell
-      if((System.currentTimeMillis()-start)/1000.0 > TIMEOUT*(99.0/100.0)) {
+			if((System.currentTimeMillis()-start)/1000.0 > TIMEOUT*(99.0/100.0)) {
 				return c;
 			} else if(k != pos) {     
 				MNKCell d = FC[k];
