@@ -6,10 +6,10 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
-import mnkgame.MNKBoard;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
+import player.ArrayBoard;
  
 
 
@@ -30,8 +30,8 @@ public class MiniMax implements MNKPlayer {
 
 	protected float time_start;					//turn start (milliseconds)
 	protected Move<MiniMax_score> bestMove;		//best move for current turn
-	private MNKBoard board;						//saves board for efficiency in checkGameEnded()
-	
+	private ArrayBoard board;					//saves board for efficiency in checkGameEnded()
+
 	
 	//MOVE, WITH POSITION AND SCORE
 	protected class Move<S extends Comparable<S>> {
@@ -54,14 +54,22 @@ public class MiniMax implements MNKPlayer {
 	
 	//#region PLAYER	
 	
-		//Initialize the (M,N,K) Player
+		/**
+		 	* Initialize the (M,N,K) Player
+		 	*
+		 	* @param M Board rows
+		 	* @param N Board columns
+		 	* @param K Number of symbols to be aligned (horizontally, vertically, diagonally) for a win
+		 	* @param first True if it is the first player, False otherwise
+			* @param timeout_in_secs Maximum amount of time (in seconds) for selectCell 
+		 */
 		public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
 			this.M = M;
 			this.N = N;
 			this.K = K;
 			this.first = first;
 			this.timeout_in_secs = timeout_in_secs;
-			this.board = new MNKBoard(M, N, K);
+			this.board = new ArrayBoard(M, N, K);
 			if(first) {
 				player_own = MNKCellState.P1;
 				player_opponent = MNKCellState.P2;
@@ -77,7 +85,15 @@ public class MiniMax implements MNKPlayer {
 		}
 
 		
-		//Select a position among those listed in the <code>FC</code> array
+		/**
+			* Select a position among those listed in the <code>FC</code> array
+			*
+			* @param FC Free Cells: array of free cells
+			* @param MC Marked Cells: array of already marked cells, ordered with respect
+ 			* to the game moves (first move is in the first position, etc)
+ 			*
+ 			* @return an element of <code>FC</code>
+		*/
 		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 			//start conting time for this turn
 			time_start = System.currentTimeMillis();
@@ -97,9 +113,13 @@ public class MiniMax implements MNKPlayer {
 			return res;
 		}
 		
-		//Returns the player name
+		/**
+   			* Returns the player name
+   			*
+			* @return string 
+   		*/
 		public String playerName() {
-			return ".";
+			return "MiniMax";
 		}
 	
 	//#endregion PLAYER
@@ -110,11 +130,14 @@ public class MiniMax implements MNKPlayer {
 
 	//returns the next free cell to visit and rearranges FC for the next iteration
 	//PRECONDITION: FC.length > 0
-	protected MNKCell iterateFreeCells() {
-		return board.getFreeCells()[0];
+	protected int iterate_FC(int it) {
+		return it++;
 	}
-	protected boolean emptyFreeCells() {
-		return board.getFreeCells().length == 0;
+	protected int iterate_FC_start() {
+		return 0;
+	}
+	protected boolean iterate_FC_ended(int it) {
+		return it >= board.FreeCells_length();
 	}
 	/**
 	 * recursive call for each possible move; returns final score obtained from current position, assuming both player make their best moves
@@ -130,12 +153,11 @@ public class MiniMax implements MNKPlayer {
 			if(my_turn) state_score = MiniMax_score.YOU;		//my turn->worst score for me
 			else state_score = MiniMax_score.ME;				//your turn->worst score for you
 			//try all moves and update state_score
-			MNKCell[] FC = board.getFreeCells();
-			int i = 0;
-			while(i < FC.length && !isTimeEnded())
+			int FC_it = 0;
+			while(!iterate_FC_ended(FC_it) && !isTimeEnded())
 			{
 				//MNKCell next = iterateFreeCells();						//get next move
-				MNKCell next = FC[i];
+				MNKCell next = board.getFreeCell(FC_it);
 				board.markCell(next.i, next.j);
 				MiniMax_score next_score = visit(!my_turn, depth + 1);		//calculate score for next move
 				board.unmarkCell();
@@ -144,7 +166,7 @@ public class MiniMax implements MNKPlayer {
 				if(my_turn) state_score = max(state_score, next_score);
 				else state_score = min(state_score, next_score);
 
-				i++;
+				iterate_FC(FC_it);
 			}
 		}
 		return state_score;
@@ -155,12 +177,6 @@ public class MiniMax implements MNKPlayer {
 
 	//#region AUXILIARY
 
-		//swaps two elements in an array
-		protected <T> void swap(T[] V, int a, int b) {
-			T tmp = V[a];
-			V[a] = V[b];
-			V[b] = tmp;
-		}
 		protected <T extends Comparable<T>> T max(T a, T b) {
 			return a.compareTo(b) >= 0 ? a : b;
 		}
@@ -188,8 +204,8 @@ public class MiniMax implements MNKPlayer {
 		}
 
 		/**
-		 * @return converts from MNKGameState to Score (class defined here)
-		 */
+			* @return converts from MNKGameState to Score (class defined here)
+		*/
 		protected MiniMax_score GameState_to_Score(MNKGameState s) {
 			if(s == MNKGameState.DRAW) return MiniMax_score.DRAW;
 			else if(s == MNKGameState.OPEN) return null;
