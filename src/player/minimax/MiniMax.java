@@ -24,57 +24,60 @@ public class MiniMax implements MNKPlayer {
 	protected int N;
 	protected int K;
 	protected Boolean first;
-	protected int timeout_in_secs;
+	protected long timeout_in_millisecs;
 
-	private MNKCellState player_own;
-	private MNKCellState player_opponent;
-	private MNKGameState my_win;
-	private MNKGameState your_win;
-
-	protected float time_start;					//turn start (milliseconds)
+	
+	//private MNKCellState player_own;
+	//private MNKCellState player_opponent;
+	protected MNKGameState my_win;
+	//private MNKGameState your_win;
+	
+	protected long timer_start;					//turn start (milliseconds)
+	protected long timer_end;					//time (millisecs) at which to stop timer
 	protected Move<MiniMax_score> bestMove;		//best move for current turn
-	private ArrayBoard board;					//saves board for efficiency in checkGameEnded()
+	protected ArrayBoard board;					//saves board for efficiency in checkGameEnded()
 
 	
-	//MOVE, WITH POSITION AND SCORE
-	protected class Move<S extends Comparable<S>> {
-		public MNKCell position;	//move target
-		public S score;				//score
-	}
-	//INFORMATION ABOUT A GAME-TREE NODE
-	//protected class Node<S extends Comparable<S>> {
-	//	public S score;				//score
-	//}
-	//SCORE FOR FINAL STATE/INTERMEDIATE STATE (in a tree node)
-	//i'm always ME, opponent always YOU
-	protected enum MiniMax_score {
-		YOU,	//-1
-		DRAW,	//0
-		ME		//1
-	}
-	//FOR VISIT...
-	private class FC_iterator {
-		int i;			//current index
-		int counter;
-		ArrayBoard B;
+	//#region CLASSES
 
-		public FC_iterator(ArrayBoard B) {
-			this.B = B;
+		//MOVE, WITH POSITION AND SCORE
+		protected class Move<S extends Comparable<S>> {
+			public MNKCell position;	//move target
+			public S score;				//score
 		}
-		//returns the next free cell to visit (index ) and rearranges FC for the next iteration
-		//PRECONDITION: FC.length > 0
-		protected void iterate() {
-			counter++;
+		//INFORMATION ABOUT A GAME-TREE NODE
+		//protected class Node<S extends Comparable<S>> {
+		//	public S score;				//score
+		//}
+		//SCORE FOR FINAL STATE/INTERMEDIATE STATE (in a tree node)
+		//i'm always ME, opponent always YOU
+		protected enum MiniMax_score {
+			YOU,	//-1
+			DRAW,	//0
+			ME		//1
 		}
-		protected void start() {
-			counter = 0;
-			i = 0;
+		//FOR VISIT...
+		protected class FC_iterator {
+			int i;			//current index
+			ArrayBoard B;
+
+			public FC_iterator(ArrayBoard B) {
+				this.B = B;
+			}
+			//returns the next free cell to visit (index ) and rearranges FC for the next iteration
+			//PRECONDITION: FC.length > 0
+			protected void iterate() {
+				i++;
+			}
+			protected void start() {
+				i = 0;
+			}
+			protected boolean ended() {
+				return i >= B.FreeCells_length();
+			}
 		}
-		protected boolean ended() {
-			return counter >= B.FreeCells_length();
-		}
-	}
-	
+
+	//#endregion CLASSES
 
 	
 	//#region PLAYER	
@@ -93,18 +96,19 @@ public class MiniMax implements MNKPlayer {
 			this.N = N;
 			this.K = K;
 			this.first = first;
-			this.timeout_in_secs = timeout_in_secs;
+			this.timeout_in_millisecs = timeout_in_secs * 1000;
+			this.timer_end = timeout_in_millisecs - (4 * M * N);	// max time - 4ms times max tree depth (M * N = possible moves)
 			this.board = new ArrayBoard(M, N, K);
 			if(first) {
-				player_own = MNKCellState.P1;
-				player_opponent = MNKCellState.P2;
+				//player_own = MNKCellState.P1;
+				//player_opponent = MNKCellState.P2;
 				my_win = MNKGameState.WINP1;
-				your_win = MNKGameState.WINP2;
+				//your_win = MNKGameState.WINP2;
 			} else {
-				player_own = MNKCellState.P2;
-				player_opponent = MNKCellState.P1;
+				//player_own = MNKCellState.P2;
+				//player_opponent = MNKCellState.P1;
 				my_win = MNKGameState.WINP2;
-				your_win = MNKGameState.WINP1;
+				//your_win = MNKGameState.WINP1;
 			}
 			bestMove = new Move<MiniMax_score>();
 		}
@@ -120,8 +124,9 @@ public class MiniMax implements MNKPlayer {
  			* @return an element of <code>FC</code>
 		*/
 		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
+			System.out.println("------------------");
 			//start conting time for this turn
-			time_start = System.currentTimeMillis();
+			timer_start = System.currentTimeMillis();
 			//update my istance of board
 			if(!first || MC.length > 0) {
 				MNKCell opponent_move = MC[MC.length - 1];
@@ -135,6 +140,10 @@ public class MiniMax implements MNKPlayer {
 			MNKCell res = getBestMove();
 			//update my istance of board
 			board.markCell(res.i, res.j);								//mark my cell
+
+			// DEBUG
+			System.out.println(System.currentTimeMillis() - timer_start);
+
 			return res;
 		}
 		
@@ -170,8 +179,19 @@ public class MiniMax implements MNKPlayer {
 			FC_iterator it = new FC_iterator(board);
 			while(!it.ended() && !isTimeEnded())
 			{
-				MNKCell next = board.getFreeCell(it.i);					//get next move
+				MNKCell next = board.getFreeCell(it.i);					//get next move				
 				board.markCell(next.i, next.j);
+
+				/*String str = "";
+				for(int i = 0; i < board.FreeCells_length(); i++) str += "(" + board.getFreeCell(i).i + "," + board.getFreeCell(i).j + ") ";
+				System.out.println(str);
+				System.out.println(Integer.toString(next.i) + " " + Integer.toString(next.j));
+				*/
+				//Scanner s = new Scanner(System.in);
+				//s.next();
+				//s.close();
+
+
 				MiniMax_score next_score = visit(!my_turn, depth + 1);		//calculate score for next move
 				board.unmarkCell();
 
@@ -203,7 +223,7 @@ public class MiniMax implements MNKPlayer {
 
 		//returns true if it's time to end the turn
 		protected Boolean isTimeEnded() {
-			return (System.currentTimeMillis() - time_start) * 1000 >= timeout_in_secs;
+			return (System.currentTimeMillis() - timer_start) >= timer_end;
 		}
 		//returns move to make on this turn
 		protected MNKCell getBestMove() {

@@ -168,12 +168,24 @@ public class ArrayBoard {
 		}
 
 		private void removeFC(int y, int x) {
-			MNKCell lastc = FC[FC_n - 1];
+			/*MNKCell lastc = FC[FC_n - 1];
 			swap(FC, FC_indexes[y][x], FC_n - 1);
 			FC_indexes[lastc.i][lastc.j] = FC_indexes[y][x];
-			FC_n--;
+			FC_n--;*/
+			swap(FC, FC_indexes[y][x], FC_n-- - 1);
+			MNKCell newc = FC[FC_indexes[y][x]];
+			FC_indexes[newc.i][newc.j] = FC_indexes[y][x];
 		}
 		private void addFC(int y, int x) {
+			swap(FC, FC_indexes[y][x], FC_n);
+			MNKCell oldc = FC[FC_n];
+			FC_indexes[oldc.i][oldc.j] = FC_n;
+			FC_n++;
+		}
+		private void addFC_new(int y, int x) {
+			FC[FC_indexes[y][x]] = 
+			FC[FC_n] = FC[FC_indexes[y][x]];
+			
 			FC[FC_n] = new MNKCell(y, x);
 			FC_indexes[y][x] = FC_n;
 			FC_n++;
@@ -225,7 +237,7 @@ public class ArrayBoard {
 			private void initFreeCells() {
 				FC_n = 0;
 			for(int y = 0; y < M; y++) 
-				for(int x = 0; x < N; x++) addFC(y, x);
+				for(int x = 0; x < N; x++) addFC_new(y, x);
 		}
 		// Resets the marked cells list
 			private void initMarkedCells() {

@@ -12,11 +12,12 @@ public class AlphaBeta extends MiniMax {
 	
 	//Initialize the (M,N,K) Player
 	public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
+		super.initPlayer(M, N, K, first, timeout_in_secs);
 		this.M = M;
 		this.N = N;
 		this.K = K;
 		this.first = first;
-		this.timeout_in_secs = timeout_in_secs;
+		this.timeout_in_millisecs = timeout_in_secs;
 	}
 
 	
