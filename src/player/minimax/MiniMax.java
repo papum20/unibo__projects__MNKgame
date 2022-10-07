@@ -6,6 +6,9 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
+
+import java.util.Scanner;
+
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
@@ -48,6 +51,28 @@ public class MiniMax implements MNKPlayer {
 		YOU,	//-1
 		DRAW,	//0
 		ME		//1
+	}
+	//FOR VISIT...
+	private class FC_iterator {
+		int i;			//current index
+		int counter;
+		ArrayBoard B;
+
+		public FC_iterator(ArrayBoard B) {
+			this.B = B;
+		}
+		//returns the next free cell to visit (index ) and rearranges FC for the next iteration
+		//PRECONDITION: FC.length > 0
+		protected void iterate() {
+			counter++;
+		}
+		protected void start() {
+			counter = 0;
+			i = 0;
+		}
+		protected boolean ended() {
+			return counter >= B.FreeCells_length();
+		}
 	}
 	
 
@@ -128,17 +153,6 @@ public class MiniMax implements MNKPlayer {
 
 	//#region ALGORITHM
 
-	//returns the next free cell to visit and rearranges FC for the next iteration
-	//PRECONDITION: FC.length > 0
-	protected int iterate_FC(int it) {
-		return it++;
-	}
-	protected int iterate_FC_start() {
-		return 0;
-	}
-	protected boolean iterate_FC_ended(int it) {
-		return it >= board.FreeCells_length();
-	}
 	/**
 	 * recursive call for each possible move; returns final score obtained from current position, assuming both player make their best moves
 	 * @param my_turn
@@ -153,11 +167,10 @@ public class MiniMax implements MNKPlayer {
 			if(my_turn) state_score = MiniMax_score.YOU;		//my turn->worst score for me
 			else state_score = MiniMax_score.ME;				//your turn->worst score for you
 			//try all moves and update state_score
-			int FC_it = 0;
-			while(!iterate_FC_ended(FC_it) && !isTimeEnded())
+			FC_iterator it = new FC_iterator(board);
+			while(!it.ended() && !isTimeEnded())
 			{
-				//MNKCell next = iterateFreeCells();						//get next move
-				MNKCell next = board.getFreeCell(FC_it);
+				MNKCell next = board.getFreeCell(it.i);					//get next move
 				board.markCell(next.i, next.j);
 				MiniMax_score next_score = visit(!my_turn, depth + 1);		//calculate score for next move
 				board.unmarkCell();
@@ -166,7 +179,7 @@ public class MiniMax implements MNKPlayer {
 				if(my_turn) state_score = max(state_score, next_score);
 				else state_score = min(state_score, next_score);
 
-				iterate_FC(FC_it);
+				it.iterate();
 			}
 		}
 		return state_score;

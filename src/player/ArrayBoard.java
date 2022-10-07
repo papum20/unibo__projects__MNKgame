@@ -4,7 +4,7 @@
  * CONSTANT COST FOR OPERATIONS LIKE MODIFYING FC AND MC
  * 
  * FOR EFFICIENCY PURPOSES, THE CLASS ASSUMES A GOOD USE,
- * i.e. DOESN?T PROVIDE ANY ERROR-THROWING AND SIMILIAR STUFF
+ * i.e. DOESN'T PROVIDE ANY ERROR-THROWING AND SIMILIAR STUFF
  * ON BAD USES
  */
 
@@ -31,7 +31,7 @@ public class ArrayBoard {
 	protected MNKCell[] FC; 			// Free Cells
 	protected int MC_n;					// marked cells number
 	protected int FC_n;					// free cells number
-	private int[][] FC_indexes;			// cell i,x=index to element i,x in FC
+	private int[][] FC_indexes;			// cell y,x=index to element y,x in FC
 
 	private final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
 	protected int currentPlayer;		// currentPlayer plays next move
@@ -57,7 +57,8 @@ public class ArrayBoard {
 
 	  	B  = new MNKCellState[M][N];
 	  	FC = new MNKCell[M*N]; 
-	  	MC = new MNKCell[M*N]; 
+	  	MC = new MNKCell[M*N];
+		FC_indexes = new int[M][N];
 
 	  	reset();
 	}
@@ -68,8 +69,8 @@ public class ArrayBoard {
 	public void reset() {
 	  	currentPlayer = 0;
 	  	initBoard();
-	  	initFreeCellList();
-	  	initMarkedCellList();
+	  	initFreeCells();
+	  	initMarkedCells();
  	}
   
  
@@ -78,6 +79,7 @@ public class ArrayBoard {
  	 * @param y i-th row
  	 * @param x x-th column
  	 * @return State of the game after the move
+	 * @PRECONDITION: GameState==OPEN
   	 */
  	public void markCell(int y, int x) {
 		removeFC(y, x);
@@ -92,6 +94,7 @@ public class ArrayBoard {
 	}
 	/**
  	 * Undoes last move
+	 @PRECONDITION: MC.length > 0
  	 */
 	public void unmarkCell() {
 		MNKCell oldc = MC[MC_n - 1];
@@ -99,6 +102,7 @@ public class ArrayBoard {
 		removeMC();
 		addFC(oldc.i, oldc.j);
 		currentPlayer = (currentPlayer + 1) % 2;
+		gameState = MNKGameState.OPEN;
  	}
 
 	
@@ -164,11 +168,15 @@ public class ArrayBoard {
 		}
 
 		private void removeFC(int y, int x) {
+			MNKCell lastc = FC[FC_n - 1];
 			swap(FC, FC_indexes[y][x], FC_n - 1);
+			FC_indexes[lastc.i][lastc.j] = FC_indexes[y][x];
 			FC_n--;
 		}
 		private void addFC(int y, int x) {
-			FC[FC_n++] = new MNKCell(y, x);
+			FC[FC_n] = new MNKCell(y, x);
+			FC_indexes[y][x] = FC_n;
+			FC_n++;
 		}
 		private void removeMC() {
 			MC_n--;
@@ -178,31 +186,31 @@ public class ArrayBoard {
 		}
 
 		// Check winning state from cell y, x
-			private boolean isWinningCell(int y, int x) {
+		private boolean isWinningCell(int y, int x) {
 			MNKCellState s = B[y][x];
 			int n;
 			
-				// Horizontal check
-				n = 1;
-				for(int k = 1; x-k >= 0 && B[y][x-k] == s; k++) n++; // backward check
-				for(int k = 1; x+k <  N && B[y][x+k] == s; k++) n++; // forward check   
-				if(n >= K) return true;
-				// Vertical check
-				n = 1;
-				for(int k = 1; y-k >= 0 && B[y-k][x] == s; k++) n++; // backward check
-				for(int k = 1; y+k <  M && B[y+k][x] == s; k++) n++; // forward check
-				if(n >= K) return true;
-				// Diagonal check
-				n = 1;
-				for(int k = 1; y-k >= 0 && x-k >= 0 && B[y-k][x-k] == s; k++) n++; // backward check
-				for(int k = 1; y+k <  M && x+k <  N && B[y+k][x+k] == s; k++) n++; // forward check
-				if(n >= K) return true;
-				// Anti-diagonal check
-				n = 1;
-				for(int k = 1; y-k >= 0 && x+k < N  && B[y-k][x+k] == s; k++) n++; // backward check
-				for(int k = 1; y+k <  M && x-k >= 0 && B[y+k][x-k] == s; k++) n++; // backward check
-				if(n >= K) return true;
-			
+			// Horizontal check
+			n = 1;
+			for(int k = 1; x-k >= 0 && B[y][x-k] == s; k++) n++; // backward check
+			for(int k = 1; x+k <  N && B[y][x+k] == s; k++) n++; // forward check   
+			if(n >= K) return true;
+			// Vertical check
+			n = 1;
+			for(int k = 1; y-k >= 0 && B[y-k][x] == s; k++) n++; // backward check
+			for(int k = 1; y+k <  M && B[y+k][x] == s; k++) n++; // forward check
+			if(n >= K) return true;
+			// Diagonal check
+			n = 1;
+			for(int k = 1; y-k >= 0 && x-k >= 0 && B[y-k][x-k] == s; k++) n++; // backward check
+			for(int k = 1; y+k <  M && x+k <  N && B[y+k][x+k] == s; k++) n++; // forward check
+			if(n >= K) return true;
+			// Anti-diagonal check
+			n = 1;
+			for(int k = 1; y-k >= 0 && x+k < N  && B[y-k][x+k] == s; k++) n++; // backward check
+			for(int k = 1; y+k <  M && x-k >= 0 && B[y+k][x-k] == s; k++) n++; // backward check
+			if(n >= K) return true;
+		
 			return false;
 		}
 	//#endregion AUXILIARY
@@ -214,18 +222,13 @@ public class ArrayBoard {
 			for(int x = 0; x < N; x++) B[i][x] = MNKCellState.FREE;
 		}
 			// Rebuilds the free cells set 
-			private void initFreeCellList() {
-				FC_n = M * N;
-				int i = 0;
-			for(int y = 0; y < M; y++) {
-				for(int x = 0; x < N; x++) {
-					FC[y] = new MNKCell(y, x);
-					FC_indexes[y][x] = i++;
-				}
-			}
+			private void initFreeCells() {
+				FC_n = 0;
+			for(int y = 0; y < M; y++) 
+				for(int x = 0; x < N; x++) addFC(y, x);
 		}
 		// Resets the marked cells list
-			private void initMarkedCellList() {
+			private void initMarkedCells() {
 			MC_n = 0;
 		}
 	//#endregion INIT
