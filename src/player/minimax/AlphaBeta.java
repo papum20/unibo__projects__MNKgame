@@ -14,19 +14,6 @@ public class AlphaBeta extends MiniMax {
 	public AlphaBeta() {
 		super();
 	}
-	/**
-		* Initialize the (M,N,K) Player
-		*
-		* @param M Board rows
-		* @param N Board columns
-		* @param K Number of symbols to be aligned (horizontally, vertically, diagonally) for a win
-		* @param first True if it is the first player, False otherwise
-		* @param timeout_in_secs Maximum amount of time (in seconds) for selectCell 
-		*/	
-	public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
-		super.initPlayer(M, N, K, first, timeout_in_secs);
-		timer_end = timeout_in_millisecs - (1 * M * N);	// max time - 4ms times max tree depth (M * N = possible moves)
-	}
 	
 	
 	/**
@@ -77,71 +64,72 @@ public class AlphaBeta extends MiniMax {
 
 	//#region ALGORITHM
 
-	/**
-	 * recursive call for each possible move; returns final score obtained from current position, assuming both player make their best moves
-	 * @param my_turn
-	 * @param depth = 0
-	 * @param alpha = getMinScore()		//min
-	 * @param beta = getMaxScore()		//max
-	 */
-	protected int visit(boolean my_turn, int depth, int alpha, int beta) {
-		//check if someone won or there was a draw
-		int state_score = checkGameEnded();
-		//else make a move
-		if(state_score == STATE_SCORE_OPEN) {
-			//final score obtained from current position, assuming both player make their best moves
-			if(my_turn) state_score = getMinScore();		//my turn->worst score for me
-			else state_score = getMaxScore();				//your turn->worst score for you
-			//try all moves and update state_score
-			FC_iterator it = new FC_iterator(board);
-			while(alpha < beta && !it.ended() && !isTimeEnded())
-			{
-				MoveInt next = new MoveInt(board.getFreeCell(it.i));		//get next move				
-				board.markCell(next.position.i, next.position.j);
+		/**
+		 * recursive call for each possible move; returns final score obtained from current position, assuming both players make their best moves
+		 * @param my_turn = true
+		 * @param depth = 0
+		 * @param alpha = getMinScore()		//min
+		 * @param beta = getMaxScore()		//max
+		 */
+		protected int visit(boolean my_turn, int depth, int alpha, int beta) {
+			//check if someone won or there was a draw
+			int state_score = checkGameEnded();
+			//else make a move
+			if(state_score == STATE_SCORE_OPEN) {
+				//final score obtained from current position, assuming both player make their best moves
+				if(my_turn) state_score = getMinScore();		//my turn->worst score for me
+				else state_score = getMaxScore();				//your turn->worst score for you
+				//try all moves and update state_score
+				FC_iterator it = new FC_iterator(board);
+				while(alpha < beta && !it.ended() && !isTimeEnded())
+				{
+					MoveInt next = new MoveInt(board.getFreeCell(it.i));		//get next move				
+					board.markCell(next.position.i, next.position.j);
 
-				// DEBUG
-				/*
-				String str = "";
-				for(int i = 0; i < board.FreeCells_length(); i++) str += "(" + board.getFreeCell(i).i + "," + board.getFreeCell(i).j + ") ";
-				//System.out.println(str);
-				System.out.println(str + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + "/" + Integer.toString(alpha)+ " " + Integer.toString(beta));
-				//Scanner s = new Scanner(System.in);
-				//s.next();
-				//s.close();
-				*/
-				
-				
-				//recursive calls				
-				if(my_turn) {
-					next.score = visit(!my_turn, depth + 1, alpha, beta);	//calculate score for next move
-					state_score = max(state_score, next.score);
-					alpha = max(alpha, next.score);
-				} else {
-					next.score = visit(!my_turn, depth + 1, alpha, beta);	//calculate score for next move
-					state_score = min(state_score, next.score);
-					beta = min(beta, next.score);
+					// DEBUG
+					/*
+					String str = "";
+					for(int i = 0; i < board.FreeCells_length(); i++) str += "(" + board.getFreeCell(i).i + "," + board.getFreeCell(i).j + ") ";
+					//System.out.println(str);
+					System.out.println(str + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + "/" + Integer.toString(alpha)+ " " + Integer.toString(beta));
+					//Scanner s = new Scanner(System.in);
+					//s.next();
+					//s.close();
+					*/
+					
+					
+					//recursive calls				
+					if(my_turn) {
+						next.score = visit(!my_turn, depth + 1, alpha, beta);	//calculate score for next move
+						state_score = max(state_score, next.score);
+						alpha = max(alpha, next.score);
+					} else {
+						next.score = visit(!my_turn, depth + 1, alpha, beta);	//calculate score for next move
+						state_score = min(state_score, next.score);
+						beta = min(beta, next.score);
+					}
+					board.unmarkCell();
+					setBestMove(next, bestMove, depth);							//sets current best move
+					
+					// DEBUG
+					//System.out.println((my_turn ? "ME" : "YOU") + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + ":" + Integer.toString(alpha)+ " " + Integer.toString(beta) + "/" + Integer.toString(next.score));
+					
+					it.iterate();
 				}
-				board.unmarkCell();
-				setBestMove(next, bestMove, depth);							//sets current best move
-				
-				// DEBUG
-				//System.out.println((my_turn ? "ME" : "YOU") + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + ":" + Integer.toString(alpha)+ " " + Integer.toString(beta) + "/" + Integer.toString(next.score));
-				
-				it.iterate();
 			}
+			return state_score;
 		}
-		return state_score;
-	}
 
 	//#endregion ALGORITHM
 
 
-	//#region AUXILIARY
+	//#region INIT
 
-	protected <M extends Move<M>> void setBestMove(M move, M bestMove, int depth) {
-		if(depth == 0 && move.compareTo(bestMove) > 0) bestMove.copy(move);
+	protected void initAttributes() {
+		super.initAttributes();
+		timer_end = timeout_in_millisecs - (1 * M * N);	// max time - 4ms times max tree depth (M * N = possible moves)
 	}
 
-	//#endregion AUXILIARY
+	//#endregion INIT
 
 }
