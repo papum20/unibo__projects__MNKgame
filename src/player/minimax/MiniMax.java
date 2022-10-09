@@ -6,11 +6,7 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
-
-import java.util.Scanner;
-
 import mnkgame.MNKCell;
-import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
  
@@ -32,7 +28,7 @@ public class MiniMax implements MNKPlayer {
 	protected MNKGameState my_win;
 	//private MNKGameState your_win;
 	
-	protected ArrayBoard board;					//saves board for efficiency in checkGameEnded()
+	protected ArrayBoard board;	
 	protected long timer_start;					//turn start (milliseconds)
 	protected long timer_end;					//time (millisecs) at which to stop timer
 
@@ -49,7 +45,7 @@ public class MiniMax implements MNKPlayer {
 		protected class MoveInt implements Move<MoveInt> {
 			public MNKCell position;	//move target
 			public int score;			//score
-			public MoveInt(){};
+			public MoveInt(){ };
 			public MoveInt(MNKCell position) {
 				this.position = position;
 				
@@ -86,7 +82,7 @@ public class MiniMax implements MNKPlayer {
 				return value;
 			}
 			@Override public double getDouble() {
-				return 0;
+				return value;
 			}
 			@Override public int compareToScore(MiniMax_score b) {
 				return compareTo(b);
@@ -94,21 +90,21 @@ public class MiniMax implements MNKPlayer {
 		}
 		//FOR VISIT...
 		protected class FC_iterator {
-			int i;			//current index
-			ArrayBoard B;
+			public int i;			//current index
+			private ArrayBoard B;
 
 			public FC_iterator(ArrayBoard B) {
 				this.B = B;
 			}
 			//returns the next free cell to visit (index ) and rearranges FC for the next iteration
 			//PRECONDITION: FC.length > 0
-			protected void iterate() {
+			public void iterate() {
 				i++;
 			}
-			protected void start() {
+			public void start() {
 				i = 0;
 			}
-			protected boolean ended() {
+			public boolean ended() {
 				return i >= B.FreeCells_length();
 			}
 		}
@@ -132,27 +128,9 @@ public class MiniMax implements MNKPlayer {
 			 * @param timeout_in_secs Maximum amount of time (in seconds) for selectCell 
 		 */
 		public void initPlayer(int M, int N, int K, boolean first, int timeout_in_secs) {
-			// initialize Player interface variable (passed as parameters)
-			this.M = M;
-			this.N = N;
-			this.K = K;
-			this.first = first;
-			this.timeout_in_millisecs = timeout_in_secs * 1000;		//converts seconds in milliseconds
-			timer_end = timeout_in_millisecs - (4 * M * N);			// max time - 4ms times max tree depth (M * N = possible moves)
-			// initialize own variables
-			board = new ArrayBoard(M, N, K);
-			if(first) {
-				//player_own = MNKCellState.P1;
-				//player_opponent = MNKCellState.P2;
-				my_win = MNKGameState.WINP1;
-				//your_win = MNKGameState.WINP2;
-			} else {
-				//player_own = MNKCellState.P2;
-				//player_opponent = MNKCellState.P1;
-				my_win = MNKGameState.WINP2;
-				//your_win = MNKGameState.WINP1;
-			}
-			bestMove = new MoveInt();
+			initParameters(M, N, K, first, timeout_in_secs);
+			initCellStates(first);
+			initAttributes();
 		}
 
 		
@@ -207,48 +185,49 @@ public class MiniMax implements MNKPlayer {
 
 	//#region ALGORITHM
 
-	/**
-	 * recursive call for each possible move; returns final score obtained from current position, assuming both player make their best moves
-	 * @param my_turn
-	 * @param depth = 0
-	 */
-	protected int visit(boolean my_turn, int depth) {
-		//check if someone won or there was a draw
-		int state_score = checkGameEnded();
-		//else make a move
-		if(state_score == STATE_SCORE_OPEN) {
-			//final score obtained from current position, assuming both player make their best moves
-			if(my_turn) state_score = getMinScore();		//my turn->worst score for me
-			else state_score = getMaxScore();				//your turn->worst score for you
-			//try all moves and update state_score
-			FC_iterator it = new FC_iterator(board);
-			while(!it.ended() && !isTimeEnded())
-			{
-				MoveInt next = new MoveInt(board.getFreeCell(it.i));		//get next move				
-				board.markCell(next.position.i, next.position.j);
+		/**
+		 * recursive call for each possible move; returns final score obtained from current position, assuming both players make their best moves
+		 * @param my_turn = true
+		 * @param depth = 0
+		 */
+		protected int visit(boolean my_turn, int depth) {
+			//check if someone won or there was a draw
+			int state_score = checkGameEnded();
+			//else make a move
+			if(state_score == STATE_SCORE_OPEN) {
+				//final score obtained from current position, assuming both player make their best moves
+				if(my_turn) state_score = getMinScore();		//my turn->worst score for me
+				else state_score = getMaxScore();				//your turn->worst score for you
+				//try all moves and update state_score
+				FC_iterator it = new FC_iterator(board);
+				while(!it.ended() && !isTimeEnded())
+				{
+					MoveInt next = new MoveInt(board.getFreeCell(it.i));		//get next move				
+					board.markCell(next.position.i, next.position.j);
 
-				/*String str = "";
-				for(int i = 0; i < board.FreeCells_length(); i++) str += "(" + board.getFreeCell(i).i + "," + board.getFreeCell(i).j + ") ";
-				System.out.println(str);
-				System.out.println(Integer.toString(next.i) + " " + Integer.toString(next.j));
-				*/
-				//Scanner s = new Scanner(System.in);
-				//s.next();
-				//s.close();
+					/*String str = "";
+					for(int i = 0; i < board.FreeCells_length(); i++) str += "(" + board.getFreeCell(i).i + "," + board.getFreeCell(i).j + ") ";
+					System.out.println(str);
+					System.out.println(Integer.toString(next.i) + " " + Integer.toString(next.j));
+					*/
+					//Scanner s = new Scanner(System.in);
+					//s.next();
+					//s.close();
 
 
-				next.score = visit(!my_turn, depth + 1);					//calculate score for next move
-				board.unmarkCell();
+					next.score = visit(!my_turn, depth + 1);					//calculate score for next move
+					board.unmarkCell();
 
-				setBestMove(next, bestMove, depth);							//sets current best move
-				if(my_turn) state_score = max(state_score, next.score);
-				else state_score = min(state_score, next.score);
+					setBestMove(next, bestMove, depth);							//sets current best move
+					if(my_turn) state_score = max(state_score, next.score);
+					else state_score = min(state_score, next.score);
 
-				it.iterate();
+					it.iterate();
+				}
 			}
+			return state_score;
 		}
-		return state_score;
-	}
+		
 	//#endregion ALGORITHM
 
 
@@ -277,7 +256,7 @@ public class MiniMax implements MNKPlayer {
 			return bestMove.position;
 		}
 		protected <M extends Move<M>> void setBestMove(M move, M bestMove, int depth) {
-			if(depth == 0 && move.compareTo(bestMove) >= 0) bestMove.copy(move);
+			if(depth == 0 && move.compareTo(bestMove) > 0) bestMove.copy(move);
 		}
 
 		/**
@@ -298,5 +277,41 @@ public class MiniMax implements MNKPlayer {
 		}
 
 	//#endregion AUXILIARY
+
+
+	//#region INIT
+
+		//inits InitPlayer parameters
+		protected void initParameters(int M, int N, int K, boolean first, int timeout_in_secs) {
+			// initialize Player interface variable (passed as parameters)
+			this.M = M;
+			this.N = N;
+			this.K = K;
+			this.first = first;
+			this.timeout_in_millisecs = timeout_in_secs * 1000;		//converts seconds in milliseconds
+		}
+		//inits constants related to cell states, turn order in game...
+		protected void initCellStates(boolean first) {
+			if(first) {
+				//player_own = MNKCellState.P1;
+				//player_opponent = MNKCellState.P2;
+				my_win = MNKGameState.WINP1;
+				//your_win = MNKGameState.WINP2;
+			} else {
+				//player_own = MNKCellState.P2;
+				//player_opponent = MNKCellState.P1;
+				my_win = MNKGameState.WINP2;
+				//your_win = MNKGameState.WINP1;
+			}
+		}
+		//inits own attributes (for this class)
+		protected void initAttributes() {
+			timer_end = timeout_in_millisecs - (4 * M * N);			// max time - 4ms times max tree depth (M * N = possible moves)
+			board = new ArrayBoard(M, N, K);
+			bestMove = new MoveInt();
+		}
+
+	//#endregion INIT
+
 
 }

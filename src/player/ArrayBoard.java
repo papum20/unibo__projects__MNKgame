@@ -62,6 +62,19 @@ public class ArrayBoard {
 
 	  	reset();
 	}
+	public ArrayBoard(ArrayBoard AB) {
+		this.M  = AB.M;
+		this.N  = AB.N;
+		this.K  = AB.K;
+	  this.gameState = AB.gameState;
+	
+		B  = new MNKCellState[M][N];
+		FC = new MNKCell[M*N]; 
+		MC = new MNKCell[M*N];
+		FC_indexes = new int[M][N];
+	
+		copyArrays(AB);
+	}
 
  	/**
 	 * Resets the MNKBoard
@@ -72,6 +85,12 @@ public class ArrayBoard {
 	  	initFreeCells();
 	  	initMarkedCells();
  	}
+	public void copyArrays(ArrayBoard AB) {
+		copyBoard(AB);
+		copyFreeCells(AB);
+		copyMarkedCells(AB);
+		copyFCindexes(AB);
+	}
   
  
  	/**
@@ -231,7 +250,7 @@ public class ArrayBoard {
 		// Sets to free all board cells
 		private void initBoard() {
 			for(int i = 0; i < M; i++)
-			for(int x = 0; x < N; x++) B[i][x] = MNKCellState.FREE;
+				for(int x = 0; x < N; x++) B[i][x] = MNKCellState.FREE;
 		}
 			// Rebuilds the free cells set 
 			private void initFreeCells() {
@@ -242,6 +261,27 @@ public class ArrayBoard {
 		// Resets the marked cells list
 			private void initMarkedCells() {
 			MC_n = 0;
+		}
+		// Copy:
+		private void copyBoard(ArrayBoard AB) {
+			for(int i = 0; i < M; i++)
+				for(int x = 0; x < N; x++) B[i][x] = AB.B[i][x];
+		}
+		private void copyFreeCells(ArrayBoard AB) {
+			FC_n = AB.FC_n;
+			for(int i = 0; i < FC_n; i++) FC[i] = copyCell(AB.FC[i]);
+		}
+		private void copyMarkedCells(ArrayBoard AB) {
+			MC_n = AB.MC_n;
+			for(int i = 0; i < MC_n; i++) MC[i] = copyCell(AB.MC[i]);
+		}
+		private void copyFCindexes(ArrayBoard AB) {
+			for(int y = 0; y < M; y++) 
+				for(int x = 0; x < N; x++) FC_indexes[y][x] = AB.FC_indexes[y][x];
+		}
+		// copies an MNKCell
+		private MNKCell copyCell(MNKCell c) {
+			return new MNKCell(c.i, c.j, c.state);
 		}
 	//#endregion INIT
 		
