@@ -1,0 +1,2 @@
+MINIMAX:
+	- cambiare Board con nostra struttura (perché modifica le sue MC e FC con markCell() in modo non efficiente; in particolare non sono efficienti FC.toArray(lineare), e FC.remove (logaritmico))
