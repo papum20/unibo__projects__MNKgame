@@ -2,7 +2,20 @@
  * ITERATIVE DEEPENING USING MINIMAX's VISIT;
  * ATTEMPTS A VISIT UP TO DEPTH depth_max AS LONG AS THERE'S ENOUGH TIME,
  * THEN INCREASING depth_max;
- * SAVES THE POSITIONS SO IT DOESN'T HAVE TO ALWAYS START FROM DEPTH 0
+ * SAVES THE POSITIONS SO IT DOESN'T HAVE TO ALWAYS START FROM DEPTH 0:
+ * MORE DETAILED IMPLEMENTATION:
+ * creates a game tree that develops level by level, where to each node is associated a priority-queue
+ * containing elements, representing game tree nodes (i.e. board states), that simply save the score for such node;
+ * also, each priority-queue has two pointers, one to the parent node of its elements, one to the priority queue where the
+ * parent node is located (that is, the priority-queue containing the parent node with its brothers, which share the same parent);
+ * there's also a queue containing the game states (boards) for the current depth;
+ * execution: in each turn, the algorithm takes (and removes) the first element in the queue as the current board, and creates a priority queue for its children;
+ * then tries all possible move from that state (in a future implementation, it could also try to go a few depths ahead instead of just one);
+ * for each new state: (if the game is not ended) adds it to the back of the queue (for the inspection of the next level/depth),
+ * adds it to the newly generated priority-queue as a score, then recursively updates the scores for the parent nodes and priority queue
+ * (it first updates the score for the parent node, performing then an increaseKey on its priority-queue; then if the max/min value for
+ * that priority-queue has changed, it goes in recursion to change the score for the parent of the parent, and so on, up to the root;
+ * if the root's score is changed, it means that the final output will be changed).
  */
 
 

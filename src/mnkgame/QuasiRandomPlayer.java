@@ -99,12 +99,12 @@ public class QuasiRandomPlayer implements MNKPlayer {
 			} else if(k != pos) {     
 				MNKCell d = FC[k];
 				if(B.markCell(d.i,d.j) == yourWin) {
-					B.unmarkCell();        // undo adversary move
-					B.unmarkCell();	       // undo my move	 
-					B.markCell(d.i,d.j);   // select his winning position
-					return d;							 // return his winning position
+					B.unmarkCell();       	// undo adversary move
+					B.unmarkCell();	      	// undo my move	 
+					B.markCell(d.i,d.j);  	// select his winning position
+					return d;				// return his winning position
 				} else {
-					B.unmarkCell();	       // undo adversary move to try a new one
+					B.unmarkCell();	      	// undo adversary move to try a new one
 				}	
 			}	
 		}
