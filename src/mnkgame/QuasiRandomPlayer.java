@@ -47,7 +47,7 @@ public class QuasiRandomPlayer implements MNKPlayer {
 		// New random seed for each game
 		rand    = new Random(System.currentTimeMillis()); 
 		B       = new MNKBoard(M,N,K);
-		myWin   = first ? MNKGameState.WINP1 : MNKGameState.WINP2; 
+		myWin   = first ? MNKGameState.WINP1 : MNKGameState.WINP2; //if(first) 	MNKGameState.WINP1 else MNKGameState.WINP2;
 		yourWin = first ? MNKGameState.WINP2 : MNKGameState.WINP1;
 		TIMEOUT = timeout_in_secs;	
 	}
@@ -78,7 +78,7 @@ public class QuasiRandomPlayer implements MNKPlayer {
 				MNKCell c = FC[rand.nextInt(FC.length)];
 				B.markCell(c.i,c.j);
 				return c;
-			} else if(B.markCell(d.i,d.j) == myWin) {
+			} else if(B.markCell(d.i,d.j) == myWin) { 
 				return d;  
 			} else {
 				B.unmarkCell();
