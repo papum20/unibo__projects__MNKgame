@@ -3,15 +3,16 @@ import java.math.BigInteger;
 import java.util.Random;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
+import ArrayBoard;
 
 
 
 
 public class transposition_table {
-	private int key_hash;
+	private long key_hash;
 	private int M;
 	private int N;
-	private long[][] storage;
+	private long[] storage;
 	private int transposition_table_index;
 	//public long transposition_hash[(2^16)-1];
 	public transposition_hash_cell[] transposition_hash;
@@ -22,23 +23,25 @@ public class transposition_table {
 		this.M=M;
 		this.N=N;
 	}
-	
-	public void generate_key(){
-		this.storage = new long[2][M*N];
-		for(int i=0; i<2;i++){
-			for(int j=0; j<M*N; j++){
-				do{
-					storage[i][j]= new Random().nextLong();//il numero deve essere positivo
-				}while(storage[i][j]<0);
-
-				key_hash ^= storage[i][j];
-			}
-			transposition_table_index = key_hash & 0xFFFF;
-		}
-		
+	public void initTableRandom()
+	{
+		this.storage = new long[M*N*2];
+		for(int i=0; i<M*N*2; i++){
+					do{
+						storage[i]= new Random().nextLong();//il numero deve essere positivo
+					}while(storage[i]<0);
+	    }
+    }
+	public void generate_key(final MNKCellState[][] B){
+			for(int j=0; j<M*2; j++){
+				for(int k=0; k<N*2; k++){
+					if(B[j][k]==MNKCellState.FREE){
+						key_hash ^= storage[j+k];
+					}
+		    }   }		
 	}
 	public void save_data(int score, MNKCell BestMove, boolean flag, int depth){
-		generate_key();
+		//generate_key();
 		transposition_hash[transposition_table_index].score=score;
 		transposition_hash[transposition_table_index].BestMove=BestMove;
 		transposition_hash[transposition_table_index].flag=flag;
