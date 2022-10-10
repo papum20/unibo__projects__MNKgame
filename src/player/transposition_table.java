@@ -9,15 +9,17 @@ import ArrayBoard;
 
 
 public class transposition_table {
+	final int hash_size;
 	private long key_hash;
 	private int M;
 	private int N;
-	private long[] storage;
+	private long[] storage;//deve essere una matrice tridimensionale
 	private int transposition_table_index;
 	//public long transposition_hash[(2^16)-1];
-	public transposition_hash_cell[] transposition_hash;
+	public transposition_hash_cell[] transposition_hash;    //l'hash table è 2^16, da inizializzare con tutti i campi val a -2 o comunque un valore per far capire che quella cella è vuota
 
 	transposition_table(int M, int N){
+		hash_size = 2^16;  //dimensione della tabella hash 
 		this.transposition_hash = new transposition_hash_cell[(2^16)-1];
 		key_hash=0;
 		this.M=M;
@@ -27,16 +29,15 @@ public class transposition_table {
 	{
 		this.storage = new long[M*N*2];
 		for(int i=0; i<M*N*2; i++){
-					do{
 						storage[i]= new Random().nextLong();//il numero deve essere positivo
-					}while(storage[i]<0);
 	    }
     }
-	public void generate_key(final MNKCellState[][] B){
+	public void generate_key(int x, int y, MNKCellState p){
 			for(int j=0; j<M*2; j++){
 				for(int k=0; k<N*2; k++){
-					if(B[j][k]==MNKCellState.FREE){
+					if(MNKCellState.FREE){
 						key_hash ^= storage[j+k];
+						transposition_table_index = (int)(key_hash & (hash_size - 1)); //contando che c'è l'and binario non serve il valore assoluto perchè toglie i numeri negativi
 					}
 		    }   }		
 	}
