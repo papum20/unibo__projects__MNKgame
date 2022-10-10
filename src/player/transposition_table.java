@@ -13,50 +13,56 @@ public class transposition_table {
 	private long key_hash;
 	private int M;
 	private int N;
-	private long[] storage;//deve essere una matrice tridimensionale
-	private int transposition_table_index;
-	//public long transposition_hash[(2^16)-1];
+	private long[][][] storage;//deve essere una matrice tridimensionale
+	//private int transposition_table_index;
 	public transposition_hash_cell[] transposition_hash;    //l'hash table è 2^16, da inizializzare con tutti i campi val a -2 o comunque un valore per far capire che quella cella è vuota
 
 	transposition_table(int M, int N){
 		hash_size = 2^16;  //dimensione della tabella hash 
-		this.transposition_hash = new transposition_hash_cell[(2^16)-1];
+		this.transposition_hash = new transposition_hash_cell[hash_size];
+		for(int i=0; i<hash_size; i++){
+			transposition_hash[i].score = -2;
+		}
 		key_hash=0;
 		this.M=M;
 		this.N=N;
 	}
 	public void initTableRandom()
 	{
-		this.storage = new long[M*N*2];
-		for(int i=0; i<M*N*2; i++){
-						storage[i]= new Random().nextLong();//il numero deve essere positivo
-	    }
+		this.storage = new long[2][M][N];
+		for(int i=0; i<2; i++){
+			for(int j=0; j<M; j++){
+				for(int k=0; k<N; k++){
+						storage[i][j][k]= new Random().nextLong();//il numero random in questo caso può essere pure negativo
+	    }   }	}
     }
-	public void generate_key(int x, int y, MNKCellState p){
-			for(int j=0; j<M*2; j++){
-				for(int k=0; k<N*2; k++){
-					if(MNKCellState.FREE){
-						key_hash ^= storage[j+k];
-						transposition_table_index = (int)(key_hash & (hash_size - 1)); //contando che c'è l'and binario non serve il valore assoluto perchè toglie i numeri negativi
-					}
-		    }   }		
+	public int generate_key(int x, int y, MNKCellState p){ //y colonne e x le righe
+	if(p == MNKCellState.P1){
+		key_hash ^= storage[0][y][x];
+		}
+	if(p == MNKCellState.P2){
+		key_hash ^= storage[1][y][x];
+		}
+	int transposition_table_index = (int)(key_hash & (hash_size - 1)); //contando che c'è l'and binario non serve il valore assoluto perchè toglie i numeri negativi	
+	return 	transposition_table_index;
+    }
+	public void open_addressing (int score, int key){ //è avvenuta una collisione
+		int k = key + 1;
+		while(transposition_hash[k].score==-2){
+			k=k^2;               //ispezione quadratica
+			if(k>=hash_size)
+				k=0;
+		}
+		transposition_hash[k].score=score;
 	}
-	public void save_data(int score, MNKCell BestMove, boolean flag, int depth){
-		//generate_key();
-		transposition_hash[transposition_table_index].score=score;
-		transposition_hash[transposition_table_index].BestMove=BestMove;
-		transposition_hash[transposition_table_index].flag=flag;
-		transposition_hash[transposition_table_index].depth=depth;
-
+	public void save_data(int score, int key){
+		transposition_hash[key].score=score;
 	}
 	
 	
 	public class transposition_hash_cell {
 		public int score;
-		public MNKCell BestMove;
-		public long zobrist_key;
-		public boolean flag;
-		public int depth;
+		//public int key;
 		transposition_hash_cell(){		
 		}
 	}
