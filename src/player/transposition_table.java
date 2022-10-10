@@ -49,16 +49,16 @@ public class transposition_table {
 		transposition_hash[transposition_table_index].depth=depth;
 
 	}
-}
-
-
-protected class transposition_hash_cell {
-	public int score;
-	public MNKCell BestMove;
-	public long zobrist_key;
-	public boolean flag;
-	public int depth;
-	transposition_hash_cell(){		
+	
+	
+	public class transposition_hash_cell {
+		public int score;
+		public MNKCell BestMove;
+		public long zobrist_key;
+		public boolean flag;
+		public int depth;
+		transposition_hash_cell(){		
+		}
 	}
 }
 
