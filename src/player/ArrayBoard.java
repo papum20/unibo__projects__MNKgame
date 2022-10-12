@@ -26,7 +26,7 @@ public class ArrayBoard {
 	public final int K;		// Number of symbols to be aligned (horizontally, vertically, diagonally) for a win
 
 
-	public final MNKCellState[][] B;	// board
+	protected final MNKCellState[][] B;	// board
 	protected MNKCell[] MC; 			// Marked Cells
 	protected MNKCell[] FC; 			// Free Cells
 	protected int MC_n;					// marked cells number

@@ -16,7 +16,6 @@ public class ItDeepeningInterface extends AlphaBeta {
 
 	ArrayBoardHeuristic board;
 	
-	protected int depth_min;				//first depth to look at
 	protected int depth_max;				//depth where to stop (updated in execution)
 	protected double score_tolerance;		//if abs(b-a)<score_tolerance, it's considered a=b
 	protected MoveDouble bestMove;			//best move for current turn
@@ -88,8 +87,7 @@ public class ItDeepeningInterface extends AlphaBeta {
 			timer_end = timeout_in_millisecs - (4 * M * N);			// max time - 4ms times max tree depth (M * N = possible moves)
 			board = new ArrayBoardHeuristic(M, N, K);
 			bestMove = new MoveDouble();
-			
-			depth_min = 1;
+
 			score_tolerance = .1;
 		}
 		

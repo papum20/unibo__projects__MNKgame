@@ -29,6 +29,8 @@ import player.ArrayBoardHeuristic;
 
 public class ItDeepeningMM extends ItDeepeningInterface {
 
+	protected int depth_min;				//first depth to look at
+
 
 	//#region PLAYER
 	
@@ -155,6 +157,15 @@ public class ItDeepeningMM extends ItDeepeningInterface {
 
 	//#endregion ALGORITHM
 
+
+	//#region INIT
+
+		protected void initAttributes() {
+			super.initAttributes();
+			depth_min = 1;
+		}
+
+		//#endregion INIT
 
 
 	
