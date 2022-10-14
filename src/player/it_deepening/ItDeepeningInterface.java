@@ -35,7 +35,7 @@ public class ItDeepeningInterface extends AlphaBeta {
 		}
 		public int compareTo(MoveDouble b) {
 			double diff = b.score - score;
-			if(diff < .1 && diff > -.1) return 0;
+			if(diff < score_tolerance && diff > -score_tolerance) return 0;
 			else if(score > b.score) return 1;
 			else return -1;
 		}

@@ -22,6 +22,8 @@
 package player.it_deepening;
 
 import java.util.LinkedList;
+import java.util.PriorityQueue;
+
 import mnkgame.MNKCell;
 import player.ArrayBoardHeuristic;
 
@@ -30,6 +32,23 @@ import player.ArrayBoardHeuristic;
 public class ItDeepeningMM extends ItDeepeningInterface {
 
 	protected int depth_min;				//first depth to look at
+
+
+	//#region CLASSESS
+
+	//MoveDouble with inverted compareTo function (for priority queue ordering)
+	protected class MoveDouble_negative extends MoveDouble {
+		@Override
+		public int compareTo(MoveDouble b) {
+			return -super.compareTo(b);
+		}
+	}
+	protected class States_priorityQueue<M extends MoveDouble> {
+		protected PriorityQueue<M> PQ;
+		
+	}
+	
+	//#endregion CLASSES
 
 
 	//#region PLAYER
@@ -47,7 +66,7 @@ public class ItDeepeningMM extends ItDeepeningInterface {
  			* to the game moves (first move is in the first position, etc)
  			*
  			* @return an element of <code>FC</code>
-		*/
+			 */
 		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 
 			// DEBUG
@@ -63,14 +82,7 @@ public class ItDeepeningMM extends ItDeepeningInterface {
 			//recursive call for each possible move
 			bestMove.position = FC[0];
 			bestMove.score = getMinScore();
-			depth_max = 1;
-			LinkedList<ArrayBoardHeuristic> states_at_depth = new LinkedList<ArrayBoardHeuristic>();
-			states_at_depth.add(board);
-			while(!isTimeEnded() && !states_at_depth.isEmpty()) {
-				board = states_at_depth.poll();
-				depth_max = board.MarkedCells_length() + 1;		//check at depth=(already made moves)+1
-				visitAtDepth(true, depth_max - 1, states_at_depth);
-			}
+			visitInLine();
 			
 			MNKCell res = getBestMove();
 			//update my istance of board
@@ -102,6 +114,17 @@ public class ItDeepeningMM extends ItDeepeningInterface {
 		 * @param my_turn = true
 		 * @param depth = 0
 		 */
+		protected double visitInLine() {
+			depth_max = 1;
+
+			LinkedList<ArrayBoardHeuristic> states_at_depth = new LinkedList<ArrayBoardHeuristic>();
+			states_at_depth.add(board);
+			while(!isTimeEnded() && !states_at_depth.isEmpty()) {
+				board = states_at_depth.poll();
+				depth_max = board.MarkedCells_length() + 1;		//check at depth=(already made moves)+1
+				visitAtDepth(true, depth_max - 1, states_at_depth);
+			}
+		}
 		protected double visitAtDepth(boolean my_turn, int depth, LinkedList<ArrayBoardHeuristic> boards) {
 			//check if someone won or there was a draw
 			double state_score = checkGameEnded();
