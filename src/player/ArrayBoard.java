@@ -34,7 +34,7 @@ public class ArrayBoard {
 	private int[][] FC_indexes;			// cell y,x=index to element y,x in FC
 
 	private final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
-	protected int currentPlayer;		// currentPlayer plays next move
+	protected int currentPlayer;		// currentPlayer plays next move (= 0 or 1)
 	private MNKGameState gameState;
   
 

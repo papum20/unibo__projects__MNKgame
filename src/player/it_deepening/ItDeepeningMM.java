@@ -21,31 +21,102 @@
 
 package player.it_deepening;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
-
 import mnkgame.MNKCell;
+import mnkgame.MNKGameState;
+import player.ArrayBoard;
 import player.ArrayBoardHeuristic;
+import structures.PHElement;
+import structures.PHOrder;
+import structures.PriorityHeap;
 
 
 
-public class ItDeepeningMM extends ItDeepeningInterface {
+public class ItDeepeningMM extends ItDeepeningSmartInterface {
 
 	protected int depth_min;				//first depth to look at
 
 
-	//#region CLASSESS
 
-	//MoveDouble with inverted compareTo function (for priority queue ordering)
-	protected class MoveDouble_negative extends MoveDouble {
-		@Override
-		public int compareTo(MoveDouble b) {
-			return -super.compareTo(b);
+	//#region CLASSES
+
+	/**
+	 * @param <B> board type
+	 * @param <K> key type for move
+	 * @param <S> move type
+	 */
+	protected class ScoreBoard<B extends ArrayBoard, K, M extends Move<M, K>> {
+		public final B board;
+		public final M lastMove;
+		public ScoreBoard(B board, M lastMove) {
+			this.board = board;
+			this.lastMove = lastMove;
 		}
 	}
-	protected class States_priorityQueue<M extends MoveDouble> {
-		protected PriorityQueue<M> PQ;
-		
+	protected class ScoreBoard_double extends ScoreBoard<ArrayBoardHeuristic, Double, MoveDouble> {
+		public ScoreBoard_double(ArrayBoardHeuristic board, MoveDouble lastMove) {
+			super(board, lastMove);
+		}
+	}
+	/**
+	 * CLASS REPRESENTING A LIST OF GAME STATES, AS PAIRS OF BOARD-MOVE WITH SCORE, ALL DERIVING FROM THE SAME GAME STATE
+	 * (i.e. THEY DIFFER FROM THE PARENT STATE BY ONE MOVE);
+	 * THE CLASS SAVES THIS LIST AND ITS ASSOCIATE PriorityHeap (RELATIVE TO ITS ELEMENTS)
+	 * THE LIST IS USED LIKE A QUEUE
+	 * @param <B> type of score-board pair
+	 * @param <K> type of key for move
+	 * @param <M> type of move for Score-board pair
+	 * @param <SB> type of Score-board pair
+	 * @param <H> type of (States_)priorityHeap
+	 */
+	protected class ChildStates<B extends ArrayBoard, K, M extends Move<M, K>, SB extends ScoreBoard<B, K, M>, H extends States_priorityHeap<K, M, H>> {
+		protected final LinkedList<SB> boards;	//boards with lastMove/score
+		protected final H PH;					//own relative priorityHeap
+
+		public ChildStates(H PH) {
+			boards = new LinkedList<SB>();
+			this.PH = PH;
+		}
+		public ChildStates(H PH, SB scoreBoard) {
+			boards = new LinkedList<SB>();
+			boards.add(scoreBoard);
+			this.PH = PH;
+		}
+		public ChildStates(H PH, LinkedList<SB> scoreBoards) {
+			this.boards = scoreBoards;
+			this.PH = PH;
+		}
+		/**
+		 * @param board : element to add as last
+		 */
+		public void push(SB scoreBoard) {
+			boards.addLast(scoreBoard);
+		}
+		/**
+		 * @return first board added
+		 */
+		public SB pop() {
+			return boards.removeFirst();
+		}
+		public boolean isEmpty() {
+			return boards.size() == 0;
+		}
+		public final LinkedList<SB> getBoards()	{return boards;}
+		public final H getPH()					{return PH;}
+	}
+	// INSTANCE OF ChildStates CLASS
+	protected class ChildStates_double extends ChildStates<ArrayBoardHeuristic, Double, MoveDouble, ScoreBoard_double, States_PH_double> {
+		public ChildStates_double(States_PH_double PH) {
+			super(PH);
+		}
+		public ChildStates_double(States_PH_double PH, ScoreBoard_double scoreBoard) {
+			super(PH, scoreBoard);
+		}
+		public ChildStates_double(States_PH_double PH, LinkedList<ScoreBoard_double> scoreBoards) {
+			super(PH, scoreBoards);
+		}
 	}
 	
 	//#endregion CLASSES
@@ -55,43 +126,6 @@ public class ItDeepeningMM extends ItDeepeningInterface {
 	
 		ItDeepeningMM() {
 			super();
-		}
-
-		
-		/**
-			* Select a position among those listed in the <code>FC</code> array
-			*
-			* @param FC Free Cells: array of free cells
-			* @param MC Marked Cells: array of already marked cells, ordered with respect
- 			* to the game moves (first move is in the first position, etc)
- 			*
- 			* @return an element of <code>FC</code>
-			 */
-		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
-
-			// DEBUG
-			//System.out.println("------------------");
-
-			//start conting time for this turn
-			timer_start = System.currentTimeMillis();
-			//update my istance of board
-			if(!first || MC.length > 0) {
-				MNKCell opponent_move = MC[MC.length - 1];
-				board.markCell(opponent_move.i, opponent_move.j);		//mark opponent cell
-			}
-			//recursive call for each possible move
-			bestMove.position = FC[0];
-			bestMove.score = getMinScore();
-			visitInLine();
-			
-			MNKCell res = getBestMove();
-			//update my istance of board
-			board.markCell(res.i, res.j);								//mark my cell
-
-			// DEBUG
-			System.out.println(System.currentTimeMillis() - timer_start);
-
-			return res;
 		}
 		
 		/**
@@ -114,67 +148,79 @@ public class ItDeepeningMM extends ItDeepeningInterface {
 		 * @param my_turn = true
 		 * @param depth = 0
 		 */
-		protected double visitInLine() {
+		@Override
+		protected void visitInLine() {
 			depth_max = 1;
 
-			LinkedList<ArrayBoardHeuristic> states_at_depth = new LinkedList<ArrayBoardHeuristic>();
-			states_at_depth.add(board);
+			//
+			MoveDouble[] firstLevel = {new MoveDouble()};
+			States_PH_double currentPH = new States_PH_double(Arrays.asList(firstLevel), PHOrder.GREATER, null, null);
+			// list of boards to be evaluated at current depth, grouped by parent game state 
+			LinkedList<ChildStates_double> states_at_depth = new LinkedList<ChildStates_double>();
+			states_at_depth.add(new ChildStates_double(currentPH, new ScoreBoard_double(board, bestMove)));
+
+			// for each set of "brothers" (nodes in game tree at same depth, sharing same parent node)
 			while(!isTimeEnded() && !states_at_depth.isEmpty()) {
-				board = states_at_depth.poll();
-				depth_max = board.MarkedCells_length() + 1;		//check at depth=(already made moves)+1
-				visitAtDepth(true, depth_max - 1, states_at_depth);
-			}
-		}
-		protected double visitAtDepth(boolean my_turn, int depth, LinkedList<ArrayBoardHeuristic> boards) {
-			//check if someone won or there was a draw
-			double state_score = checkGameEnded();
-			//else
-			if(state_score == STATE_SCORE_OPEN) {
-				//else if arrived at depth_max
-				if(depth == depth_max) {
-					//save current state
-					boards.add(new ArrayBoardHeuristic(board));
-					//return evaluation
-					return board.evaluate();
-				}
-				//else make a move
-				else {
-					//final score obtained from current position, assuming both player make their best moves
-					if(my_turn) state_score = getMinScore();		//my turn->worst score for me
-					else state_score = getMaxScore();				//your turn->worst score for you
-					//try all moves and update state_score
-					FC_iterator it = new FC_iterator(board);
-					while(!it.ended() && !isTimeEnded())
-					{
-						MoveDouble next = new MoveDouble(board.getFreeCell(it.i));		//get next move				
-						board.markCell(next.position.i, next.position.j);
-
-						// DEBUG
-						/*
-						String str = "";
-						for(int i = 0; i < board.FreeCells_length(); i++) str += "(" + board.getFreeCell(i).i + "," + board.getFreeCell(i).j + ") ";
-						//System.out.println(str);
-						System.out.println(str + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + "/" + Integer.toString(alpha)+ " " + Integer.toString(beta));
-						//Scanner s = new Scanner(System.in);
-						//s.next();
-						//s.close();
-						*/
-						
-						next.score = visit(!my_turn, depth + 1);	//calculate score for next move
-						board.unmarkCell();
-
-						if(my_turn) state_score = max(state_score, next.score);
-						else state_score = min(state_score, next.score);
-						setBestMove(next, bestMove, depth);							//sets current best move
-						
-						// DEBUG
-						//System.out.println((my_turn ? "ME" : "YOU") + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + ":" + Integer.toString(alpha)+ " " + Integer.toString(beta) + "/" + Integer.toString(next.score));
-						
-						it.iterate();
+				ChildStates_double currentSet = states_at_depth.remove();
+				// for each "brother"
+				while(!isTimeEnded() && !currentSet.isEmpty()) {
+					//get structures for child nodes to check at next depth
+					ScoreBoard_double currentBoard = currentSet.pop();
+					LinkedList<MoveDouble> child_moves = new LinkedList<MoveDouble>();
+					LinkedList<ScoreBoard_double> child_boards = new LinkedList<ScoreBoard_double>();
+					//retrieve scores for next depth
+					visitAtDepth(currentBoard.board, child_moves, child_boards);
+					//update "global" structures
+					if(!child_moves.isEmpty()) {
+						//new priorityHeap for children of the node i'm checking
+						States_PH_double childrenPH = new States_PH_double(child_moves, checkTurn(currentBoard.board) ? PHOrder.GREATER : PHOrder.LESS, currentSet.getPH(), currentBoard.lastMove);
+						childrenPH.updateParent();
+						//new list of boards to check later, at next depth
+						if(!child_boards.isEmpty()) states_at_depth.addLast(new ChildStates_double(childrenPH, child_boards));
 					}
 				}
 			}
-			return state_score;
+		}
+		/**
+		 * 
+		 * @param currentBoard
+		 * @param child_moves
+		 * @param child_boards
+		 * @param my_turn
+		 * @param depth
+		 */
+		protected void visitAtDepth(ArrayBoardHeuristic currentBoard, LinkedList<MoveDouble> child_moves, LinkedList<ScoreBoard_double> child_boards) {
+			// doesn't check if gameEnded() : unnecessary, as it doesn't even add ended games to the queue to check them later
+			//try all moves and update structures in input
+			FC_iterator it = new FC_iterator(board);
+			while(!it.ended() && !isTimeEnded())
+			{
+				MoveDouble next = new MoveDouble(currentBoard.getFreeCell(it.i));		//get next move				
+				currentBoard.markCell(next.position.i, next.position.j);
+
+				// DEBUG
+				/*
+				String str = "";
+				for(int i = 0; i < board.FreeCells_length(); i++) str += "(" + board.getFreeCell(i).i + "," + board.getFreeCell(i).j + ") ";
+				//System.out.println(str);
+				System.out.println(str + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + "/" + Integer.toString(alpha)+ " " + Integer.toString(beta));
+				//Scanner s = new Scanner(System.in);
+				//s.next();
+				//s.close();
+				*/
+				
+				next.score = currentBoard.evaluate();	//calculate score for next move
+				//update child_boards: add current board with last move, if game is not ended
+				if(currentBoard.gameState() == MNKGameState.OPEN) child_boards.addLast(new ScoreBoard_double(new ArrayBoardHeuristic(currentBoard), next));
+				currentBoard.unmarkCell();				//then release last move
+				//update child_moves: add this move with its score
+				child_moves.addLast(next);
+
+				// DEBUG
+				//System.out.println((my_turn ? "ME" : "YOU") + " " + Integer.toString(next.position.i) + " " + Integer.toString(next.position.j) + ":" + Integer.toString(alpha)+ " " + Integer.toString(beta) + "/" + Integer.toString(next.score));
+				
+				it.iterate();
+			}
 		}
 
 

@@ -1,8 +1,19 @@
+/*
+ * PARAMTERS:
+ * S=self (same class)
+ * K=key type
+ */
+
+
 package structures;
 
 
 
-public interface PHElement<K> extends Comparable<PHElement<K>> {
+/**
+ * @param <S> the same type as the class
+ * @param <K> the type used to compare
+ */
+public interface PHElement<S, K> extends Comparable<S> {
 	
 	/**
 	 * changes own K key such that PHElement(new_key).compareTo(PHElement(old_key)) >= 0
@@ -14,4 +25,12 @@ public interface PHElement<K> extends Comparable<PHElement<K>> {
 	 * @param delta = variation to "subtract"
 	 */
 	public void decreaseKey(K delta);
+	/**
+	 * @return key
+	 */
+	public K getKey();
+	/**
+	 * sets new key
+	 */
+	public void setKey(K new_key);
 }

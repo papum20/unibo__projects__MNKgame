@@ -25,7 +25,7 @@ public class ItDeepeningInterface extends AlphaBeta {
 	
 	//#region CLASSES
 
-	protected class MoveDouble implements Move<MoveDouble> {
+	protected class MoveDouble implements Move<MoveDouble, Double> {
 		public MNKCell position;	//move target
 		public double score;			//score
 		public MoveDouble(){};
@@ -42,6 +42,22 @@ public class ItDeepeningInterface extends AlphaBeta {
 		public void copy(MoveDouble b) {
 			position = b.position;
 			score = b.score;
+		}
+		@Override
+		public void increaseKey(Double delta) {
+			score += delta;
+		}
+		@Override
+		public void decreaseKey(Double delta) {
+			score -= delta;
+		}
+		@Override
+		public Double getKey() {
+			return score;
+		}
+		@Override
+		public void setKey(Double new_key) {
+			score = new_key;
 		}
 	}
 	protected class ItDeep_score implements Score<ItDeep_score> {

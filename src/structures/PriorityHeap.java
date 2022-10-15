@@ -5,7 +5,7 @@ import java.util.Collection;
 
 
 
-public class PriorityHeap<K, T extends PHElement<K>> {
+public class PriorityHeap<K, T extends PHElement<T, K>> {
 	
 	ArrayList<T> heap;
 	int size;
@@ -43,6 +43,13 @@ public class PriorityHeap<K, T extends PHElement<K>> {
 		}
 	}
 	/**
+	 * PriorityHeap must not be empty
+	 * @return best element, in the root of the max/min/other-heap
+	 */
+	public T findBest() {
+		return heap.get(0);
+	}
+	/**
 	 * @param elem
 	 * @return index in heap / -1 if not found
 	 */
@@ -57,12 +64,34 @@ public class PriorityHeap<K, T extends PHElement<K>> {
 		fix(find(elem));
 	} 
 	/**
+	 * calls heap[ind].increaseKey(key)
+	 */
+	public void increaseKey(int ind, K key) {
+		heap.get(ind).increaseKey(key);
+		fix(ind);
+	} 
+	/**
 	 * calls elem.decreaseKey(key)
 	 */
 	public void decreaseKey(T elem, K key) {
 		elem.decreaseKey(key);
 		fix(find(elem));
-	} 
+	}
+	/**
+	 * calls elem.decreaseKey(key)
+	 */
+	public void decreaseKey(int ind, K key) {
+		heap.get(ind).decreaseKey(key);
+		fix(ind);
+	}
+	public void setKey(T elem, K key) {
+		elem.setKey(key);
+		fix(find(elem));
+	}
+	public void setKey(int ind, K key) {
+		heap.get(ind).setKey(key);
+		fix(ind);
+	}
 
 	//#endregion OPERATIONS
 
