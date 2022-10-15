@@ -6,6 +6,9 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
+
+import java.sql.Array;
+
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
@@ -263,6 +266,11 @@ public class MiniMax implements MNKPlayer {
 		}
 		//checks if either a player won or it's a draw and returns the winner, else returns null
 		protected int checkGameEnded() {
+			MiniMax_score score = GameState_to_Score(board.gameState());
+			if(score == null) return STATE_SCORE_OPEN;
+			else return score.getInt();
+		}
+		protected <B extends ArrayBoard> int checkGameEnded(B board) {
 			MiniMax_score score = GameState_to_Score(board.gameState());
 			if(score == null) return STATE_SCORE_OPEN;
 			else return score.getInt();

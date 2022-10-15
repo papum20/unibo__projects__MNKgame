@@ -45,9 +45,9 @@ public class ItDeepeningABdumb extends ItDeepeningInterface {
 			//recursive call for each possible move
 			bestMove.position = FC[0];
 			bestMove.score = getMinScore();
-			depth_max = 1;
+			int depth_max = 1;
 			while(!isTimeEnded()) {		//missing check on depth, but there's no problem on checking upper depths
-				visitAtDepth(true, 0, getMinScore(), getMaxScore());
+				visitAtDepth(true, 0, depth_max, getMinScore(), getMaxScore());
 				depth_max++;
 			}
 			
@@ -81,7 +81,7 @@ public class ItDeepeningABdumb extends ItDeepeningInterface {
 		 * @param my_turn = true
 		 * @param depth = 0
 		 */
-		protected double visitAtDepth(boolean my_turn, int depth, double alpha, double beta) {
+		protected double visitAtDepth(boolean my_turn, int depth, int depth_max, double alpha, double beta) {
 			//check if someone won or there was a draw
 			double state_score = checkGameEnded();
 			//else
@@ -114,11 +114,11 @@ public class ItDeepeningABdumb extends ItDeepeningInterface {
 						
 						//recursive calls				
 						if(my_turn) {
-							next.score = visitAtDepth(!my_turn, depth + 1, alpha, beta);	//calculate score for next move
+							next.score = visitAtDepth(!my_turn, depth + 1, depth_max, alpha, beta);	//calculate score for next move
 							state_score = max(state_score, next.score);
 							alpha = max(alpha, next.score);
 						} else {
-							next.score = visitAtDepth(!my_turn, depth + 1, alpha, beta);	//calculate score for next move
+							next.score = visitAtDepth(!my_turn, depth + 1, depth_max, alpha, beta);	//calculate score for next move
 							state_score = min(state_score, next.score);
 							beta = min(beta, next.score);
 						}

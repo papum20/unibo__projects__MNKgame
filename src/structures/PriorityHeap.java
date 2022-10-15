@@ -33,6 +33,11 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 		fix(size);
 		size++;
 	}
+	public void insertAll(Collection<T> V) {
+		heap.addAll(V);
+		heapify(0);
+		size += V.size();
+	}
 	public void remove(T elem) {
 		int index = find(elem);
 		if(index != -1) {
