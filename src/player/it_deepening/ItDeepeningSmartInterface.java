@@ -32,7 +32,7 @@ public abstract class ItDeepeningSmartInterface extends ItDeepeningInterface {
 	 */
 	protected class States_priorityHeap<K, T extends PHElement<T, K>, S extends States_priorityHeap<K,T,S>> {
 		protected final PriorityHeap<K, T> PH;		//
-		protected final S parent;					//null if this is the root
+		protected S parent;							//null if this is the root
 		protected T parentMove;						//index in PQ's heap (array)	
 		/**
 		 * @param V = contains element to put in priorityHeap
@@ -71,6 +71,12 @@ public abstract class ItDeepeningSmartInterface extends ItDeepeningInterface {
 		}
 		public void addAll(Collection<T> V) {
 			PH.insertAll(V);
+		}
+		public final S getParent() {
+			return parent;
+		}
+		public T getBest() {
+			return PH.findBest();
 		}
 	}
 	// INSTANCE OF States_priorityHeap CLASS

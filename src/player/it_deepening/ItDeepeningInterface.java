@@ -27,7 +27,7 @@ public class ItDeepeningInterface extends AlphaBeta {
 
 	protected class MoveDouble implements Move<MoveDouble, Double> {
 		public MNKCell position;	//move target
-		public double score;			//score
+		public double score;		//score
 		public MoveDouble(){};
 		public MoveDouble(MNKCell position) {
 			this.position = position;

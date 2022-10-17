@@ -6,9 +6,6 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
-
-import java.sql.Array;
-
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;

@@ -9,24 +9,26 @@ package player.it_deepening;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoardHeuristic;
 import structures.PHOrder;
+import structures.PriorityHeap;
 
 
 
-public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
+public class ItDeepeningMMmultiSaves extends ItDeepeningMMmulti {
 
-	protected int depth_max;				//number of depths/level of game tree to check at a time
-
+	// priorityHeap containing the last made move
+	States_PH_double firstPH;
+	// saved boards, that where being checked last turn
+	LinkedList<ChildStates_double> states_at_depth;
 
 
 
 
 	//#region PLAYER
 	
-		ItDeepeningMMmulti() {
+		ItDeepeningMMmultiSaves() {
 			super();
 		}
 
@@ -36,7 +38,7 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 			* @return string 
    		*/
 		public String playerName() {
-			return "ItDeepeningMMmulti";
+			return "ItDeepeningMMmultiSaves";
 		}
 	
 	//#endregion PLAYER
@@ -49,9 +51,7 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 		 * recursive call for each possible move; returns final score obtained from current position, assuming both players make their best moves
 		 */
 		protected void visitInLine() {
-			//
-			MoveDouble[] firstLevel = {bestMove};
-			States_PH_double firstPH = new States_PH_double(Arrays.asList(firstLevel), PHOrder.GREATER, null, null);
+			// PROPERTY: firstPH was already setted (because it's the first turn or because it was setted in visitInLine() in the previous turn)
 			States_PH_double secondPH = null;
 			// list of boards to be evaluated at current depth, grouped by parent game state 
 			LinkedList<ChildStates_double> states_at_depth = new LinkedList<ChildStates_double>();
@@ -160,11 +160,7 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 
 	//#region AUXILIARY
 
-	@Override
-	protected MNKCell getBestMove() {
-		return super.getBestMove();
-	}
-	
+
 	//#endregion AUXILIARY
 
 
@@ -172,7 +168,11 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 
 		protected void initAttributes() {
 			super.initAttributes();
-			depth_max = 3;
+			//firstPH
+			MoveDouble[] firstLevel = {bestMove};
+			firstPH = new States_PH_double(Arrays.asList(firstLevel), PHOrder.GREATER, null, null);
+			//states_at_depth
+			states_at_depth = new LinkedList<ChildStates_double>();
 		}
 
 		//#endregion INIT

@@ -19,10 +19,8 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 		this.order = order;
 	}
 	public PriorityHeap(Collection<T> V, PHOrder order) {
-		heap = new ArrayList<T>(V);
-		size = heap.size();
+		reset(V);
 		this.order = order;
-		heapify(0);
 	}
 
 
@@ -46,6 +44,15 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 			fix(index);
 			// doesn't remove, but decreases size
 		}
+	}
+	/**
+	 * remove all values and assign new ones
+	 * @param V
+	 */
+	public void reset(Collection<T> V) {
+		heap = new ArrayList<T>(V);
+		size = heap.size();
+		heapify(0);
 	}
 	/**
 	 * PriorityHeap must not be empty
@@ -121,7 +128,7 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 	protected void fixUp(int pos) {
 		if(pos > 0) {
 			int par = parent(pos);
-			if(compare(heap.get(par), heap.get(pos)) > 0) {
+			if(compare(heap.get(pos), heap.get(par)) > 0) {
 				swap(pos, par);
 				fixUp(par);
 			}
@@ -130,8 +137,8 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 	protected void fixDown(int pos) {
 		int l = left(pos), r = right(pos);
 		if(l < size) {
-			boolean r_valid = r < size && compare(heap.get(r), heap.get(pos)) < 0;
-			if(compare(heap.get(l), heap.get(pos)) < 0 && (!r_valid || compare(heap.get(l), heap.get(r)) <= 0)) {
+			boolean r_valid = r < size && compare(heap.get(pos), heap.get(r)) < 0;
+			if(compare(heap.get(pos), heap.get(l)) < 0 && (!r_valid || compare(heap.get(r), heap.get(l)) <= 0)) {
 				swap(pos, l);
 				fixDown(l);
 			}
@@ -163,7 +170,7 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 		heap.set(b, tmp);
 	}
 	/**
-	 * @return a.compareTo(b), relative to chosen order
+	 * @return a positive value if a is more important than b
 	 */
 	protected int compare(T a, T b) {
 		return a.compareTo(b) * order.get();

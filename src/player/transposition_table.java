@@ -1,9 +1,6 @@
 package player;
-import java.math.BigInteger;
 import java.util.Random;
-import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
-import ArrayBoard;
 
 
 
