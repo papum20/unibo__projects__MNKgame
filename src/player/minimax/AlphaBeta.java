@@ -11,55 +11,58 @@ import mnkgame.MNKCell;
 public class AlphaBeta extends MiniMax {
 	
 
-	public AlphaBeta() {
-		super();
-	}
-	
-	
-	/**
-		* Select a position among those listed in the <code>FC</code> array
-		*
-		* @param FC Free Cells: array of free cells
-		* @param MC Marked Cells: array of already marked cells, ordered with respect
-		* to the game moves (first move is in the first position, etc)
-		*
-		* @return an element of <code>FC</code>
-	*/
-	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
+	//#region PLAYER
 
-		// DEBUG
-		//System.out.println("------------------");
-		
-		//start conting time for this turn
-		timer_start = System.currentTimeMillis();
-		//update my istance of board
-		if(!first || MC.length > 0) {
-			MNKCell opponent_move = MC[MC.length - 1];
-			board.markCell(opponent_move.i, opponent_move.j);		//mark opponent cell
+		public AlphaBeta() {
+			super();
 		}
-		//recursive call for each possible move
-		bestMove.position = FC[0];
-		bestMove.score = getMinScore();
-		visit(true, 0, getMinScore(), getMaxScore());
 		
-		MNKCell res = getBestMove();
-		//update my istance of board
-		board.markCell(res.i, res.j);								//mark my cell
+		/**
+			* Select a position among those listed in the <code>FC</code> array
+			*
+			* @param FC Free Cells: array of free cells
+			* @param MC Marked Cells: array of already marked cells, ordered with respect
+			* to the game moves (first move is in the first position, etc)
+			*
+			* @return an element of <code>FC</code>
+		*/
+		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 
-		// DEBUG
-		System.out.println(System.currentTimeMillis() - timer_start);
+			// DEBUG
+			//System.out.println("------------------");
+			
+			//start conting time for this turn
+			timer_start = System.currentTimeMillis();
+			//update my istance of board
+			if(!first || MC.length > 0) {
+				MNKCell opponent_move = MC[MC.length - 1];
+				board.markCell(opponent_move.i, opponent_move.j);		//mark opponent cell
+			}
+			//recursive call for each possible move
+			bestMove.position = FC[0];
+			bestMove.score = getMinScore();
+			visit(true, 0, getMinScore(), getMaxScore());
+			
+			MNKCell res = getBestMove();
+			//update my istance of board
+			board.markCell(res.i, res.j);								//mark my cell
 
-		return res;
-	}
-	
-	/**
-		* Returns the player name
-		*
-		* @return string 
-	*/
-	public String playerName() {
-		return "AlphaBeta";
-	}
+			// DEBUG
+			System.out.println(System.currentTimeMillis() - timer_start);
+
+			return res;
+		}
+		
+		/**
+			* Returns the player name
+			*
+			* @return string 
+		*/
+		public String playerName() {
+			return "AlphaBeta";
+		}
+		
+	//#endregion PLAYER
 
 
 	//#region ALGORITHM

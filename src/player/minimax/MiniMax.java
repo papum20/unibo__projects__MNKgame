@@ -6,9 +6,13 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
+
+import java.sql.Array;
+
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
+import structures.PHElement;
  
 
 
@@ -38,11 +42,15 @@ public class MiniMax implements MNKPlayer {
 	
 	//#region CLASSES
 
-		//MOVE, WITH POSITION AND SCORE
-		protected interface Move<S> extends Comparable<S> {
+		/**
+		 * MOVE, WITH POSITION AND SCORE
+		 * @param <S> the same type as the class
+		 * @param <K> the type used to compare
+		 */
+		protected interface Move<S, K> extends PHElement<S, K> {
 			public void copy(S b);
 		} 
-		protected class MoveInt implements Move<MoveInt> {
+		protected class MoveInt implements Move<MoveInt, Integer> {
 			public MNKCell position;	//move target
 			public int score;			//score
 			public MoveInt(){ };
@@ -56,6 +64,22 @@ public class MiniMax implements MNKPlayer {
 			public void copy(MoveInt b) {
 				position = b.position;
 				score = b.score;
+			}
+			@Override
+			public void increaseKey(Integer delta) {
+				score += delta;
+			}
+			@Override
+			public void decreaseKey(Integer delta) {
+				score -= delta;				
+			}
+			@Override
+			public Integer getKey() {
+				return score;
+			}
+			@Override
+			public void setKey(Integer new_key) {
+				score = new_key;
 			}
 		}
 		//INFORMATION ABOUT A GAME-TREE NODE
@@ -246,6 +270,11 @@ public class MiniMax implements MNKPlayer {
 			if(score == null) return STATE_SCORE_OPEN;
 			else return score.getInt();
 		}
+		protected <B extends ArrayBoard> int checkGameEnded(B board) {
+			MiniMax_score score = GameState_to_Score(board.gameState());
+			if(score == null) return STATE_SCORE_OPEN;
+			else return score.getInt();
+		}
 
 		//returns true if it's time to end the turn
 		protected Boolean isTimeEnded() {
@@ -255,7 +284,7 @@ public class MiniMax implements MNKPlayer {
 		protected MNKCell getBestMove() {
 			return bestMove.position;
 		}
-		protected <M extends Move<M>> void setBestMove(M move, M bestMove, int depth) {
+		protected <K, M extends Move<M, K>> void setBestMove(M move, M bestMove, int depth) {
 			if(depth == 0 && move.compareTo(bestMove) > 0) bestMove.copy(move);
 		}
 

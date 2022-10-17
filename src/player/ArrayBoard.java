@@ -26,7 +26,7 @@ public class ArrayBoard {
 	public final int K;		// Number of symbols to be aligned (horizontally, vertically, diagonally) for a win
 
 
-	public final MNKCellState[][] B;	// board
+	protected final MNKCellState[][] B;	// board
 	protected MNKCell[] MC; 			// Marked Cells
 	protected MNKCell[] FC; 			// Free Cells
 	protected int MC_n;					// marked cells number
@@ -34,7 +34,7 @@ public class ArrayBoard {
 	private int[][] FC_indexes;			// cell y,x=index to element y,x in FC
 
 	private final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
-	protected int currentPlayer;		// currentPlayer plays next move
+	protected int currentPlayer;		// currentPlayer plays next move (= 0 or 1)
 	private MNKGameState gameState;
   
 

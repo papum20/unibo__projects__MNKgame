@@ -16,8 +16,7 @@ public class ItDeepeningInterface extends AlphaBeta {
 
 	ArrayBoardHeuristic board;
 	
-	protected int depth_min;				//first depth to look at
-	protected int depth_max;				//depth where to stop (updated in execution)
+	//protected int depth_max;				//depth where to stop (updated in execution)
 	protected double score_tolerance;		//if abs(b-a)<score_tolerance, it's considered a=b
 	protected MoveDouble bestMove;			//best move for current turn
 
@@ -26,7 +25,7 @@ public class ItDeepeningInterface extends AlphaBeta {
 	
 	//#region CLASSES
 
-	protected class MoveDouble implements Move<MoveDouble> {
+	protected class MoveDouble implements Move<MoveDouble, Double> {
 		public MNKCell position;	//move target
 		public double score;			//score
 		public MoveDouble(){};
@@ -36,13 +35,29 @@ public class ItDeepeningInterface extends AlphaBeta {
 		}
 		public int compareTo(MoveDouble b) {
 			double diff = b.score - score;
-			if(diff < .1 && diff > -.1) return 0;
+			if(diff < score_tolerance && diff > -score_tolerance) return 0;
 			else if(score > b.score) return 1;
 			else return -1;
 		}
 		public void copy(MoveDouble b) {
 			position = b.position;
 			score = b.score;
+		}
+		@Override
+		public void increaseKey(Double delta) {
+			score += delta;
+		}
+		@Override
+		public void decreaseKey(Double delta) {
+			score -= delta;
+		}
+		@Override
+		public Double getKey() {
+			return score;
+		}
+		@Override
+		public void setKey(Double new_key) {
+			score = new_key;
 		}
 	}
 	protected class ItDeep_score implements Score<ItDeep_score> {
@@ -68,7 +83,14 @@ public class ItDeepeningInterface extends AlphaBeta {
 
 
 
+
+
+
 	//#region PLAYER	
+
+		public ItDeepeningInterface() {
+			super();
+		}
 
 		/**
    			* Returns the player name
@@ -88,8 +110,7 @@ public class ItDeepeningInterface extends AlphaBeta {
 			timer_end = timeout_in_millisecs - (4 * M * N);			// max time - 4ms times max tree depth (M * N = possible moves)
 			board = new ArrayBoardHeuristic(M, N, K);
 			bestMove = new MoveDouble();
-			
-			depth_min = 1;
+
 			score_tolerance = .1;
 		}
 		
