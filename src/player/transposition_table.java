@@ -19,12 +19,12 @@ public class transposition_table {
 	private long[][][] storage;//deve essere una matrice tridimensionale
 	private transposition_hash_cell[] transposition_hash;    //l'hash table è 2^16, da inizializzare con tutti i campi val a -2 o comunque un valore per far capire che quella cella è vuota
 
-	transposition_table(int M, int N){
+	public transposition_table(int M, int N){
 		table_is_full=false;
 		hash_size = (int)Math.pow(2,16);  //dimensione della tabella hash 
 		max_ite = 20;  //n_max_iterazioni prima di ritornare ScoreNotFound nella ricerca della transposition_hash per trovare un Game_State uguale 
 		ScoreNotFound = -10; //indica se quando Osama controlla se è presente nella transposition_hash lo stesso Game_state, non lo trova
-		this.transposition_hash = new transposition_hash_cell[hash_size];
+		transposition_hash = new transposition_hash_cell[hash_size];
 		for(int i=0; i<hash_size; i++){
 			transposition_hash[i].score = -2;
 		}
@@ -118,7 +118,7 @@ public class transposition_table {
 	public class transposition_hash_cell {
 		public int score;
 		public long key;
-		transposition_hash_cell(){		
+		public transposition_hash_cell(){		
 		}
 	}
 }
