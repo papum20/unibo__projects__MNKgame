@@ -10,9 +10,9 @@ import java.lang.Math.pow;
 
 
 public class transposition_table {
-	final int hash_size;
-	final int ScoreNotFound;
-	final int max_ite;
+	private final int hash_size;
+	private final int ScoreNotFound;
+	private final int max_ite;
 	private boolean table_is_full;
 	private int M;
 	private int N;
