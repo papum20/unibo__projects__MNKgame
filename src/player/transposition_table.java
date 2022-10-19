@@ -6,21 +6,21 @@ import mnkgame.MNKCellState;
 
 
 public class transposition_table {
-	final int hash_size;
-	final int ScoreNotFound;
-	final int max_ite;
+	private final int hash_size;
+	private final int ScoreNotFound;
+	private final int max_ite;
 	private boolean table_is_full;
 	private int M;
 	private int N;
 	private long[][][] storage;//deve essere una matrice tridimensionale
 	private transposition_hash_cell[] transposition_hash;    //l'hash table è 2^16, da inizializzare con tutti i campi val a -2 o comunque un valore per far capire che quella cella è vuota
 
-	transposition_table(int M, int N){
+	public transposition_table(int M, int N){
 		table_is_full=false;
 		hash_size = (int)Math.pow(2,16);  //dimensione della tabella hash 
 		max_ite = 20;  //n_max_iterazioni prima di ritornare ScoreNotFound nella ricerca della transposition_hash per trovare un Game_State uguale 
 		ScoreNotFound = -10; //indica se quando Osama controlla se è presente nella transposition_hash lo stesso Game_state, non lo trova
-		this.transposition_hash = new transposition_hash_cell[hash_size];
+		transposition_hash = new transposition_hash_cell[hash_size];
 		for(int i=0; i<hash_size; i++){
 			transposition_hash[i].score = -2;
 		}
@@ -52,10 +52,10 @@ public class transposition_table {
 				return ScoreNotFound;
 			boolean Not_found_after_max_ite=false;
 			int i=0;
-			int c1= 2;  //c1 e c2 poi devo vedere come sceglierli
-			int c2= 3;
+			double c1= 0.5;  
+			double c2= 0.5;
 			while(transposition_hash[transposition_table_index].key!=key){ //da togliere il true
-				transposition_table_index=(transposition_table_index + i*c1 + (i*i)*c2)%(hash_size - 1); //ispezione quadratica
+				transposition_table_index=(int)(transposition_table_index + i*c1 + (i*i)*c2)%(hash_size - 1); //ispezione quadratica
 				i++;
 				if(i>=max_ite){  //si cerca nella transposition_table fino a max_it    
 					Not_found_after_max_ite=true;
@@ -96,14 +96,14 @@ public class transposition_table {
 	private int ispezione_quadrata (long key){ //trova la prima cella libera 
 		int transposition_table_index = (int)(key & (hash_size - 1));
 		int i=0;
-		int c1= 2;  //c1 e c2 poi devo vedere come sceglierli
-		int c2= 3;
+		double c1 = 0.5;  //c1 e c2 wikipedia dice di metterli uguali a 1/2 se hash size è 2^n
+		double c2 = 0.5;
 		while(transposition_hash[transposition_table_index].score!=-2){
 			if(i==hash_size){
 				table_is_full=true;
 				break;
 			}
-			transposition_table_index=(transposition_table_index + i*c1 + (i*i)*c2)%(hash_size - 1); //ispezione quadratica
+			transposition_table_index=(int)(transposition_table_index + i*c1 + (i*i)*c2)%(hash_size - 1); //ispezione quadratica
 			i++;      
 		}
 		return transposition_table_index;
@@ -114,7 +114,7 @@ public class transposition_table {
 	public class transposition_hash_cell {
 		public int score;
 		public long key;
-		transposition_hash_cell(){		
+		public transposition_hash_cell(){		
 		}
 	}
 }
