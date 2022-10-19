@@ -31,7 +31,10 @@ public class ItDeepeningInterface extends AlphaBeta {
 		public MoveDouble(){};
 		public MoveDouble(MNKCell position) {
 			this.position = position;
-			
+		}
+		public MoveDouble(MNKCell position, double score) {
+			this.position = position;
+			this.score = score;
 		}
 		public int compareTo(MoveDouble b) {
 			double diff = b.score - score;

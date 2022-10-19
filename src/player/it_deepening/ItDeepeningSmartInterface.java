@@ -75,6 +75,9 @@ public abstract class ItDeepeningSmartInterface extends ItDeepeningInterface {
 		public final S getParent() {
 			return parent;
 		}
+		public final T getParentMove() {
+			return parentMove;
+		}
 		public T getBest() {
 			return PH.findBest();
 		}

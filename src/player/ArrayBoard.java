@@ -127,6 +127,21 @@ public class ArrayBoard {
 	
 	//#region GET
 		/**
+		 * @param c : cell to convert
+		 * @return : converts cell in single number (giving an index to each cell of the board from top left to bottom right)
+		 */
+		public int single(MNKCell c) {
+			return c.i * N + c.j;
+		}
+		/**
+		 * @param c : single index to convert in cell
+		 * @return : converts  single number in cell (inverse of single())
+		 */
+		public MNKCell cell(int single) {
+			return new MNKCell(single / N, single - (single / N) * N);
+		}
+
+		/**
 			* Returns the state of cell <code>i,x</code>
 			* @param i i-th row
 			* @param x x-th column

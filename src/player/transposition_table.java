@@ -17,7 +17,7 @@ public class transposition_table {
 
 	transposition_table(int M, int N){
 		table_is_full=false;
-		hash_size = 2^16;  //dimensione della tabella hash 
+		hash_size = (int)Math.pow(2,16);  //dimensione della tabella hash 
 		max_ite = 20;  //n_max_iterazioni prima di ritornare ScoreNotFound nella ricerca della transposition_hash per trovare un Game_State uguale 
 		ScoreNotFound = -10; //indica se quando Osama controlla se è presente nella transposition_hash lo stesso Game_state, non lo trova
 		this.transposition_hash = new transposition_hash_cell[hash_size];

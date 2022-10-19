@@ -98,11 +98,11 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 
 					//create structures:
 					// list of moves for priority heap
-					LinkedList<MoveDouble> children_moves = new LinkedList<MoveDouble>();
+					LinkedList<MoveDouble> child_moves = new LinkedList<MoveDouble>();
 					// priority heap for next depth
 					States_PH_double childrenPH = new States_PH_double(my_turn ? PHOrder.GREATER : PHOrder.LESS, currentPH, scoreBoard.lastMove);
 					// list of boards
-					LinkedList<ScoreBoard_double> children_boards = new LinkedList<ScoreBoard_double>();
+					LinkedList<ScoreBoard_double> child_boards = new LinkedList<ScoreBoard_double>();
 					
 					//try all moves and update state_score
 					FC_iterator it = new FC_iterator(scoreBoard.board);
@@ -124,10 +124,10 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 						
 						next.score = visitAtDepth(scoreBoard, childrenPH, boards, !my_turn, depth+1, depth_max);	//calculate score for next move
 						//update child_boards: add current board with last move, if game is not ended
-						if(scoreBoard.board.gameState() == MNKGameState.OPEN) children_boards.addLast(new ScoreBoard_double(new ArrayBoardHeuristic(scoreBoard.board), next));
+						if(scoreBoard.board.gameState() == MNKGameState.OPEN) child_boards.addLast(new ScoreBoard_double(new ArrayBoardHeuristic(scoreBoard.board), next));
 						scoreBoard.board.unmarkCell();				//then release last move
 						//update child_moves: add this move with its score
-						children_moves.addLast(next);
+						child_moves.addLast(next);
 
 						//update score for current state (to return)
 						if(my_turn) state_score = max(state_score, next.score);
@@ -140,11 +140,11 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 					}
 					
 					//update structures
-					childrenPH.addAll(children_moves);
+					childrenPH.addAll(child_moves);
 					//if next depth is max_depth:
 					if(depth == depth_max - 1)
 						//new list of boards to check later, at next depth
-						if(!children_boards.isEmpty()) boards.addLast(new ChildStates_double(childrenPH, children_boards));
+						if(!child_boards.isEmpty()) boards.addLast(new ChildStates_double(childrenPH, child_boards));
 					//else if this is the first depth:
 					else if(depth == 0)
 						//update this prorityHeap
