@@ -6,6 +6,9 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
+
+import javax.xml.stream.events.ProcessingInstruction;
+
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
@@ -57,6 +60,11 @@ public class MiniMax implements MNKPlayer {
 			}
 			public int compareTo(MoveInt b) {
 				return score - b.score;
+			}
+			@Override
+			public int compareTo2(MoveInt b) {
+				if(position.equals(b.position)) return 0;
+				else return 1;
 			}
 			public void copy(MoveInt b) {
 				position = b.position;

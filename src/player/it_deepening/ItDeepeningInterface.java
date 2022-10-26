@@ -25,24 +25,31 @@ public class ItDeepeningInterface extends AlphaBeta {
 	
 	//#region CLASSES
 
-	protected class MoveDouble implements Move<MoveDouble, Double> {
+	/**
+	 * @param <S> : self (this class)
+	 */
+	protected class IMoveDouble<S extends IMoveDouble<S>> implements Move<S, Double> {
 		public MNKCell position;	//move target
 		public double score;		//score
-		public MoveDouble(){};
-		public MoveDouble(MNKCell position) {
+		public IMoveDouble(){};
+		public IMoveDouble(MNKCell position) {
 			this.position = position;
 		}
-		public MoveDouble(MNKCell position, double score) {
+		public IMoveDouble(MNKCell position, double score) {
 			this.position = position;
 			this.score = score;
 		}
-		public int compareTo(MoveDouble b) {
+		public int compareTo(S b) {
 			double diff = b.score - score;
 			if(diff < score_tolerance && diff > -score_tolerance) return 0;
 			else if(score > b.score) return 1;
 			else return -1;
 		}
-		public void copy(MoveDouble b) {
+		public int compareTo2(S b) {
+			if(position.equals(b.position)) return 0;
+			else return 1;
+		}
+		public void copy(S b) {
 			position = b.position;
 			score = b.score;
 		}
@@ -62,6 +69,15 @@ public class ItDeepeningInterface extends AlphaBeta {
 		public void setKey(Double new_key) {
 			score = new_key;
 		}
+	}
+	protected class MoveDouble extends IMoveDouble<MoveDouble> {
+		public MoveDouble(){};
+		public MoveDouble(MNKCell position) {
+			super(position);
+		}
+		public MoveDouble(MNKCell position, double score) {
+			super(position, score);
+		}	
 	}
 	protected class ItDeep_score implements Score<ItDeep_score> {
 		protected double value;

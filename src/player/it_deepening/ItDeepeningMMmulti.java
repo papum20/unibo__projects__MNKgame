@@ -7,11 +7,13 @@
 package player.it_deepening;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoardHeuristic;
+import structures.PHElement;
 import structures.PHOrder;
 
 
@@ -22,22 +24,69 @@ public class ItDeepeningMMmulti extends ItDeepeningSmartInterface {
 
 
 
+	//#region CLASSES
 
-
-	//#region PLAYER
-	
-		ItDeepeningMMmulti() {
-			super();
+		protected enum CheckState {
+			OK,		//ok
+			NOK,	//not ok
+			IDK;	//not known
 		}
-
 		/**
-   			* Returns the player name
-   			*
-			* @return string 
-   		*/
-		public String playerName() {
-			return "ItDeepeningMMmulti";
+		 * PRIORITY HEAP OF GAME STATES WITH A BOOLEAN FIELD
+		 */
+		protected class StatesPHcheck<K, T extends PHElement<T, K>, S extends StatesPHcheck<K,T,S>> extends States_priorityHeap<K, T, S> {
+			protected CheckState valid;
+			protected int id;
+
+			public StatesPHcheck(PHOrder order, S parent, T parentMove, int id) {
+				super(order, parent, parentMove);
+				valid = CheckState.IDK;
+				this.id = id;
+			}
+			public StatesPHcheck(Collection<T> V, PHOrder order, S parent, T parentMove, int id) {
+				super(V, order, parent, parentMove);
+				valid = CheckState.IDK;
+				this.id = id;
+			}
+			public CheckState isValid() {
+				return valid;
+			}
+			public void setValid(CheckState c) {
+				valid = c;
+			}
+			public int getId() {
+				return id;
+			}
 		}
+		// INSTANCE of StatesPHcheck
+		protected class StatesPHcheck_double extends StatesPHcheck<Double, MoveDouble, StatesPHcheck_double> {
+			public StatesPHcheck_double(PHOrder order, StatesPHcheck_double parent, MoveDouble parentMove, int id) {
+				super(order, parent, parentMove, id);
+			}
+			public StatesPHcheck_double(Collection<MoveDouble> V, PHOrder order, StatesPHcheck_double parent, MoveDouble parentMove, int id) {
+				super(V, order, parent, parentMove, id);
+			}
+		}
+
+		
+		//#endregion CLASSES
+
+		
+
+		//#region PLAYER
+		
+			ItDeepeningMMmulti() {
+				super();
+			}
+
+			/**
+				* Returns the player name
+				*
+				* @return string 
+			*/
+			public String playerName() {
+				return "ItDeepeningMMmulti";
+			}
 	
 	//#endregion PLAYER
 

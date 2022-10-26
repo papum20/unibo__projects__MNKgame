@@ -16,6 +16,11 @@ package structures;
 public interface PHElement<S, K> extends Comparable<S> {
 	
 	/**
+	 * alternative compare
+	 * @param b
+	 */
+	public int compareTo2(S b);
+	/**
 	 * changes own K key such that PHElement(new_key).compareTo(PHElement(old_key)) >= 0
 	 * @param delta = variation to "add"
 	 */

@@ -7,8 +7,8 @@ import java.util.Collection;
 
 public class PriorityHeap<K, T extends PHElement<T, K>> {
 	
-	ArrayList<T> heap;
-	int size;
+	protected ArrayList<T> heap;
+	protected int size;
 	protected PHOrder order;
 
 
@@ -45,6 +45,10 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 			// doesn't remove, but decreases size
 		}
 	}
+	public T get(int ind) {
+		if (ind < 0) return null;
+		else return heap.get(ind);
+	}
 	/**
 	 * remove all values and assign new ones
 	 * @param V
@@ -67,6 +71,14 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 	 */
 	public int find(T elem) {
 		return recursiveSearch(elem, 0);
+	}
+	/**
+	 * find with alternative compare (compareTo2)
+	 * @param elem
+	 * @return index in heap / -1 if not found
+	 */
+	public int find2(T elem) {
+		return recursiveSearch2(elem, 0);
 	}
 	/**
 	 * calls elem.increaseKey(key)
@@ -155,6 +167,17 @@ public class PriorityHeap<K, T extends PHElement<T, K>> {
 	 */
 	protected int recursiveSearch(T elem, int pos) {
 		if(pos < size && heap.get(pos) == elem) return pos;
+		else {
+			int res = -1;
+			if(left(pos) < size) {
+				if(compare(elem, heap.get(left(pos))) <= 0) res = recursiveSearch(elem, left(pos));
+				if(res != -1 && right(pos) < size && compare(elem, heap.get(right(pos))) <= 0) res = recursiveSearch(elem, right(pos));
+			}
+			return res;
+		}
+	}
+	protected int recursiveSearch2(T elem, int pos) {
+		if(pos < size && elem.compareTo2(heap.get(pos)) == 0) return pos;
 		else {
 			int res = -1;
 			if(left(pos) < size) {
