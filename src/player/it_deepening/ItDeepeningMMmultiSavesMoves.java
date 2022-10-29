@@ -6,14 +6,9 @@
 
 package player.it_deepening;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.ListIterator;
 import mnkgame.MNKCell;
-import mnkgame.MNKCellState;
-import mnkgame.MNKGameState;
-import player.ArrayBoardHeuristic;
 import structures.PHElement;
 import structures.PHOrder;
 
