@@ -5,17 +5,17 @@ import mnkgame.MNKCellState;
 
 
 
-public class transposition_table {
-	private final int hash_size;
-	private final int ScoreNotFound;
-	private final int max_ite;
-	private boolean table_is_full;
-	private int M;
-	private int N;
-	private long[][][] storage;//deve essere una matrice tridimensionale
-	private transposition_hash_cell[] transposition_hash;    //l'hash table è 2^16, da inizializzare con tutti i campi val a -2 o comunque un valore per far capire che quella cella è vuota
+public class Transposition_table {
+	protected final int hash_size;
+	protected final int ScoreNotFound;
+	protected final int max_ite;
+	protected boolean table_is_full;
+	protected int M;
+	protected int N;
+	protected long[][][] storage;//deve essere una matrice tridimensionale
+	protected transposition_hash_cell[] transposition_hash;    //l'hash table è 2^16, da inizializzare con tutti i campi val a -2 o comunque un valore per far capire che quella cella è vuota
 
-	public transposition_table(int M, int N){
+	public Transposition_table(int M, int N){
 		table_is_full=false;
 		hash_size = (int)Math.pow(2,16);  //dimensione della tabella hash 
 		max_ite = 20;  //n_max_iterazioni prima di ritornare ScoreNotFound nella ricerca della transposition_hash per trovare un Game_State uguale 
@@ -46,41 +46,6 @@ public class transposition_table {
 		return 	father_key_hash; //con un hash a 64 bit, le collisioni possono avvenire 1 ogni sqrt(2^64) cioè dopo circa 2^32 o 4 miliardi di posizioni calcolate
     }
 
-	public int gain_score (long key){   //funzione che deve fare osama per prendere lo score, ritorna la costante ScoreNotFound se non è stato trovato
-			int transposition_table_index = (int)(key & (hash_size - 1));	//contando che c'è l'and binario non serve il valore assoluto perchè toglie i numeri negativi
-			if(table_is_full)
-				return ScoreNotFound;
-			boolean Not_found_after_max_ite=false;
-			int i=0;
-			double c1= 0.5;  
-			double c2= 0.5;
-			while(transposition_hash[transposition_table_index].key!=key){ //da togliere il true
-				transposition_table_index=(int)(transposition_table_index + i*c1 + (i*i)*c2)%(hash_size - 1); //ispezione quadratica
-				i++;
-				if(i>=max_ite){  //si cerca nella transposition_table fino a max_it    
-					Not_found_after_max_ite=true;
-					break;
-				}
-			}
-			if(Not_found_after_max_ite)
-				return ScoreNotFound;
-			else return transposition_hash[transposition_table_index].score;
-			
-	}
-	//Osama genera la chiave, controlla se è presente nella tabella tramite gain_score, se non c'è fa una evaluation e poi salva lo score con save_data
-	public void save_data(int score, long key){
-		if(table_is_full)
-			return;
-		int transposition_table_index = ispezione_quadrata(key);
-		if(table_is_full)
-			return;
-		transposition_hash[transposition_table_index].score=score;
-		transposition_hash[transposition_table_index].key=key;
-	}
-
-
-
-
 	public boolean table_is_full(){
 		return(table_is_full);
 	}
@@ -93,6 +58,7 @@ public class transposition_table {
 		else save_data(score, new_key);
 		
 	}*/
+
 	private int ispezione_quadrata (long key){ //trova la prima cella libera 
 		int transposition_table_index = (int)(key & (hash_size - 1));
 		int i=0;
@@ -108,7 +74,38 @@ public class transposition_table {
 		}
 		return transposition_table_index;
 	}
-	
+
+	public int gain_score (long key){   //funzione che deve fare osama per prendere lo score, ritorna la costante ScoreNotFound se non è stato trovato
+		int transposition_table_index = (int)(key & (hash_size - 1));	//contando che c'è l'and binario non serve il valore assoluto perchè toglie i numeri negativi
+		if(table_is_full)
+			return ScoreNotFound;
+		boolean Not_found_after_max_ite=false;
+		int i=0;
+		double c1= 0.5;  
+		double c2= 0.5;
+		while(transposition_hash[transposition_table_index].key!=key){ //da togliere il true
+			transposition_table_index=(int)(transposition_table_index + i*c1 + (i*i)*c2)%(hash_size - 1); //ispezione quadratica
+			i++;
+			if(i>=max_ite){  //si cerca nella transposition_table fino a max_it    
+				Not_found_after_max_ite=true;
+				break;
+			}
+		}
+		if(Not_found_after_max_ite)
+			return ScoreNotFound;
+		else return transposition_hash[transposition_table_index].score;
+}
+
+	//Osama genera la chiave, controlla se è presente nella tabella tramite gain_score, se non c'è fa una evaluation e poi salva lo score con save_data
+	public void save_data(int score, long key){
+		if(table_is_full)
+			return;
+		int transposition_table_index = ispezione_quadrata(key);
+		if(table_is_full)
+			return;
+		transposition_hash[transposition_table_index].score=score;
+		transposition_hash[transposition_table_index].key=key;
+	}
 	
 	
 	public class transposition_hash_cell {
