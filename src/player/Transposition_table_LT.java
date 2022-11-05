@@ -1,6 +1,7 @@
 package player;
 import java.util.Random;
 import mnkgame.MNKCellState;
+import player.ArrayBoard;
 
 
 public class Transposition_table_LT {
@@ -59,6 +60,79 @@ public class Transposition_table_LT {
 	public void save_data(int score, long key){
 		int transposition_table_index = (int)(key & (hash_size - 1));
 		transposition_hash[transposition_table_index].head_insert(score, key);
+	}
+	public boolean are_transpositions(MNKCellState[][] A, MNKCellState[][] B, int M, int N){
+		if(N==M){
+			boolean sim0rot90=true;
+			boolean sim0rot180=true;
+			boolean sim0rot270=true;
+			boolean sim1rot0=true;
+			boolean sim1rot90=true;
+			boolean sim1rot180=true;
+			boolean sim1rot270=true;
+			for(int i=0; i<N;i++){
+				for(int j=0; j<N; j++){
+					if(sim0rot90){
+						if(A[i][j]!=B[N-1-j][i])
+							sim0rot90=false;
+					}
+					if(sim0rot180){
+						if(A[i][j]!=B[N-1-i][N-1-j])
+							sim0rot180=false;
+					}
+					if(sim0rot270){
+						if(A[i][j]!=B[j][N-1-i])
+							sim0rot270=false;
+					}
+					if(sim1rot0){
+						int tmp = N-j-1;
+						if(i>tmp)
+							break;
+						else if(A[i][j]!=B[i][tmp])  
+							sim1rot0=false;
+					}
+					if(sim1rot90){
+						if(A[i][j]!=B[j][i])
+							sim1rot90=false;
+					}
+					if(sim1rot180){
+						if(A[i][j]!=B[N-1-i][j])
+							sim1rot180=false;
+					}
+					if(sim1rot270){
+						if(A[i][j]!=B[j][N-1-i])
+							sim1rot270=false;
+					}
+
+				}
+			}
+			return(sim0rot90 || sim0rot180 || sim0rot270 || sim1rot0 || sim1rot90 || sim1rot180 || sim1rot270);
+		}
+		else{
+			boolean sim0rot180=true;
+			boolean sim1rot0=true;
+			boolean sim1rot180=true;
+			for(int i =0; i <M; i++){
+				for(int j=0; j<N; j++){
+					if(sim0rot180){
+						if(A[i][j]!=B[M-1-i][N-1-j])
+							sim0rot180=false;
+					}
+					if(sim1rot0){
+						int tmp = N-j-1;
+						if(i>tmp)
+							break;
+						else if(A[i][j]!=B[i][tmp])  
+							sim1rot0=false;
+					}
+					if(sim1rot180){
+						if(A[i][j]!=B[M-1-i][j])
+							sim0rot180=false;
+					}
+				}
+			}
+			return(sim0rot180 || sim1rot0 || sim1rot180);
+		}
 	}
 	
 	public class node{
