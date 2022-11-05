@@ -16,6 +16,8 @@ MINIMAX:
 	infine, a sto punto, si può non inizializzare subito la hash table di trasposizione, ma farlo per le configurazioni volute di volta in volta
 -	DAG transposition
 
+-	transposition table: salvare solo parte di hash key per ogni entry ? (eventualmente (chess-wikipedia) parte non usata come indice, o anche meno)
+
 
 
 PROPRIETÀ:
