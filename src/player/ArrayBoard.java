@@ -230,6 +230,14 @@ public class ArrayBoard {
 		private void addMC(int y, int x) {
 			MC[MC_n++] = new MNKCell(y, x);
 		}
+		
+		//Checks if a cell is within the bounds of the matrix
+		private boolean in_Bounds(int y, int x){
+			if (y >= 0 && y < M && x >= 0 && x < N)
+				return true;
+			else
+				return false;
+		}
 
 		// Check winning state from cell y, x
 		private boolean isWinningCell(int y, int x) {
