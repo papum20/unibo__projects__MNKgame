@@ -95,7 +95,7 @@ public class ArrayBoard {
  
  	/**
  	 * Marks the selected cell for the current player
- 	 * @param y i-th row
+ 	 * @param y y-th row
  	 * @param x x-th column
  	 * @return State of the game after the move
 	 * @PRECONDITION: GameState==OPEN
@@ -232,7 +232,7 @@ public class ArrayBoard {
 		}
 		
 		//Checks if a cell is within the bounds of the matrix
-		private boolean in_Bounds(int y, int x){
+		private boolean in_bounds(int y, int x){
 			if (y >= 0 && y < M && x >= 0 && x < N)
 				return true;
 			else

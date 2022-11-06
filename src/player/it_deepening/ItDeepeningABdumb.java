@@ -16,7 +16,7 @@ public class ItDeepeningABdumb extends ItDeepeningInterface {
 
 	//#region PLAYER
 	
-		ItDeepeningABdumb() {
+		public ItDeepeningABdumb() {
 			super();
 		}
 
@@ -88,7 +88,7 @@ public class ItDeepeningABdumb extends ItDeepeningInterface {
 			if(state_score == STATE_SCORE_OPEN) {
 				//if arrived at depth_max
 				if(depth == depth_max)
-					return board.evaluate();
+					return board.evaluate(first);
 				//else make a move
 				else {
 					//final score obtained from current position, assuming both player make their best moves
