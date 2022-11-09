@@ -24,15 +24,15 @@ public class PnSearchDelete extends IPnSearch<Move, NodeD> {
 		}
 				
 		/**
-			 * Returns the player name
-			 *
-			* @return string 
-		*/
+		 * Returns the player name
+		 * @return string 
+		 */
 		public String playerName() {
 			return "PnSearchDelete";
 		}
 
-	//#endregion PLAYER
+		
+		//#endregion PLAYER
 
 
 
@@ -40,5 +40,22 @@ public class PnSearchDelete extends IPnSearch<Move, NodeD> {
 
 
 	//#endregion ALGORITHM
+
+
+
+	//#region INIT
+
+		@Override
+		protected Move newMove(MNKCell move) {
+			return new Move(move);
+		}
+
+		@Override
+		protected NodeD newNode() {
+			return new NodeD();
+		}
+		
+	//#endregion INIT
+	
 
 }

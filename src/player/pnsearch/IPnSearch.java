@@ -69,9 +69,8 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 
 			// DEBUG
-			
 			System.out.println("------------------");
-
+			debug.open();
 
 			//start conting time for this turn
 			timer_start = System.currentTimeMillis();
@@ -90,18 +89,12 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 				else current_root.setMove(newMove(opponent_move));
 			}
 			// DEBUG
-			String made = "";
-			for(int i = 0; i < board.MarkedCells_length(); i++)
-			made += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
-			System.out.println("MC: " + made);
+			debug.markedCells(0);
 			if(current_root.move != null) System.out.println(current_root.move.position);
 			//recursive call for each possible move
 			visit(current_root);
 			// DEBUG
-			made = "";
-			for(int i = 0; i < board.MarkedCells_length(); i++)
-			made += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
-			System.out.println("MC: " + made);
+			debug.markedCells(0);
 			if(current_root.move != null) System.out.println(current_root.move.position);
 			
 			N best_node = getBestNode();
@@ -114,7 +107,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 
 			// DEBUG
 			System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
-			
+			debug.close();
 
 			return res;
 		}
@@ -277,7 +270,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 		//returns move to make on this turn
 		protected N getBestNode() {
 			// if found winning move: return it (i.e. the child move that is winning too)
-			if(current_root.children.size() == 0) return null;
+			if(!current_root.isExpanded() || current_root.children.size() == 0) return null;
 			else {
 				N best = current_root.children.getFirst();
 				if(current_root.proof == 0) {
@@ -333,7 +326,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			timer_end = timeout_in_millisecs - 1000;
 			current_root = newNode();		
 			
-			debug = new Debug("debug-" + playerName());
+			debug = new Debug("debug-" + playerName(), false);
 		}
 
 		// create N object
@@ -350,10 +343,12 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			protected FileWriter file;
 			protected String filename;
 			protected String error;
+			protected boolean active;
 
-			public Debug(String filename) {
+			public Debug(String filename, boolean active) {
 				this.filename = filename;
 				this.error = "WTF";
+				this.active = active;
 			}
 			public void open() {
 				try {
@@ -372,41 +367,49 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			
 			// print up to last one minus "minus"
 			protected void freeCells(int minus) {
-				String fc = "";
-				for(int i = 0; i < board.FreeCells_length() - minus; i++) fc += Integer.toString(board.getFreeCell(i).i) + Integer.toString(board.getFreeCell(i).j) + " ";
-				System.out.println("mc: " + fc);				
-				try {
-					file.write("mc: " + fc + "\n");
-				} catch(IOException e) {
-					System.out.println(error);
+				if(active) {
+					String fc = "";
+					for(int i = 0; i < board.FreeCells_length() - minus; i++) fc += Integer.toString(board.getFreeCell(i).i) + Integer.toString(board.getFreeCell(i).j) + " ";
+					System.out.println("mc: " + fc);				
+					try {
+						file.write("mc: " + fc + "\n");
+					} catch(IOException e) {
+						System.out.println(error);
+					}
 				}
 			}
 			protected void markedCells(int minus) {
-				String mc = "";
-				for(int i = 0; i < board.MarkedCells_length() - minus; i++) mc += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
-				System.out.println("mc: " + mc);				
-				try {
-					file.write("mc: " + mc + "\n");
-				} catch(IOException e) {
-					System.out.println(error);
+				if(active) {
+					String mc = "";
+					for(int i = 0; i < board.MarkedCells_length() - minus; i++) mc += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
+					System.out.println("mc: " + mc);				
+					try {
+						file.write("mc: " + mc + "\n");
+					} catch(IOException e) {
+						System.out.println(error);
+					}
 				}
 			}
 			protected void node(N node) {
-				String txt = (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
-				System.out.println(txt);
-				try {
-					file.write(txt + "\n");
-				} catch(IOException e) {
-					System.out.println(error);
+				if(active) {
+					String txt = (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
+					System.out.println(txt);
+					try {
+						file.write(txt + "\n");
+					} catch(IOException e) {
+						System.out.println(error);
+					}
 				}
 			}
 			protected void nestedNode(N node, int minus) {
-				String txt = tabs(minus) + (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
-				System.out.println(txt);
-				try {
-					file.write(txt + "\n");
-				} catch(IOException e) {
-					System.out.println(error);
+				if(active) {
+					String txt = tabs(minus) + (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
+					System.out.println(txt);
+					try {
+						file.write(txt + "\n");
+					} catch(IOException e) {
+						System.out.println(error);
+					}
 				}
 			}
 			// return string with a tab for each depth level

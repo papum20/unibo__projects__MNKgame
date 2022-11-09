@@ -160,7 +160,7 @@ public class Nodes {
 			}
 		}
 		// INSTANCE FOR PnSearchDelete
-		protected class NodeD extends INode<Move, NodeD> {
+		protected static class NodeD extends INode<Move, NodeD> {
 			protected boolean expanded;
 			
 			public NodeD() {
@@ -182,6 +182,14 @@ public class Nodes {
 				this.children = null;
 			}
 			
+			// FUNCTIONS
+			//functions about children should be redefined to check whether children==null;
+			//however some are only called if node is expanded
+			public NodeD findChild(MNKCell move) {
+				if(children == null) return null;
+				else return super.findChild(move);
+			}
+			// BOOL
 			@Override
 			public boolean isExpanded() {
 				return expanded;
@@ -194,6 +202,7 @@ public class Nodes {
 			@Override
 			public void expand() {
 				expanded = true;
+				children = new LinkedList<NodeD>();
 			}
 		}
 	

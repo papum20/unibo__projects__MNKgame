@@ -7,7 +7,8 @@
 
 package player.pnsearch;
 
-import java.io.IOException;
+import player.pnsearch.Nodes.Node;
+import player.pnsearch.Nodes.Value;
 
 
 
@@ -34,10 +35,10 @@ public class PnSearchUpdate extends PnSearch {
 
 	//#region ALOGRITHM
 
-		protected <M extends Move, N extends Node_t<M,N>> void visit(N root) {
+		protected void visit(Node root) {
 			evaluate(root);
 			setProofAndDisproofNumbers(root, true);
-			N currentNode = root;
+			Node currentNode = root;
 			while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
 			
 				// DEBUG
@@ -49,7 +50,7 @@ public class PnSearchUpdate extends PnSearch {
 					System.out.println("WTF");
 				}
 				*/
-				N mostProvingNode = selectMostProving(currentNode);
+				Node mostProvingNode = selectMostProving(currentNode);
 				// DEBUG
 				/*
 				System.out.println( Integer.toString(board.MarkedCells_length()) + ((mostProvingNode.move == null || isMyTurn()) ? "P" : "D") + ((mostProvingNode.move == null) ? "root" : mostProvingNode.move.position) + " " + Short.toString(mostProvingNode.proof) + " " + Short.toString(mostProvingNode.disproof) );
@@ -103,8 +104,8 @@ public class PnSearchUpdate extends PnSearch {
 		 * @param node
 		 * @param my_turn
 		 */
-		protected <M extends Move, N extends Node_t<M,N>> N updateAncestorsUpto(N node) {
-			N previousNode = node;
+		protected Node updateAncestorsUpto(Node node) {
+			Node previousNode = node;
 			boolean changed = true;
 			while(node != null && changed) {
 				int oldProof = node.proof, oldDisproof = node.disproof;
@@ -135,12 +136,6 @@ public class PnSearchUpdate extends PnSearch {
 	
 	
 	//#region INIT
-
-		@Override
-		protected void initAttributes() {
-			super.initAttributes();
-			debugName = "debug-pnsearch-update";
-		}
 
 	//#endregion INIT
 
