@@ -36,7 +36,7 @@ public class Nodes {
 		 * @param <M> move type
 		 * @param <S> self (same type)
 		 */
-		protected static abstract class Node_t<M extends Move, S extends Node_t<M,S>> {
+		protected static abstract class INode<M extends Move, S extends INode<M,S>> {
 			protected M move;
 			public Value value;
 			public short proof;
@@ -44,13 +44,13 @@ public class Nodes {
 			protected S parent;
 			public LinkedList<S> children;
 
-			public Node_t() {
+			public INode() {
 				init(null, Value.UNKNOWN, PROOF_N_ZERO, PROOF_N_ZERO, null);
 			}
-			public Node_t(M move, S parent) {
+			public INode(M move, S parent) {
 				init(move, Value.UNKNOWN, PROOF_N_ZERO, PROOF_N_ZERO, parent);
 			}
-			public Node_t(M move, Value value, short proof, short disproof) {
+			public INode(M move, Value value, short proof, short disproof) {
 				init(move, value, proof, disproof, null);
 			}
 			protected void init(M move, Value value, short proof, short disproof, S parent) {
@@ -123,7 +123,7 @@ public class Nodes {
 
 		}
 		// INSTANCE FOR PnSearch
-		public static class Node extends Node_t<Move, Node> {
+		public static class Node extends INode<Move, Node> {
 			protected boolean expanded;
 			
 			public Node() {
@@ -145,7 +145,6 @@ public class Nodes {
 				this.children = new LinkedList<Node>();
 			}
 			
-			// BOOL
 			@Override
 			public boolean isExpanded() {
 				return expanded;
@@ -161,17 +160,19 @@ public class Nodes {
 			}
 		}
 		// INSTANCE FOR PnSearchDelete
-		protected class NodeD extends Node {
+		protected class NodeD extends INode<Move, NodeD> {
+			protected boolean expanded;
+			
 			public NodeD() {
 				super();
 			}
-			public NodeD(Move move, Node parent) {
+			public NodeD(Move move, NodeD parent) {
 				super(move, parent);
 			}
 			public NodeD(Move move, Value value, short proof, short disproof) {
 				super(move, value, proof, disproof);
 			}
-			protected void init(Move move, Value value, short proof, short disproof, Node parent) {
+			protected void init(Move move, Value value, short proof, short disproof, NodeD parent) {
 				this.move = move;
 				this.value = value;
 				this.proof = proof;
@@ -180,7 +181,20 @@ public class Nodes {
 				this.parent = parent;
 				this.children = null;
 			}
-
+			
+			@Override
+			public boolean isExpanded() {
+				return expanded;
+			}
+			// SET
+			@Override
+			public void addChild(MNKCell move) {
+				children.addLast(new NodeD(new Move(move), this));
+			}
+			@Override
+			public void expand() {
+				expanded = true;
+			}
 		}
 	
 	//#endregion CLASSES

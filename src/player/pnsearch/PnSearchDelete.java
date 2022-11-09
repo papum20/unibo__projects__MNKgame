@@ -8,10 +8,12 @@ package player.pnsearch;
 import java.util.LinkedList;
 
 import mnkgame.MNKCell;
+import player.pnsearch.Nodes.Move;
+import player.pnsearch.Nodes.NodeD;
 
 
 
-public class PnSearchDelete extends PnSearch {
+public class PnSearchDelete extends IPnSearch<Move, NodeD> {
 	
 
 

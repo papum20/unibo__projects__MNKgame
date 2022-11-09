@@ -6,13 +6,13 @@ import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
 import player.pnsearch.Nodes.Move;
-import player.pnsearch.Nodes.Node_t;
+import player.pnsearch.Nodes.INode;
 import player.pnsearch.Nodes.Value;
 
 
 
 
-public abstract class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame.MNKPlayer {
+public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements mnkgame.MNKPlayer {
 
 	protected int M;
 	protected int N;
