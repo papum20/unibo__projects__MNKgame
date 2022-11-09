@@ -2,7 +2,6 @@ package player.pnsearch;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
@@ -13,7 +12,7 @@ import player.pnsearch.Nodes.Value;
 
 
 
-public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame.MNKPlayer {
+public abstract class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame.MNKPlayer {
 
 	protected int M;
 	protected int N;
@@ -23,6 +22,8 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 
 	protected MNKGameState MY_WIN;
 	protected int MY_PLAYER;
+	protected final short PROOF_N_ZERO = Nodes.PROOF_N_ZERO;
+	protected final short PROOF_N_INFINITE = Nodes.PROOF_N_INFINITE;
 
 	ArrayBoard board;
 	protected long timer_start;					//turn start (milliseconds)
@@ -30,9 +31,8 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 
 	protected N current_root;
 
-	protected FileWriter debugFile;
-	protected String debugName;
-	
+	protected Debug debug;
+
 
 
 	//#region PLAYER	
@@ -71,13 +71,7 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 			// DEBUG
 			
 			System.out.println("------------------");
-			/*
-			try {
-				debugFile = new FileWriter(debugName + MC.length + ".txt");
-			} catch (IOException e) {
-				System.out.println("WTF");
-			}
-			*/		
+
 
 			//start conting time for this turn
 			timer_start = System.currentTimeMillis();
@@ -88,12 +82,12 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 				board.markCell(opponent_move.i, opponent_move.j);
 				//update current_root (with last opponent move)
 				//assumption: current_root != null
-				Node new_root = current_root.findChild(opponent_move);
+				N new_root = current_root.findChild(opponent_move);
 				if(new_root != null) {
 					current_root = new_root;
 					current_root.setParent(null);
 				}
-				else current_root.setMove(new Move(opponent_move));
+				else current_root.setMove(newMove(opponent_move));
 			}
 			// DEBUG
 			String made = "";
@@ -110,7 +104,7 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 			System.out.println("MC: " + made);
 			if(current_root.move != null) System.out.println(current_root.move.position);
 			
-			Node best_node = getBestNode();
+			N best_node = getBestNode();
 			MNKCell res = FC[0];
 			if(best_node != null) res = best_node.move.position;
 			//update my istance of board
@@ -120,13 +114,7 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 
 			// DEBUG
 			System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
-			/*
-			try {
-				debugFile.close();
-			} catch(IOException e) {
-				System.out.println("WTF");
-			}
-			*/
+			
 
 			return res;
 		}
@@ -137,7 +125,7 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 			* @return string 
 		*/
 		public String playerName() {
-			return "PnSearch";
+			return "IPnSearch";
 		}
 
 		//#endregion PLAYER
@@ -148,50 +136,26 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 
 		/**
 		 * 
-		 * @param <N>
 		 * @param root
 		 */
-		protected <M extends Move, N extends Node_t<M,N>> void visit(N root) {
+		protected void visit(N root) {
 			evaluate(root);
 			setProofAndDisproofNumbers(root, true);
 			while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
-				// DEBUG
-				/*
-				System.out.println( "\t" + Integer.toString(board.MarkedCells_length()) + ((isMyTurn()) ? "P" : "D") + "(r)" + ((root.move == null) ? "root" : root.move.position) + " " + Short.toString(root.proof) + " " + Short.toString(root.disproof) );
-				try {
-					debugFile.write( "\t" + Integer.toString(board.MarkedCells_length()) + ((isMyTurn()) ? "P" : "D") + "(r)" + ((root.move == null) ? "root" : root.move.position) + " " + Short.toString(root.proof) + " " + Short.toString(root.disproof) + "\n" );
-				} catch(IOException e) {
-					System.out.println("WTF");
-				}
-				*/
+
+				debug.node(root);
+				
 				N mostProvingNode = selectMostProving(root);
-				// DEBUG
-				/*
-				System.out.println( Integer.toString(board.MarkedCells_length()) + ((mostProvingNode.move == null || isMyTurn()) ? "P" : "D") + ((mostProvingNode.move == null) ? "root" : mostProvingNode.move.position) + " " + Short.toString(mostProvingNode.proof) + " " + Short.toString(mostProvingNode.disproof) );
-				try {
-					String made = "", free = "";
-					for(int i = 0; i < board.MarkedCells_length(); i++)
-					made += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
-					for(int i = 0; i < board.FreeCells_length(); i++)
-					free += Integer.toString(board.getFreeCell(i).i) + Integer.toString(board.getFreeCell(i).j) + " ";
-					debugFile.write("MC: " + made + "\n" + "FC: " + free + "\n");
-					debugFile.write( Integer.toString(board.MarkedCells_length()) + ((mostProvingNode.move == null || isMyTurn()) ? "P" : "D") + ((mostProvingNode.move == null) ? "root" : mostProvingNode.move.position) + " " + Short.toString(mostProvingNode.proof) + " " + Short.toString(mostProvingNode.disproof) + "\n" );
-						} catch(IOException e) {
-							System.out.println("WTF");
-						}
-						*/
-						//if(!isTimeEnded()) {
-							developNode(mostProvingNode);
-							updateAncestors(mostProvingNode);
-					// DEBUG
-					/*
-					System.out.println( Integer.toString(board.MarkedCells_length()) + ((isMyTurn()) ? "P" : "D") + ((mostProvingNode.move == null) ? "root" : mostProvingNode.move.position) + " " + Short.toString(mostProvingNode.proof) + " " + Short.toString(mostProvingNode.disproof) );
-					try {
-						debugFile.write( Integer.toString(board.MarkedCells_length()) + ((isMyTurn()) ? "P" : "D") + ((mostProvingNode.move == null) ? "root" : mostProvingNode.move.position) + " " + Short.toString(mostProvingNode.proof) + " " + Short.toString(mostProvingNode.disproof) + "\n" );
-					} catch(IOException e) {
-						System.out.println("WTF");
-					}
-					*/
+				
+				debug.markedCells(0);
+				debug.freeCells(0);
+				debug.node(mostProvingNode);
+
+				//if(!isTimeEnded()) {
+					developNode(mostProvingNode);
+					updateAncestors(mostProvingNode);
+					
+				debug.node(mostProvingNode);
 				//}
 			}
 			if(root.proof == 0) root.value = Value.TRUE;
@@ -201,20 +165,18 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 
 		/**
 		 * 
-		 * @param <N>
-		 * @param V
+		 * @param node
 		 */
-		protected <M extends Move, N extends Node_t<M,N>> void evaluate(N node) {
+		protected void evaluate(N node) {
 			Value current = gameState_to_value(board.gameState());
 			node.value = current;
 		}
 		/**
 		 * 
-		 * @param <N>
 		 * @param V
 		 * @param my_turn
 		 */
-		protected <M extends Move, N extends Node_t<M,N>> void setProofAndDisproofNumbers(N node, boolean my_turn) {
+		protected void setProofAndDisproofNumbers(N node, boolean my_turn) {
 			if(node.isExpanded()) {
 				if(my_turn) node.setProofDisproof(node.getChildren_minProof(), node.getChildren_sumDisproof());
 				else node.setProofDisproof(node.getChildren_sumProof(), node.getChildren_minDisproof());
@@ -227,32 +189,15 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 		}
 		/**
 		 * 
-		 * @param <M>
-		 * @param <N>
 		 * @param node
-		 * @param my_turn
 		 * @return
 		 */
-		protected <M extends Move, N extends Node_t<M,N>> N selectMostProving(N node) {
+		protected N selectMostProving(N node) {
 			if(!node.isExpanded()) return node;
 			else {
-				// DEBUG
-				/*
-				String mc = "";
-				for(int i = 0; i < board.MarkedCells_length(); i++) mc += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
-				System.out.println("mc: " + mc);
-				System.out.println(node.move.position);
-				*/
-
 				N res = null;
 				if(isMyTurn()) {
 					for(N child : node.children) {
-						/*System.out.println( "\t" + child.move.position + " " + Short.toString(child.proof) + Short.toString(child.disproof) );
-						try {
-							debugFile.write( "\t" + child.move.position + " " + Short.toString(child.proof) + Short.toString(child.disproof) + "\n" );
-						} catch(IOException e) {
-							System.out.println("WTF");
-						}*/
 						if(child.proof == node.proof) {
 							res = child;
 							break;
@@ -260,35 +205,24 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 					}
 				} else {
 					for(N child : node.children) {
-						/*System.out.println( "\t" + child.move.position + " " + Short.toString(child.proof) + Short.toString(child.disproof) );
-						try {
-							debugFile.write( "\t" + child.move.position + " " + Short.toString(child.proof) + Short.toString(child.disproof) + "\n" );
-						} catch(IOException e) {
-							System.out.println("WTF");
-						}*/
 						if(child.disproof == node.disproof) {
 							res = child;
 							break;
 						}
 					}
 				}
-				// DEBUG
-				/*
-				String tab = "\t";
-				for(int i = 0; i < board.MarkedCells_length(); i++) tab += "\t";
-				System.out.println( tab + ((!isMyTurn()) ? "P" : "D") + res.move.position + " " + Short.toString(res.proof) + " " + Short.toString(res.disproof) );
-				try {
-					debugFile.write( tab + ((!isMyTurn()) ? "P" : "D") + res.move.position + " " + Short.toString(res.proof) + " " + Short.toString(res.disproof) + "\n" );
-				} catch(IOException e) {
-					System.out.println("WTF");
-				}
-				*/
 				board.markCell(res.move.position.i, res.move.position.j);
+
+				debug.nestedNode(node, 0);
+				
 				return selectMostProving(res);
 			}
 		}
-		
-		protected <M extends Move, N extends Node_t<M,N>> void developNode(N node) {
+		/**
+		 * 
+		 * @param node
+		 */
+		protected void developNode(N node) {
 			node.expand();
 			generateAllChildren(node);
 			for(N child : node.children) {
@@ -300,32 +234,24 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 		}
 		/**
 		 * 
-		 * @param <M>
-		 * @param <N>
 		 * @param node
 		 * @param my_turn
 		 */
-		protected <M extends Move, N extends Node_t<M,N>> void updateAncestors(N node) {
+		protected void updateAncestors(N node) {
 			while(node != null) {
 				setProofAndDisproofNumbers(node, isMyTurn());
-				if(node.getParent() != null) board.unmarkCell();
 
-				// DEBUG
-				/*
-				String tab = "\t";
-				for(int i = 0; i < board.MarkedCells_length() - ((node.getParent() == null) ? 1 : 0); i++) tab += "\t";
-				System.out.println( tab + ((node.getParent() == null || !isMyTurn()) ? "P" : "D") + ((node.getParent() == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof) );
-				try {
-					debugFile.write( tab + ((node.getParent() == null || !isMyTurn()) ? "P" : "D") + ((node.getParent() == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof) + "\n" );
-				} catch(IOException e) {
-					System.out.println("WTF");
-				}
-				*/
+				debug.nestedNode(node, 0);
+
+				if(node.getParent() != null) board.unmarkCell();
 				node = node.getParent();
 			}
 		}
-		
-		protected <M extends Move, N extends Node_t<M,N>> void generateAllChildren(N node) {
+		/**
+		 * 
+		 * @param node
+		 */
+		protected void generateAllChildren(N node) {
 			for(int i = 0; i < board.FreeCells_length(); i++)
 				node.addChild(board.getFreeCell(i));
 		}
@@ -349,13 +275,13 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 			return board.currentPlayer() == MY_PLAYER;
 		}
 		//returns move to make on this turn
-		protected Node getBestNode() {
+		protected N getBestNode() {
 			// if found winning move: return it (i.e. the child move that is winning too)
 			if(current_root.children.size() == 0) return null;
 			else {
-				Node best = current_root.children.getFirst();
+				N best = current_root.children.getFirst();
 				if(current_root.proof == 0) {
-					for(Node child : current_root.children) {
+					for(N child : current_root.children) {
 						if(child.proof == 0) {
 							best = child;
 							break;
@@ -364,14 +290,12 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 				}
 				// else: return the move with highest (proof-disproof)
 				else {
-					for(Node child : current_root.children)
+					for(N child : current_root.children)
 						if(child.proof - child.disproof > best.proof - best.disproof) best = child;
 				}
 				return best;
 			}
 		}
-		
-
 		
 		//#endregion AUXILIARY
 		
@@ -407,17 +331,94 @@ public class IPnSearch<M extends Move, N extends Node_t<M,N>> implements mnkgame
 		protected void initAttributes() {
 			board = new ArrayBoard(M, N, K);
 			timer_end = timeout_in_millisecs - 1000;
-			current_root = new Node();
+			current_root = newNode();		
 			
-			debugName = "debug-pnsearch";
-			/*try {
-				debugFile = new FileWriter("debug-pnsearch.txt");
-			} catch (IOException e) {
-				System.out.println("WTF");
-			}*/
+			debug = new Debug("debug-" + playerName());
 		}
 
+		// create N object
+		protected abstract M newMove(MNKCell move);
+		protected abstract N newNode();
+
 	//#endregion INIT
+
+
+
+	//#region DEBUG
+
+		protected class Debug{
+			protected FileWriter file;
+			protected String filename;
+			protected String error;
+
+			public Debug(String filename) {
+				this.filename = filename;
+				this.error = "WTF";
+			}
+			public void open() {
+				try {
+					file = new FileWriter(filename + board.MarkedCells_length() + ".txt");
+				} catch (IOException e) {
+					System.out.println(error);
+				}
+			}
+			public void close() {
+				try {
+					file.close();
+				} catch(IOException e) {
+					System.out.println(error);
+				}
+			}
+			
+			// print up to last one minus "minus"
+			protected void freeCells(int minus) {
+				String fc = "";
+				for(int i = 0; i < board.FreeCells_length() - minus; i++) fc += Integer.toString(board.getFreeCell(i).i) + Integer.toString(board.getFreeCell(i).j) + " ";
+				System.out.println("mc: " + fc);				
+				try {
+					file.write("mc: " + fc + "\n");
+				} catch(IOException e) {
+					System.out.println(error);
+				}
+			}
+			protected void markedCells(int minus) {
+				String mc = "";
+				for(int i = 0; i < board.MarkedCells_length() - minus; i++) mc += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
+				System.out.println("mc: " + mc);				
+				try {
+					file.write("mc: " + mc + "\n");
+				} catch(IOException e) {
+					System.out.println(error);
+				}
+			}
+			protected void node(N node) {
+				String txt = (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
+				System.out.println(txt);
+				try {
+					file.write(txt + "\n");
+				} catch(IOException e) {
+					System.out.println(error);
+				}
+			}
+			protected void nestedNode(N node, int minus) {
+				String txt = tabs(minus) + (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
+				System.out.println(txt);
+				try {
+					file.write(txt + "\n");
+				} catch(IOException e) {
+					System.out.println(error);
+				}
+			}
+			// return string with a tab for each depth level
+			protected String tabs(int minus) {
+				String tab = "\t";
+				for(int i = 0; i < board.MarkedCells_length(); i++) tab += "\t";
+				return tab;
+			}
+
+		}
+	
+	//#endregion DEBUG
 
 
 }
