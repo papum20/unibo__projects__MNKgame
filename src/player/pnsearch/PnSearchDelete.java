@@ -1,15 +1,13 @@
 /*
- * DELETES POINTERS TO SOLVED NODES;
+ * DELETES POINTERS TO SOLVED NODES; (to implement in sublcasses)
  * DOESNT IMMEDIATELY CREATE LISTS FOR NODES, JUST WHEN NEEDED
  */
 
 package player.pnsearch;
 
-import java.util.LinkedList;
-
 import mnkgame.MNKCell;
-import player.pnsearch.Nodes.Move;
-import player.pnsearch.Nodes.NodeD;
+import player.pnsearch.structures.Nodes.Move;
+import player.pnsearch.structures.Nodes.NodeD;
 
 
 

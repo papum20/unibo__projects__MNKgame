@@ -5,14 +5,16 @@ import java.io.IOException;
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
-import player.pnsearch.Nodes.Move;
-import player.pnsearch.Nodes.INode;
-import player.pnsearch.Nodes.Value;
+import player.pnsearch.structures.Nodes;
+import player.pnsearch.structures.Nodes.INode;
+import player.pnsearch.structures.Nodes.Move;
+import player.pnsearch.structures.Nodes.Node_t;
+import player.pnsearch.structures.Nodes.Value;
 
 
 
 
-public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements mnkgame.MNKPlayer {
+public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> implements mnkgame.MNKPlayer {
 
 	protected int M;
 	protected int N;
@@ -32,6 +34,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 	protected N current_root;
 
 	protected Debug debug;
+	protected int nodes_created;
 
 
 
@@ -71,6 +74,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			// DEBUG
 			System.out.println("------------------");
 			debug.open();
+			nodes_created = 0;
 
 			//start conting time for this turn
 			timer_start = System.currentTimeMillis();
@@ -90,16 +94,16 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			}
 			// DEBUG
 			debug.markedCells(0);
-			if(current_root.move != null) System.out.println(current_root.move.position);
+			if(current_root.getPosition() != null) System.out.println(current_root.getPosition());
 			//recursive call for each possible move
 			visit(current_root);
 			// DEBUG
 			debug.markedCells(0);
-			if(current_root.move != null) System.out.println(current_root.move.position);
+			if(current_root.getPosition() != null) System.out.println(current_root.getPosition());
 			
 			N best_node = getBestNode();
 			MNKCell res = FC[0];
-			if(best_node != null) res = best_node.move.position;
+			if(best_node != null) res = best_node.getPosition();
 			//update my istance of board
 			board.markCell(res.i, res.j);								//mark my cell
 			//update current_root (with my last move)
@@ -107,6 +111,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 
 			// DEBUG
 			System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
+			System.out.println("nodes: " + Integer.toString(nodes_created));
 			debug.close();
 
 			return res;
@@ -189,22 +194,9 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			if(!node.isExpanded()) return node;
 			else {
 				N res = null;
-				if(isMyTurn()) {
-					for(N child : node.children) {
-						if(child.proof == node.proof) {
-							res = child;
-							break;
-						}
-					}
-				} else {
-					for(N child : node.children) {
-						if(child.disproof == node.disproof) {
-							res = child;
-							break;
-						}
-					}
-				}
-				board.markCell(res.move.position.i, res.move.position.j);
+				if(isMyTurn()) res = node.findChildProof(node.proof);
+				else res = node.findChildDisproof(node.disproof);
+				board.markCell(res.getPosition().i, res.getPosition().j);
 
 				debug.nestedNode(node, 0);
 				
@@ -215,16 +207,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 		 * 
 		 * @param node
 		 */
-		protected void developNode(N node) {
-			node.expand();
-			generateAllChildren(node);
-			for(N child : node.children) {
-				board.markCell(child.move.position.i, child.move.position.j);
-				evaluate(child);
-				setProofAndDisproofNumbers(child, isMyTurn());
-				board.unmarkCell();
-			}
-		}
+		protected abstract void developNode(N node);
 		/**
 		 * 
 		 * @param node
@@ -268,27 +251,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			return board.currentPlayer() == MY_PLAYER;
 		}
 		//returns move to make on this turn
-		protected N getBestNode() {
-			// if found winning move: return it (i.e. the child move that is winning too)
-			if(!current_root.isExpanded() || current_root.children.size() == 0) return null;
-			else {
-				N best = current_root.children.getFirst();
-				if(current_root.proof == 0) {
-					for(N child : current_root.children) {
-						if(child.proof == 0) {
-							best = child;
-							break;
-						}
-					}
-				}
-				// else: return the move with highest (proof-disproof)
-				else {
-					for(N child : current_root.children)
-						if(child.proof - child.disproof > best.proof - best.disproof) best = child;
-				}
-				return best;
-			}
-		}
+		protected abstract N getBestNode();
 		
 		//#endregion AUXILIARY
 		
@@ -392,7 +355,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			}
 			protected void node(N node) {
 				if(active) {
-					String txt = (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
+					String txt = (isMyTurn() ? "P" : "D") + ((node.getMove() == null) ? "root" : node.getPosition()) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
 					System.out.println(txt);
 					try {
 						file.write(txt + "\n");
@@ -403,7 +366,7 @@ public abstract class IPnSearch<M extends Move, N extends INode<M,N>> implements
 			}
 			protected void nestedNode(N node, int minus) {
 				if(active) {
-					String txt = tabs(minus) + (isMyTurn() ? "P" : "D") + ((node.move == null) ? "root" : node.move.position) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
+					String txt = tabs(minus) + (isMyTurn() ? "P" : "D") + ((node.getMove() == null) ? "root" : node.getPosition()) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
 					System.out.println(txt);
 					try {
 						file.write(txt + "\n");

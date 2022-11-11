@@ -1,8 +1,8 @@
 package player.pnsearch;
 
 import mnkgame.MNKCell;
-import player.pnsearch.Nodes.Move;
-import player.pnsearch.Nodes.Node;
+import player.pnsearch.structures.Nodes.Move;
+import player.pnsearch.structures.Nodes.Node;
 
 
 
@@ -11,7 +11,7 @@ public class PnSearch extends IPnSearch<Move, Node> {
 
 	//#region PLAYER
 
-		PnSearch() {
+		public PnSearch() {
 			
 		}
 		
