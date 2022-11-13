@@ -1,12 +1,13 @@
 package player.pnsearch;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
 import player.pnsearch.structures.Nodes;
-import player.pnsearch.structures.Nodes.INode;
 import player.pnsearch.structures.Nodes.Move;
 import player.pnsearch.structures.Nodes.Node_t;
 import player.pnsearch.structures.Nodes.Value;
@@ -28,8 +29,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 	protected final short PROOF_N_INFINITE = Nodes.PROOF_N_INFINITE;
 
 	ArrayBoard board;
+
 	protected long timer_start;					//turn start (milliseconds)
 	protected long timer_end;					//time (millisecs) at which to stop timer
+	protected Runtime runtime;
 
 	protected N current_root;
 
@@ -94,20 +97,22 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			}
 			// DEBUG
 			debug.markedCells(0);
-			if(current_root.getPosition() != null) System.out.println(current_root.getPosition());
+			if(current_root.getMove() != null) System.out.println(current_root.getPosition());
 			//recursive call for each possible move
 			visit(current_root);
 			// DEBUG
 			debug.markedCells(0);
-			if(current_root.getPosition() != null) System.out.println(current_root.getPosition());
+			if(current_root.getMove() != null) System.out.println(current_root.getPosition());
 			
 			N best_node = getBestNode();
 			MNKCell res = FC[0];
-			if(best_node != null) res = best_node.getPosition();
+			if(best_node != null) {
+				res = best_node.getPosition();
+				//update current_root (with my last move)
+				current_root = best_node;
+			};
 			//update my istance of board
 			board.markCell(res.i, res.j);								//mark my cell
-			//update current_root (with my last move)
-			current_root = best_node;
 
 			// DEBUG
 			System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
@@ -149,12 +154,13 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				debug.freeCells(0);
 				debug.node(mostProvingNode);
 
-				//if(!isTimeEnded()) {
+				if(!isTimeEnded()) {
 					developNode(mostProvingNode);
 					updateAncestors(mostProvingNode);
-					
+				} else
+					resetBoard(mostProvingNode, root);
+				
 				debug.node(mostProvingNode);
-				//}
 			}
 			if(root.proof == 0) root.value = Value.TRUE;
 			else if(root.disproof == 0) root.value = Value.FALSE;			
@@ -231,6 +237,18 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			for(int i = 0; i < board.FreeCells_length(); i++)
 				node.addChild(board.getFreeCell(i));
 		}
+		/**
+		 * unmarks cells in board until current node reaches root node
+		 * precondition: root is ancestor of current
+		 * @param current : current node in game tree
+		 * @param root : node to go back to, in game tree
+		 */
+		protected void resetBoard(N current, N root) {
+			while(current != root) {
+				current = current.getParent();
+				board.unmarkCell();
+			}
+		}
 		
 	//#endregion ALGORITHM
 	
@@ -246,6 +264,12 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		//returns true if it's time to end the turn
 		protected boolean isTimeEnded() {
 			return (System.currentTimeMillis() - timer_start) >= timer_end;
+		}
+		//returns true if available memory is less than a small percentage of max memory
+		protected boolean isMemoryEnded() {
+			// max memory useable by jvm - (allocatedMemory = memory actually allocated by system for jvm - free memory in totalMemory)
+			long freeMemory = runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory());
+			return freeMemory < runtime.maxMemory() * (5 / 100);
 		}
 		protected boolean isMyTurn() {
 			return board.currentPlayer() == MY_PLAYER;
@@ -287,9 +311,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		protected void initAttributes() {
 			board = new ArrayBoard(M, N, K);
 			timer_end = timeout_in_millisecs - 1000;
+			runtime = Runtime.getRuntime();
 			current_root = newNode();		
 			
-			debug = new Debug("debug-" + playerName(), false);
+			debug = new Debug("debug/debug-" + playerName(), false);
 		}
 
 		// create N object
@@ -305,26 +330,34 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		protected class Debug{
 			protected FileWriter file;
 			protected String filename;
+			protected String filename_current;
 			protected String error;
 			protected boolean active;
 
 			public Debug(String filename, boolean active) {
 				this.filename = filename;
+				this.filename_current = filename;
 				this.error = "WTF";
 				this.active = active;
 			}
 			public void open() {
-				try {
-					file = new FileWriter(filename + board.MarkedCells_length() + ".txt");
-				} catch (IOException e) {
-					System.out.println(error);
+				if(active) {
+					filename_current = filename + board.MarkedCells_length() + ".txt";
+					try {
+						new File(filename_current);
+						file = new FileWriter(filename_current);
+					} catch (IOException e) {
+						System.out.println(error + " (open)");
+					}
 				}
 			}
 			public void close() {
-				try {
-					file.close();
-				} catch(IOException e) {
-					System.out.println(error);
+				if(active) {
+					try {
+						file.close();
+					} catch(IOException e) {
+						System.out.println(error + " (close)");
+					}
 				}
 			}
 			
@@ -337,7 +370,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					try {
 						file.write("mc: " + fc + "\n");
 					} catch(IOException e) {
-						System.out.println(error);
+						System.out.println(error + " (fc)");
 					}
 				}
 			}
@@ -349,7 +382,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					try {
 						file.write("mc: " + mc + "\n");
 					} catch(IOException e) {
-						System.out.println(error);
+						System.out.println(error + " (mc)");
 					}
 				}
 			}
@@ -360,7 +393,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					try {
 						file.write(txt + "\n");
 					} catch(IOException e) {
-						System.out.println(error);
+						System.out.println(error + " (node)");
 					}
 				}
 			}
@@ -371,7 +404,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					try {
 						file.write(txt + "\n");
 					} catch(IOException e) {
-						System.out.println(error);
+						System.out.println(error + "(nested)");
 					}
 				}
 			}

@@ -191,7 +191,7 @@ public class Nodes {
 				public S findChild(MNKCell move) {
 					S res = null;
 					for(S child : children) {
-						if(compareMNKMoves(move, child.move.position)) {
+						if(equalMNKMoves(move, child.move.position)) {
 							res = child;
 							break;
 						}
@@ -248,6 +248,7 @@ public class Nodes {
 				public Node_e(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
 				protected void init(Move move, Value value, short proof, short disproof, S parent) {
 					super.init(move, value, proof, disproof, parent);
+					this.expanded = false;
 					this.children = new LinkedList<S>();
 				}
 
@@ -298,13 +299,16 @@ public class Nodes {
 			}
 			// INSTANCE FOR PnSearchDelete
 			public static class NodeD extends Node_e<NodeD> {
-				protected boolean expanded;
-				
 				public NodeD() {super();}
 				public NodeD(Move move, NodeD parent) {super(move, parent);}
 				public NodeD(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
 				protected void init(Move move, Value value, short proof, short disproof, NodeD parent) {
-					super.init(move, value, proof, disproof, parent);
+					this.move = move;
+					this.value = value;
+					this.proof = proof;
+					this.disproof = disproof;
+					this.parent = parent;
+					this.expanded = false;
 					this.children = null;
 				}
 				
@@ -373,7 +377,7 @@ public class Nodes {
 				public S findChild(MNKCell move) {
 					S res = null;
 					for(S child : children) {
-						if(compareMNKMoves(move, child.move.position)) {
+						if(equalMNKMoves(move, child.move.position)) {
 							res = child;
 							break;
 						}
@@ -475,7 +479,7 @@ public class Nodes {
 
 		}
 
-		protected static boolean compareMNKMoves(MNKCell a, MNKCell b) {
+		protected static boolean equalMNKMoves(MNKCell a, MNKCell b) {
 			return a.i == b.i && a.j == b.j;
 		}
 

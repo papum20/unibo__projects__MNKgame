@@ -23,7 +23,7 @@ public class PnSearchUpdate extends PnSearchDelete {
 		/**
 		 * Returns the player name
 		 *
-		* @return string 
+		* @return string
 		*/
 		public String playerName() {
 			return "PnSearchUpdate";
@@ -49,18 +49,16 @@ public class PnSearchUpdate extends PnSearchDelete {
 				debug.freeCells(0);
 				debug.node(mostProvingNode);
 
-				//if(!isTimeEnded()) {
+				if(!isTimeEnded()) {
 					developNode(mostProvingNode);
 					currentNode = updateAncestorsUpto(mostProvingNode);
+				} else
+					resetBoard(mostProvingNode, root);
 
 				debug.node(mostProvingNode);
-				//}
 			}
 			// unmark all cells up to root
-			while(currentNode != root) {
-				currentNode = currentNode.getParent();
-				board.unmarkCell();
-			}
+			resetBoard(currentNode, root);
 			// set root value
 			if(root.proof == 0) root.value = Value.TRUE;
 			else if(root.disproof == 0) root.value = Value.FALSE;			
@@ -79,13 +77,13 @@ public class PnSearchUpdate extends PnSearchDelete {
 			while(node != null && changed) {
 				int oldProof = node.proof, oldDisproof = node.disproof;
 				setProofAndDisproofNumbers(node, isMyTurn());
-				changed = oldProof != node.proof || oldDisproof != node.disproof;
+				changed = (oldProof != node.proof || oldDisproof != node.disproof);
 
 				debug.nestedNode(node, 0);
 				
-				if(node.getParent() != null && changed) board.unmarkCell();
 				previousNode = node;
 				node = node.getParent();
+				if(node != null && changed) board.unmarkCell();
 			}
 			return previousNode;
 		}
