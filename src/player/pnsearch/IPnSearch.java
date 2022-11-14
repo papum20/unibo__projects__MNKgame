@@ -115,8 +115,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			board.markCell(res.i, res.j);								//mark my cell
 
 			// DEBUG
-			System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
-			System.out.println("nodes: " + Integer.toString(nodes_created));
+			debug.info();
 			debug.close();
 
 			return res;
@@ -407,6 +406,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 						System.out.println(error + "(nested)");
 					}
 				}
+			}
+			protected void info() {
+				System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
+				System.out.println("nodes: " + Integer.toString(nodes_created));
 			}
 			// return string with a tab for each depth level
 			protected String tabs(int minus) {
