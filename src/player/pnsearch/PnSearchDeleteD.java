@@ -41,10 +41,18 @@ public class PnSearchDeleteD extends PnSearchDelete {
 			if(node.isExpanded()) {
 				if(my_turn) node.setProofDisproof(node.getChildren_minProof(), node.getChildren_sumDisproof());
 				else node.setProofDisproof(node.getChildren_sumProof(), node.getChildren_minDisproof());
-				//if proved/disproved: delete children
+				//if proved/disproved: delete all children but the next in order
 				if(node.proof == 0 || node.disproof == 0) {
 					node.value = (node.proof == 0) ? Value.TRUE : Value.FALSE;
-					node.children = null;
+					NodeD next = null;
+					for(NodeD child : node.children) {
+						if(child.proof == node.proof || child.disproof == node.disproof) {
+							next = child;
+							break;
+						}
+					}
+					node.children.clear();
+					node.children.add(next);
 				}
 			}
 			else if(node.value != Value.UNKNOWN) {
