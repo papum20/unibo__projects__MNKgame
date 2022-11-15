@@ -62,7 +62,7 @@ public class PnSearchUpdateD extends PnSearchUpdate {
 				debug.nestedNode(node, 0);
 
 				// delete children
-				if((node.proof == 0 || node.disproof == 0) && node.getParent() != current_root) {
+				if((node.proof == 0 || node.disproof == 0) && node != current_root) {
 					node.value = (node.proof == 0) ? Value.TRUE : Value.FALSE;
 					node.children = null;
 				}

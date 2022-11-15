@@ -94,6 +94,9 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					current_root.setParent(null);
 				}
 				else current_root.setMove(newMove(opponent_move));
+
+				// DEBUG
+				System.out.println("last/opponent: " + MC[MC.length - 1]);
 			}
 			// DEBUG
 			debug.markedCells(0);
@@ -117,6 +120,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			// DEBUG
 			debug.info();
 			debug.close();
+			System.out.println("my move: " + res);
 
 			return res;
 		}
