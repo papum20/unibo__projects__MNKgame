@@ -218,3 +218,39 @@ take the number you generated and XOR them together. Reduce your Zobrist Key to 
  * 
  * 
 */
+
+/** 
+32 BIT
+
+int hash(int x) {
+    x = ((x >>> 16) ^ x) * 0x45d9f3b;
+    x = ((x >>> 16) ^ x) * 0x45d9f3b;
+    x = (x >>> 16) ^ x;
+    return x;
+}
+
+
+
+int unhash(int x) {
+    x = ((x >>> 16) ^ x) * 0x119de1f3;
+    x = ((x >>> 16) ^ x) * 0x119de1f3;
+    x = (x >>> 16) ^ x;
+    return x;
+}
+
+64 BIT
+long hash(long x) {
+    x = (x ^ (x >>> 30)) * L(0xbf58476d1ce4e5b9);
+    x = (x ^ (x >>> 27)) * L(0x94d049bb133111eb);
+    x = x ^ (x >>> 31);
+    return x;
+}
+
+long unhash(long x) {
+    x = (x ^ (x >>> 31) ^ (x >>> 62)) * L(0x319642b2d24d8ec3);
+    x = (x ^ (x >>> 27) ^ (x >>> 54)) * L(0x96de1b173f119089);
+    x = x ^ (x >>> 30) ^ (x >>> 60);
+    return x;
+}
+
+*/
