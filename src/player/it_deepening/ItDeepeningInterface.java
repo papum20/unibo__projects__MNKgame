@@ -14,7 +14,7 @@ import player.minimax.AlphaBeta;
 
 public class ItDeepeningInterface extends AlphaBeta {
 
-	ArrayBoardHeuristic board;
+	protected ArrayBoardHeuristic board;
 	
 	//protected int depth_max;				//depth where to stop (updated in execution)
 	protected double score_tolerance;		//if abs(b-a)<score_tolerance, it's considered a=b
@@ -52,6 +52,10 @@ public class ItDeepeningInterface extends AlphaBeta {
 		public void copy(S b) {
 			position = b.position;
 			score = b.score;
+		}
+		@Override
+		public MNKCell getPosition() {
+			return position;
 		}
 		@Override
 		public void increaseKey(Double delta) {
@@ -122,12 +126,21 @@ public class ItDeepeningInterface extends AlphaBeta {
 	
 	//#endregion PLAYER
 
+	//#region AUXILIARY
+
+		//returns move to make on this turn
+		protected MNKCell getBestMove() {
+			return bestMove.getPosition();
+		}
+
+	//#endregion AUXILIARY
 
 	//#region INIT
 
 		protected void initAttributes() {
 			timer_end = timeout_in_millisecs - (4 * M * N);			// max time - 4ms times max tree depth (M * N = possible moves)
 			board = new ArrayBoardHeuristic(M, N, K);
+			super.board = board;
 			bestMove = new MoveDouble();
 
 			score_tolerance = .1;

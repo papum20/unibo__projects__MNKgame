@@ -4,6 +4,7 @@
 @echo off
 title MAKE
 
+setlocal
 set argsEmpty=1
 set curPath="src"
 

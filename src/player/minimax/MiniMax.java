@@ -26,7 +26,7 @@ public class MiniMax implements MNKPlayer {
 	
 	//private MNKCellState player_own;
 	//private MNKCellState player_opponent;
-	protected MNKGameState my_win;
+	protected MNKGameState MY_WIN;
 	//private MNKGameState your_win;
 	
 	protected ArrayBoard board;	
@@ -46,6 +46,7 @@ public class MiniMax implements MNKPlayer {
 		 */
 		protected interface Move<S, K> extends PHElement<S, K> {
 			public void copy(S b);
+			public MNKCell getPosition();
 		} 
 		protected class MoveInt implements Move<MoveInt, Integer> {
 			public MNKCell position;	//move target
@@ -66,6 +67,10 @@ public class MiniMax implements MNKPlayer {
 			public void copy(MoveInt b) {
 				position = b.position;
 				score = b.score;
+			}
+			@Override
+			public MNKCell getPosition() {
+				return position;
 			}
 			@Override
 			public void increaseKey(Integer delta) {
@@ -284,7 +289,7 @@ public class MiniMax implements MNKPlayer {
 		}
 		//returns move to make on this turn
 		protected MNKCell getBestMove() {
-			return bestMove.position;
+			return bestMove.getPosition();
 		}
 		protected <K, M extends Move<M, K>> void setBestMove(M move, M bestMove, int depth) {
 			if(depth == 0 && move.compareTo(bestMove) > 0) bestMove.copy(move);
@@ -296,7 +301,7 @@ public class MiniMax implements MNKPlayer {
 		protected MiniMax_score GameState_to_Score(MNKGameState s) {
 			if(s == MNKGameState.DRAW) return MiniMax_score.DRAW;
 			else if(s == MNKGameState.OPEN) return null;
-			else if(s == my_win) return MiniMax_score.ME;
+			else if(s == MY_WIN) return MiniMax_score.ME;
 			else return MiniMax_score.YOU;
 		}
 
@@ -326,12 +331,12 @@ public class MiniMax implements MNKPlayer {
 			if(first) {
 				//player_own = MNKCellState.P1;
 				//player_opponent = MNKCellState.P2;
-				my_win = MNKGameState.WINP1;
+				MY_WIN = MNKGameState.WINP1;
 				//your_win = MNKGameState.WINP2;
 			} else {
 				//player_own = MNKCellState.P2;
 				//player_opponent = MNKCellState.P1;
-				my_win = MNKGameState.WINP2;
+				MY_WIN = MNKGameState.WINP2;
 				//your_win = MNKGameState.WINP1;
 			}
 		}

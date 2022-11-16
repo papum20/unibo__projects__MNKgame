@@ -17,21 +17,27 @@ public class ArrayBoardHeuristic extends ArrayBoard {
 	public ArrayBoardHeuristic(int M, int N, int K) {
 		super(M, N, K);
 		SCORE_MIN = -1;
-		SCORE_MAX = -1;
+		SCORE_MAX = 1;
 	}
 	public ArrayBoardHeuristic(ArrayBoardHeuristic AB) {
 		super(AB);
 		SCORE_MIN = -1;
-		SCORE_MAX = -1;
+		SCORE_MAX = 1;
 	}
 
 
 	/**
-	 * evaluates current position
+	 * evaluates current position, assuming it's not an ended state
 	 * @return current position's evaluation
 	 */
 	public double evaluate() {
 		return 0;
+	}
+	public double evaluate(boolean first) {
+		int my_player = 0;
+		if(!first) my_player = 1;
+		if(currentPlayer() == my_player) return SCORE_MAX;	//if last move was from opponent
+		else return SCORE_MIN;
 	}
 	
 }
