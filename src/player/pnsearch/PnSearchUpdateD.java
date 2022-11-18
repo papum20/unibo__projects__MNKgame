@@ -5,16 +5,12 @@
 package player.pnsearch;
 
 import mnkgame.MNKCell;
-import player.ArrayBoard;
 import player.pnsearch.structures.Nodes.NodeD;
 import player.pnsearch.structures.Nodes.Value;
 
 
 
-public class PnSearchUpdateD extends PnSearchUpdate {
-
-	protected int nodes_current;
-	
+public class PnSearchUpdateD extends PnSearchUpdate {	
 	
 	
 	//#region PLAYER
@@ -23,12 +19,6 @@ public class PnSearchUpdateD extends PnSearchUpdate {
 		super();
 	}
 
-	@Override
-	public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
-		nodes_current = 0;
-		return super.selectCell(FC, MC);
-	}
-	
 	@Override
 	public String playerName() {
 		return "PnSearchUpdate2";
@@ -75,40 +65,6 @@ public class PnSearchUpdateD extends PnSearchUpdate {
 		}
 	
 	//#endregion ALGORITHM
-
-	//#region INIT
-	
-		protected void initAttributes() {
-			board = new ArrayBoard(M, N, K);
-			timer_end = timeout_in_millisecs - 1000;
-			runtime = Runtime.getRuntime();
-			current_root = newNode();		
-			
-			debug = new DebugUpdateD("debug/debug-" + playerName(), false);
-		}
-
-	//#endregion INIT
-
-
-
-	//#region DEBUG
-
-		protected class DebugUpdateD extends Debug {
-
-			public DebugUpdateD(String filename, boolean active) {
-				super(filename, active);
-			}
-			@Override
-			protected void info() {
-				System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
-				System.out.println("nodes created: " + Integer.toString(nodes_created));
-				System.out.println("nodes alive: " + Integer.toString(nodes_current));
-			}
-
-
-		}
-
-	//#endregion DEBUG
 
 
 }

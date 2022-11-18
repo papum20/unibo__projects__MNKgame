@@ -38,6 +38,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 
 	protected Debug debug;
 	protected int nodes_created;
+	protected int nodes_current;
 
 
 
@@ -78,6 +79,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			System.out.println("------------------");
 			debug.open();
 			nodes_created = 0;
+			nodes_current = 0;
 
 			//start conting time for this turn
 			timer_start = System.currentTimeMillis();
@@ -413,7 +415,8 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			}
 			protected void info() {
 				System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
-				System.out.println("nodes: " + Integer.toString(nodes_created));
+				System.out.println("nodes created: " + Integer.toString(nodes_created));
+				System.out.println("nodes alive: " + Integer.toString(nodes_current));
 			}
 			// return string with a tab for each depth level
 			protected String tabs(int minus) {
