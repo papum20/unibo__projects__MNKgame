@@ -1,5 +1,12 @@
 #VS CODE SETTINGS
-.vscode/*
+.vscode/
+
+#JAVA FOLDERS
+bin/*
+out/*
+
+#OTHER FOLDERS
+debug/*
 
 #JAVA FILES
 *.class
