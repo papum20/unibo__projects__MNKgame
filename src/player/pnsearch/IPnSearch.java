@@ -38,7 +38,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 
 	protected Debug debug;
 	protected int nodes_created;
-	protected int nodes_current;
+	protected int nodes_alive;
+	protected int nodes_created_tot;
+	protected int nodes_alive_tot;
+	
 
 
 
@@ -79,7 +82,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			System.out.println("------------------");
 			debug.open();
 			nodes_created = 0;
-			nodes_current = 0;
+			nodes_alive = 0;
 
 			//start conting time for this turn
 			timer_start = System.currentTimeMillis();
@@ -92,6 +95,8 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				//assumption: current_root != null
 				N new_root = current_root.findChild(opponent_move);
 				if(new_root != null) {
+					System.out.println("found move in tree.");
+					nodes_alive_tot -= current_root.getChildrenLength();
 					current_root = new_root;
 					current_root.setParent(null);
 				}
@@ -108,12 +113,15 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			// DEBUG
 			debug.markedCells(0);
 			if(current_root.getMove() != null) System.out.println(current_root.getPosition());
+			nodes_created_tot += nodes_created;
+			nodes_alive_tot += nodes_alive;
 			
 			N best_node = getBestNode();
 			MNKCell res = FC[0];
 			if(best_node != null) {
 				res = best_node.getPosition();
 				//update current_root (with my last move)
+				nodes_alive_tot -= current_root.getChildrenLength();
 				current_root = best_node;
 			};
 			//update my istance of board
@@ -317,8 +325,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			board = new ArrayBoard(M, N, K);
 			timer_end = timeout_in_millisecs - 1000;
 			runtime = Runtime.getRuntime();
-			current_root = newNode();		
-			
+			current_root = newNode();
+
+			nodes_created_tot = 0;
+			nodes_alive_tot = 0;
 			debug = new Debug("debug/debug-" + playerName(), false);
 		}
 
@@ -415,8 +425,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			}
 			protected void info() {
 				System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
-				System.out.println("nodes created: " + Integer.toString(nodes_created));
-				System.out.println("nodes alive: " + Integer.toString(nodes_current));
+				System.out.println("nodes created:\t\t" + Integer.toString(nodes_created));
+				System.out.println("nodes alive:\t\t" + Integer.toString(nodes_alive));
+				System.out.println("nodes created tot:\t" + Integer.toString(nodes_created_tot));
+				System.out.println("nodes alive tot:\t" + Integer.toString(nodes_alive_tot));
 			}
 			// return string with a tab for each depth level
 			protected String tabs(int minus) {

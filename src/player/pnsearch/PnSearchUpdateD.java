@@ -4,7 +4,6 @@
 
 package player.pnsearch;
 
-import mnkgame.MNKCell;
 import player.pnsearch.structures.Nodes.NodeD;
 import player.pnsearch.structures.Nodes.Value;
 
@@ -31,7 +30,6 @@ public class PnSearchUpdateD extends PnSearchUpdate {
 		@Override
 		protected void developNode(NodeD node) {
 			super.developNode(node);
-			nodes_current += node.getChildrenLength();
 		}
 		/**
 		 * 
@@ -52,8 +50,9 @@ public class PnSearchUpdateD extends PnSearchUpdate {
 				debug.nestedNode(node, 0);
 
 				// delete children
-				if((node.proof == 0 || node.disproof == 0) && node != current_root) {
+				if((node.proof == 0 || node.disproof == 0) && node != current_root && node.getParent() != current_root) {
 					node.value = (node.proof == 0) ? Value.TRUE : Value.FALSE;
+					nodes_alive -= node.getChildrenLength();
 					node.children = null;
 				}
 				// update ancestors

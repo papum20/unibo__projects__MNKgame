@@ -246,6 +246,7 @@ public class Nodes {
 				public Node_e() {super();}
 				public Node_e(Move move, S parent) {super(move, parent);}
 				public Node_e(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
+				@Override
 				protected void init(Move move, Value value, short proof, short disproof, S parent) {
 					super.init(move, value, proof, disproof, parent);
 					this.expanded = false;
@@ -302,6 +303,7 @@ public class Nodes {
 				public NodeD() {super();}
 				public NodeD(Move move, NodeD parent) {super(move, parent);}
 				public NodeD(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
+				@Override
 				protected void init(Move move, Value value, short proof, short disproof, NodeD parent) {
 					this.move = move;
 					this.value = value;
@@ -340,12 +342,18 @@ public class Nodes {
 			 * @param <S> self (same type)
 			 */
 			public abstract static class Node_a<M extends Move, S extends Node_a<M,S>> extends Node_t<M,S,S[]> {
+				protected int children_n;
 
 				public Node_a() {super();}
-				public Node_a(M move, S parent) {super(move, parent);}
-				public Node_a(M move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
+				public Node_a(M move, S parent, int children_max) {init(move, Value.UNKNOWN, PROOF_N_ZERO, PROOF_N_ZERO, parent, children_max);}
+				public Node_a(M move, Value value, short proof, short disproof, int children_max) {init(move, value, proof, disproof, null, children_max);}
+				protected void init(M move, Value value, short proof, short disproof, S parent, int children_max) {
+					super.init(move, value, proof, disproof, parent);
+					children_n = 0;
+					//init children
+				}
 
-				// FUNCTIONS
+				//#region FUNCTIONS
 				public short getChildren_sumProof() {
 					short sum = 0;
 					for(S child : children) {
@@ -398,13 +406,14 @@ public class Nodes {
 					if(i == children.length) return null;
 					else return res;
 				}
+				//#endregion FUNCTIONS
 				// BOOL
 				//public boolean isExpanded();
 				// GET
 				//public M getMove();
 				//public MNKCell getPosition();
 				public int getChildrenLength() {
-					return children.length;
+					return children_n;
 				}
 				public S getFirstChild() {
 					return children[0];
@@ -421,25 +430,18 @@ public class Nodes {
 			 * expand, linkedlist
 			 * @param <S> self
 			 */
-			public abstract static class Node_ae<S extends Node_e<S>> extends Node_c<Move, S, LinkedList<S>> {
+			public abstract static class Node_ae<S extends Node_ae<S>> extends Node_a<Move, S> {
 				protected boolean expanded;
 				
-				public Node_ae() {super();}
-				public Node_ae(Move move, S parent) {super(move, parent);}
-				public Node_ae(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
-				protected void init(Move move, Value value, short proof, short disproof, S parent) {
-					super.init(move, value, proof, disproof, parent);
-					this.children = new LinkedList<S>();
+				public Node_ae(int children_max) {init(null, Value.UNKNOWN, PROOF_N_ZERO, PROOF_N_ZERO, null, children_max);}
+				public Node_ae(Move move, S parent, int children_max) {init(move, Value.UNKNOWN, PROOF_N_ZERO, PROOF_N_ZERO, parent, children_max);}
+				public Node_ae(Move move, Value value, short proof, short disproof, int children_max) {init(move, value, proof, disproof, null, children_max);}
+				protected void init(Move move, Value value, short proof, short disproof, S parent, int children_max) {
+					super.init(move, value, proof, disproof, parent, children_max);
+					expanded = false;
+					//init children
 				}
 
-				// FUNCTIONS
-				//public short getChildren_sumProof();
-				//public short getChildren_sumDisproof();
-				//public short getChildren_minProof();
-				//public short getChildren_minDisproof();
-				//public S findChild(MNKCell move);
-				//public S findChildProof(short proof);
-				//public S findChildDisproof(short disproof);
 				// BOOL
 				public boolean isExpanded() {
 					return expanded;
@@ -463,6 +465,21 @@ public class Nodes {
 				//public void setProofDisproof(short proof, short disproof);
 				//public void setMove(M move);
 				//public void setParent(S parent);
+			}
+			//INSTANCE : Node with arrays
+			public static class NodeA extends Node_ae<NodeA> {
+				public NodeA(int children_max) {super(children_max);}
+				public NodeA(Move move, NodeA parent, int children_max) {super(move, parent, children_max);}
+				public NodeA(Move move, Value value, short proof, short disproof, int children_max) {super(move, value, proof, disproof, children_max);}
+				@Override
+				protected void init(Move move, Value value, short proof, short disproof, NodeA parent, int children_max) {
+					super.init(move, value, proof, disproof, parent, children_max);
+					children = new NodeA[children_max];
+				}
+
+				public void addChild(MNKCell move) {
+					children[children_n++] = new NodeA(new Move(move), this, children.length);
+				}				
 			}
 			// INSTANCE
 			//public static class NodeAD extends Node_ae

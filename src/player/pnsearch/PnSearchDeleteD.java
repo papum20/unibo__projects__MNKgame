@@ -51,6 +51,7 @@ public class PnSearchDeleteD extends PnSearchDelete {
 							break;
 						}
 					}
+					nodes_alive -= node.getChildrenLength() - 1;
 					node.children.clear();
 					node.children.add(next);
 				}

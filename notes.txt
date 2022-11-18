@@ -19,6 +19,10 @@ MINIMAX:
 
 -	transposition table: salvare solo parte di hash key per ogni entry ? (eventualmente (chess-wikipedia) parte non usata come indice, o anche meno)
 
+PNSEARCH:
+	-	per avere effettivo numero di nodi alive (tot), si dovrebbe memorizzare nel nodo i nodi figli (ricorsivamente), altrimenti non si sa quanti se ne tolgono tagliando
+		l'albero tra una mossa e l'altra
+
 
 
 PROPRIETÀ:
