@@ -196,8 +196,8 @@ public class INodesA extends INodes {
 		public Node_ads() {super();}
 		public Node_ads(Move move, S parent) {super(move, parent);}
 		@Override
-		protected void init(Move move, Value value, short proof, short disproof, S parent) {
-			super.init(move, value, proof, disproof, parent);
+		protected void init(Move move, Value value, short proof, short disproof, S parent, int children_max) {
+			super.init(move, value, proof, disproof, parent, children_max);
 			most_proving = null;
 		}
 

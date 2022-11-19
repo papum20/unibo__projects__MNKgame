@@ -27,10 +27,6 @@ public abstract class IPnSearchLUpdateD<N extends Node_d<N>> extends IPnSearchLU
 
 	//#region ALGORITHM
 
-		@Override
-		protected void developNode(N node) {
-			super.developNode(node);
-		}
 		/**
 		 * 
 		 * @param <M>

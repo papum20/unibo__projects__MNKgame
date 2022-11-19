@@ -27,33 +27,52 @@ public abstract class IPnSearchAUpdate<N extends Node_ad<N>> extends IPnSearchAD
 	//#region ALOGRITHM
 
 		protected void visit(N root) {
-			evaluate(root);
-			setProofAndDisproofNumbers(root, true);
-			N currentNode = root;
-			while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
-			
-				debug.node(root);
-
-				N mostProvingNode = selectMostProving(currentNode);
+			String exception = "";
+			long select_time_start = 0;
+			long select_time_end = 0;
+			try {
+				exception = "evaluate root";
+				evaluate(root);
+				exception = "set proof root";
+				setProofAndDisproofNumbers(root, true);
+				N currentNode = root;
+				while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
 				
-				debug.markedCells(0);
-				debug.freeCells(0);
-				debug.node(mostProvingNode);
+					debug.node(root);
 
-				if(!isTimeEnded()) {
-					developNode(mostProvingNode);
-					currentNode = updateAncestorsUpto(mostProvingNode);
-				} else
-					resetBoard(mostProvingNode, root);
+					exception = "select most proving";
+					select_time_start = System.currentTimeMillis() - timer_start;
+					N mostProvingNode = selectMostProving(currentNode);
+					select_time_end = System.currentTimeMillis() - timer_start;
+					
+					debug.markedCells(0);
+					debug.freeCells(0);
+					debug.node(mostProvingNode);
 
-				debug.node(mostProvingNode);
+					exception = "reset board 1";
+					if(!isTimeEnded()) {
+						exception = "develop";
+						developNode(mostProvingNode);
+						exception = "ancestors up to";
+						currentNode = updateAncestorsUpto(mostProvingNode);
+					} else
+						resetBoard(mostProvingNode, root);
+
+					debug.node(mostProvingNode);
+				}
+				// unmark all cells up to root
+				exception += ", reset board 2";
+				resetBoard(currentNode, root);
+				// set root value
+				if(root.proof == 0) root.value = Value.TRUE;
+				else if(root.disproof == 0) root.value = Value.FALSE;			
+				else root.value = Value.UNKNOWN;
+			} finally {
+				System.out.println("VISIT: " + exception);
+				System.out.println("VISIT: last select:");
+				System.out.println("\tstart =\t" + select_time_start);
+				System.out.println("\tend =\t" + select_time_end);
 			}
-			// unmark all cells up to root
-			resetBoard(currentNode, root);
-			// set root value
-			if(root.proof == 0) root.value = Value.TRUE;
-			else if(root.disproof == 0) root.value = Value.FALSE;			
-			else root.value = Value.UNKNOWN;
 		}
 		/**
 		 * 
