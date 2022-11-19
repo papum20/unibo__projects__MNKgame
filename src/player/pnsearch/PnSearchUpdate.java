@@ -66,7 +66,7 @@ public class PnSearchUpdate extends PnSearchDelete {
 					debug.node(mostProvingNode);
 				}
 				// unmark all cells up to root
-				exception = "reset board 2";
+				exception += ", reset board 2";
 				resetBoard(currentNode, root);
 				// set root value
 				if(root.proof == 0) root.value = Value.TRUE;

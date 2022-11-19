@@ -193,7 +193,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				if(root.proof == 0) root.value = Value.TRUE;
 				else if(root.disproof == 0) root.value = Value.FALSE;			
 				else root.value = Value.UNKNOWN;
-			} finally {
+			} catch(Exception e) {
 				System.out.println("VISIT: " + exception);
 			}
 		}
