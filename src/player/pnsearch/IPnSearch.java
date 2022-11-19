@@ -95,7 +95,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				//assumption: current_root != null
 				N new_root = current_root.findChild(opponent_move);
 				if(new_root != null) {
-					System.out.println("found move in tree.");
+					System.out.println("found opponent move in tree.");
 					nodes_alive_tot -= current_root.getChildrenLength();
 					current_root = new_root;
 					current_root.setParent(null);
@@ -112,7 +112,9 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			try{
 				visit(current_root);
 			} catch (NullPointerException e) {
-				System.out.println("visit null");
+				System.out.println("VISIT: NULL EXCEPTION");
+			} catch(ArrayIndexOutOfBoundsException e) {
+				System.out.println("VISIT: ARRAY BOUNDS EXCEPTION");
 			}
 			// DEBUG
 			debug.markedCells(0);
@@ -123,6 +125,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			N best_node = getBestNode();
 			MNKCell res = FC[0];
 			if(best_node != null) {
+				System.out.println("FOUND BEST NODE");
 				res = best_node.getPosition();
 				//update current_root (with my last move)
 				nodes_alive_tot -= current_root.getChildrenLength();
@@ -159,29 +162,40 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		 * @param root
 		 */
 		protected void visit(N root) {
-			evaluate(root);
-			setProofAndDisproofNumbers(root, true);
-			while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
-
-				debug.node(root);
-				
-				N mostProvingNode = selectMostProving(root);
-				
-				debug.markedCells(0);
-				debug.freeCells(0);
-				debug.node(mostProvingNode);
-
-				if(!isTimeEnded()) {
-					developNode(mostProvingNode);
-					updateAncestors(mostProvingNode);
-				} else
-					resetBoard(mostProvingNode, root);
-				
-				debug.node(mostProvingNode);
+			String exception = "";
+			try{
+				exception = "evaluate root";
+				evaluate(root);
+				exception = "set proof root";
+				setProofAndDisproofNumbers(root, true);
+				while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
+					
+					debug.node(root);
+					
+					exception = "select most proving";
+					N mostProvingNode = selectMostProving(root);
+					
+					debug.markedCells(0);
+					debug.freeCells(0);
+					debug.node(mostProvingNode);
+					
+					exception = "reset board";
+					if(!isTimeEnded()) {
+						exception = "develop";
+						developNode(mostProvingNode);
+						exception = "ancestors";
+						updateAncestors(mostProvingNode);
+					} else
+						resetBoard(mostProvingNode, root);
+					
+					debug.node(mostProvingNode);
+				}
+				if(root.proof == 0) root.value = Value.TRUE;
+				else if(root.disproof == 0) root.value = Value.FALSE;			
+				else root.value = Value.UNKNOWN;
+			} finally {
+				System.out.println("VISIT: " + exception);
 			}
-			if(root.proof == 0) root.value = Value.TRUE;
-			else if(root.disproof == 0) root.value = Value.FALSE;			
-			else root.value = Value.UNKNOWN;
 		}
 
 		/**

@@ -36,33 +36,45 @@ public class PnSearchUpdate extends PnSearchDelete {
 	//#region ALOGRITHM
 
 		protected void visit(NodeD root) {
-			evaluate(root);
-			setProofAndDisproofNumbers(root, true);
-			NodeD currentNode = root;
-			while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
-			
-				debug.node(root);
+			String exception = "";
+			try{
+				exception = "evaluate root";
+				evaluate(root);
+				exception = "set proof root";
+				setProofAndDisproofNumbers(root, true);
+				NodeD currentNode = root;
+				while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
+					
+					debug.node(root);
+					
+					exception = "select most proving";
+					NodeD mostProvingNode = selectMostProving(currentNode);
+					
+					debug.markedCells(0);
+					debug.freeCells(0);
+					debug.node(mostProvingNode);
+					
+					exception = "reset board 1";
+					if(!isTimeEnded()) {
+						exception = "develop";
+						developNode(mostProvingNode);
+						exception = "ancestors up to";
+						currentNode = updateAncestorsUpto(mostProvingNode);
+					} else
+						resetBoard(mostProvingNode, root);
 
-				NodeD mostProvingNode = selectMostProving(currentNode);
-				
-				debug.markedCells(0);
-				debug.freeCells(0);
-				debug.node(mostProvingNode);
-
-				if(!isTimeEnded()) {
-					developNode(mostProvingNode);
-					currentNode = updateAncestorsUpto(mostProvingNode);
-				} else
-					resetBoard(mostProvingNode, root);
-
-				debug.node(mostProvingNode);
+					debug.node(mostProvingNode);
+				}
+				// unmark all cells up to root
+				exception = "reset board 2";
+				resetBoard(currentNode, root);
+				// set root value
+				if(root.proof == 0) root.value = Value.TRUE;
+				else if(root.disproof == 0) root.value = Value.FALSE;			
+				else root.value = Value.UNKNOWN;
+			} finally {
+				System.out.println("VISIT: " + exception);
 			}
-			// unmark all cells up to root
-			resetBoard(currentNode, root);
-			// set root value
-			if(root.proof == 0) root.value = Value.TRUE;
-			else if(root.disproof == 0) root.value = Value.FALSE;			
-			else root.value = Value.UNKNOWN;
 		}
 		/**
 		 * 
