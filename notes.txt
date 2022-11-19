@@ -1,7 +1,14 @@
 ERRORI:
 	- pnsearchADeleteD :
-		- selected illegal move (dopo qualche mossa)
-		- -1 out of bounds for 49, dopo il primo print prima del visit (dopo qualche mossa)
+		- errore out of tempo con 3g mem (su macchine lab)
+		- selected illegal move (dopo qualche mossa) (player 1)
+		- -1 out of bounds for 49, dopo il primo print prima del visit (dopo qualche mossa) (player 1,2)
+	- pnsearchAUpdate:
+		- (player2) java.util.concurrent.ExecutionException: java.lang.NullPointerException: Cannot invoke "player.pnsearch.structures.Nodes$Node_t.getPosition()" because "<local2>" is null
+		- [come player1 sembra non dare errori]
+	- updateD:
+		- (p2,>1move) java.util.concurrent.ExecutionException: java.lang.NullPointerException: Cannot invoke "java.util.Collection.iterator()" because "this.children" is null
+		- (//) java.lang.ArrayIndexOutOfBoundsException: Index -1 out of bounds for length 49
 
 
 LINK (da leggere):

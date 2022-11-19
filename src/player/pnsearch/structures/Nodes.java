@@ -70,7 +70,7 @@ public class Nodes {
 				public void addChild(MNKCell move);
 				public void expand();
 				public void setProofDisproof(short proof, short disproof);
-				public void setMove(M move);
+				public void reset(M move);
 				public void setParent(S parent);
 
 			}
@@ -133,8 +133,13 @@ public class Nodes {
 					this.proof = proof;
 					this.disproof = disproof;
 				}
-				public void setMove(M move) {
+				public void reset(M move) {
 					this.move = move;
+					value = Value.UNKNOWN;
+					proof = 1;
+					disproof = 1;
+					parent = null;
+					children = null;
 				}
 				public void setParent(S parent) {
 					this.parent = parent;
@@ -231,8 +236,8 @@ public class Nodes {
 				// SET
 				//public void addChild(MNKCell move);
 				//public void expand();
+				//public void reset(M move);
 				//public void setProofDisproof(short proof, short disproof);
-				//public void setMove(M move);
 				//public void setParent(S parent);
 			}
 		
@@ -276,16 +281,16 @@ public class Nodes {
 				}
 				//public S getParent():
 				// SET
-				//public void setMove(M move);
-				//public void setParent(S parent);
-				//public void setProofDisproof(short proof, short disproof);
-				// SET
 				public abstract void addChild(MNKCell move);
 				public void expand() {
 					expanded = true;
 				}
+				@Override
+				public void reset(Move move) {
+					super.reset(move);
+					expanded = false;
+				}
 				//public void setProofDisproof(short proof, short disproof);
-				//public void setMove(M move);
 				//public void setParent(S parent);
 			}
 			// INSTANCE FOR PnSearch
@@ -426,7 +431,7 @@ public class Nodes {
 				//public void addChild(MNKCell move);
 				//public void expand();
 				//public void setProofDisproof(short proof, short disproof);
-				//public void setMove(M move);
+				//public void reset(M move);
 				//public void setParent(S parent);
 			}
 			/**
@@ -457,16 +462,15 @@ public class Nodes {
 				}
 				//public int getChildrenLength();
 				// SET
-				//public void setMove(M move);
-				//public void setParent(S parent);
-				//public void setProofDisproof(short proof, short disproof);
-				// SET
 				public abstract void addChild(MNKCell move);
 				public void expand() {
 					expanded = true;
 				}
+				public void reset(Move move) {
+					super.reset(move);
+					expanded = false;
+				}
 				//public void setProofDisproof(short proof, short disproof);
-				//public void setMove(M move);
 				//public void setParent(S parent);
 			}
 			//INSTANCE : Node with arrays
@@ -504,11 +508,7 @@ public class Nodes {
 				// FUNCTIONS
 				//functions about children should be redefined to check whether children==null;
 				//however some are only called if node is expanded
-				@Override
-				public NodeAD findChild(MNKCell move) {
-					if(children == null) return null;
-					else return super.findChild(move);
-				}
+
 				// deletes all children but the one with the same values of proof-disproof
 				// assumes that this node is proved
 				public void reduce() {
