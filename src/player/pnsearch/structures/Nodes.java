@@ -509,6 +509,16 @@ public class Nodes {
 					if(children == null) return null;
 					else return super.findChild(move);
 				}
+				// deletes all children but the one with the same values of proof-disproof
+				// assumes that this node is proved
+				public void reduce() {
+					value = (proof == 0) ? Value.TRUE : Value.FALSE;
+					int i = 0;
+					//just checks child.proof==proof: child.disproof==disproof is obvious, if the nodes are proved
+					while(i < children_n && children[i].proof != proof) i++;
+					children[0] = children[i];
+					children_n = 1;
+				}
 				// SET
 				public void addChild(MNKCell move) {
 					children[children_n++] = new NodeAD(new Move(move), this);
