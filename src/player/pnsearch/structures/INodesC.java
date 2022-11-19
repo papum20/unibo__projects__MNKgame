@@ -5,7 +5,7 @@ import java.util.LinkedList;
 
 import mnkgame.MNKCell;
 
-public class INodesC extends Nodes {
+public class INodesC extends INodes {
 
 
 	/**
@@ -38,16 +38,16 @@ public class INodesC extends Nodes {
 			}
 			return sum;
 		}
-		public short getChildren_minProof() {
-			short min = PROOF_N_INFINITE;
+		public S getChildren_minProof() {
+			S min = getFirstChild();
 			for(S child : children)
-			if (child.proof < min) min = child.proof;
+			if (child.proof < min.proof) min = child;
 			return min;
 		}
-		public short getChildren_minDisproof() {
-			short min = PROOF_N_INFINITE;
+		public S getChildren_minDisproof() {
+			S min = getFirstChild();
 			for(S child : children) 
-			if(child.disproof < min) min = child.disproof;
+			if(child.disproof < min.disproof) min = child;
 			return min;
 		}
 		public S findChild(MNKCell move) {
@@ -201,6 +201,13 @@ public class INodesC extends Nodes {
 		@Override
 		protected void init(Move move, Value value, short proof, short disproof, S parent) {
 			super.init(move, value, proof, disproof, parent);
+			most_proving = null;
+		}
+
+		// SET
+		@Override
+		public void reset(Move move) {
+			super.reset(move);
 			most_proving = null;
 		}
 	}

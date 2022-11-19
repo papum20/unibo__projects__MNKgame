@@ -4,7 +4,7 @@ import mnkgame.MNKCell;
 
 
 
-public class INodesA extends Nodes {
+public class INodesA extends INodes {
 
 	/**
 	 * A array
@@ -42,20 +42,16 @@ public class INodesA extends Nodes {
 			}
 			return sum;
 		}
-		public short getChildren_minProof() {
-			short min = PROOF_N_INFINITE;
-			for(int i = 0; i < children_n; i++) {
-				S child = children[i];
-				if (child.proof < min) min = child.proof;
-			}
+		public S getChildren_minProof() {
+			S min = children[0];
+			for(int i = 1; i < children_n; i++)
+				if (children[i].proof < min.proof) min = children[i];
 			return min;
 		}
-		public short getChildren_minDisproof() {
-			short min = PROOF_N_INFINITE;
-			for(int i = 0; i < children_n; i++) {
-				S child = children[i];
-				if(child.disproof < min) min = child.disproof;
-			}
+		public S getChildren_minDisproof() {
+			S min = children[0];
+			for(int i = 1; i < children_n; i++)
+				if(children[i].disproof < min.disproof) min = children[i];
 			return min;
 		}
 		public S findChild(MNKCell move) {
@@ -202,6 +198,13 @@ public class INodesA extends Nodes {
 		@Override
 		protected void init(Move move, Value value, short proof, short disproof, S parent) {
 			super.init(move, value, proof, disproof, parent);
+			most_proving = null;
+		}
+
+		// SET
+		@Override
+		public void reset(Move move) {
+			super.reset(move);
 			most_proving = null;
 		}
 	}

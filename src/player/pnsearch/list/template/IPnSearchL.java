@@ -9,7 +9,7 @@ package player.pnsearch.list.template;
 import java.util.Collection;
 
 import player.pnsearch.IPnSearch;
-import player.pnsearch.structures.Nodes.Move;
+import player.pnsearch.structures.INodes.Move;
 import player.pnsearch.structures.INodesC.Node_c;
 
 

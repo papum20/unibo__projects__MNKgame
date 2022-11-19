@@ -5,7 +5,7 @@
 package player.pnsearch.list.template;
 
 import player.pnsearch.structures.INodesC.Node_d;
-import player.pnsearch.structures.Nodes.Value;
+import player.pnsearch.structures.INodes.Value;
 
 
 

@@ -1,7 +1,7 @@
 package player.pnsearch.array.template;
 
 import player.pnsearch.structures.INodesA.Node_ad;
-import player.pnsearch.structures.Nodes.Value;
+import player.pnsearch.structures.INodes.Value;
 
 
 

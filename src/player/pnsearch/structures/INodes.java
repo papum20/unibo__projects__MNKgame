@@ -4,7 +4,7 @@ import mnkgame.MNKCell;
 
 
 
-public class Nodes {
+public class INodes {
 
 	public static final short PROOF_N_ZERO = 0;
 	public static final short PROOF_N_INFINITE = 32767;
@@ -47,8 +47,8 @@ public class Nodes {
 			// FUNCTIONS
 			public short getChildren_sumProof();
 			public short getChildren_sumDisproof();
-			public short getChildren_minProof();
-			public short getChildren_minDisproof();
+			public S getChildren_minProof();
+			public S getChildren_minDisproof();
 			public S findChild(MNKCell move);
 			public S findChildProof(short proof);
 			public S findChildDisproof(short disproof);
@@ -104,8 +104,8 @@ public class Nodes {
 			// FUNCTIONS
 			//public short getChildren_sumProof();
 			//public short getChildren_sumDisproof();
-			//public short getChildren_minProof();
-			//public short getChildren_minDisproof();
+			//public S getChildren_minProof();
+			//public S getChildren_minDisproof();
 			//public S findChild(MNKCell move);
 			//public S findChildProof(short proof);
 			//public S findChildDisproof(short disproof);
@@ -150,7 +150,7 @@ public class Nodes {
 
 	//#region FUNCTIONS
 		
-		public Nodes() {
+		public INodes() {
 
 		}
 

@@ -7,7 +7,7 @@ package player.pnsearch.array.obj;
 
 import mnkgame.MNKCell;
 import player.pnsearch.array.template.IPnSearchA;
-import player.pnsearch.structures.Nodes.Move;
+import player.pnsearch.structures.INodes.Move;
 import player.pnsearch.structures.NodesA.NodeA;
 
 

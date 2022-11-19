@@ -8,7 +8,7 @@ package player.pnsearch.list.template;
 import java.util.LinkedList;
 import mnkgame.MNKCell;
 import player.pnsearch.structures.INodesC.Node_d;
-import player.pnsearch.structures.Nodes.Move;
+import player.pnsearch.structures.INodes.Move;
 
 
 

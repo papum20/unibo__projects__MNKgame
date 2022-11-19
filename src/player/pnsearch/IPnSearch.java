@@ -7,10 +7,10 @@ import java.io.IOException;
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
-import player.pnsearch.structures.Nodes;
-import player.pnsearch.structures.Nodes.Move;
-import player.pnsearch.structures.Nodes.Node_t;
-import player.pnsearch.structures.Nodes.Value;
+import player.pnsearch.structures.INodes;
+import player.pnsearch.structures.INodes.Move;
+import player.pnsearch.structures.INodes.Node_t;
+import player.pnsearch.structures.INodes.Value;
 
 
 
@@ -25,8 +25,8 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 
 	protected MNKGameState MY_WIN;
 	protected int MY_PLAYER;
-	protected final short PROOF_N_ZERO = Nodes.PROOF_N_ZERO;
-	protected final short PROOF_N_INFINITE = Nodes.PROOF_N_INFINITE;
+	protected final short PROOF_N_ZERO = INodes.PROOF_N_ZERO;
+	protected final short PROOF_N_INFINITE = INodes.PROOF_N_INFINITE;
 
 	protected ArrayBoard board;
 
@@ -221,14 +221,14 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		 */
 		protected void setProofAndDisproofNumbers(N node, boolean my_turn) {
 			if(node.isExpanded()) {
-				if(my_turn) node.setProofDisproof(node.getChildren_minProof(), node.getChildren_sumDisproof());
-				else node.setProofDisproof(node.getChildren_sumProof(), node.getChildren_minDisproof());
+				if(my_turn) node.setProofDisproof(node.getChildren_minProof().proof, node.getChildren_sumDisproof());
+				else node.setProofDisproof(node.getChildren_sumProof(), node.getChildren_minDisproof().disproof);
 			}
 			else if(node.value != Value.UNKNOWN) {
 				if(node.value == Value.TRUE) node.setProofDisproof(PROOF_N_ZERO, PROOF_N_INFINITE);
 				else node.setProofDisproof(PROOF_N_INFINITE, PROOF_N_ZERO);
 			}
-			else node.setProofDisproof((short)1, (short)1);
+			else initProofAndDisproofNumbers(node);;
 		}
 		/**
 		 * 
@@ -290,14 +290,23 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		}
 		
 	//#endregion ALGORITHM
+
 	
 	
 	//#region AUXILIARY
 	
-	protected Value gameState_to_value(MNKGameState s) {
-		if(s == MNKGameState.OPEN) return Value.UNKNOWN;
-			else if(s == MY_WIN) return Value.TRUE;
-			else return Value.FALSE;
+		/**
+		 * initializes proof and disproof for node
+		 * @param node
+		 */
+		protected void initProofAndDisproofNumbers(N node) {
+			node.setProofDisproof((short)1, (short)1);
+		}
+	
+		protected Value gameState_to_value(MNKGameState s) {
+			if(s == MNKGameState.OPEN) return Value.UNKNOWN;
+				else if(s == MY_WIN) return Value.TRUE;
+				else return Value.FALSE;
 		}
 		
 		//returns true if it's time to end the turn
@@ -316,10 +325,11 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		//returns move to make on this turn
 		protected abstract N getBestNode();
 		
-		//#endregion AUXILIARY
-		
-		
-		//#region INIT
+	//#endregion AUXILIARY
+	
+	
+	
+	//#region INIT
 		
 		//inits InitPlayer parameters
 		protected void initParameters(int M, int N, int K, boolean first, int timeout_in_secs) {

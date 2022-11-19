@@ -10,7 +10,7 @@ package player.pnsearch.array.template;
 
 import player.ArrayBoard;
 import player.pnsearch.IPnSearch;
-import player.pnsearch.structures.Nodes.Move;
+import player.pnsearch.structures.INodes.Move;
 import player.pnsearch.structures.INodesA.Node_a;
 
 
