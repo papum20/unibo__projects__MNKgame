@@ -69,6 +69,7 @@ public class Nodes {
 				// SET
 				public void addChild(MNKCell move);
 				public void expand();
+				public void prove(V value);			//prove or disprove node (making it not expanded)
 				public void setProofDisproof(short proof, short disproof);
 				public void reset(M move);
 				public void setParent(S parent);
@@ -129,6 +130,10 @@ public class Nodes {
 				// SET
 				//public void addChild(MNKCell move);
 				//public void expand();
+				public void prove(Value value) {
+					this.value = value;
+					children = null;
+				}
 				public void setProofDisproof(short proof, short disproof) {
 					this.proof = proof;
 					this.disproof = disproof;
@@ -236,6 +241,7 @@ public class Nodes {
 				// SET
 				//public void addChild(MNKCell move);
 				//public void expand();
+				//public void prove(Value value);
 				//public void reset(M move);
 				//public void setProofDisproof(short proof, short disproof);
 				//public void setParent(S parent);
@@ -286,6 +292,11 @@ public class Nodes {
 					expanded = true;
 				}
 				@Override
+				public void prove(Value value) {
+					super.prove(value);
+					expanded = false;
+				}
+				@Override
 				public void reset(Move move) {
 					super.reset(move);
 					expanded = false;
@@ -334,6 +345,10 @@ public class Nodes {
 					expanded = true;
 					children = new LinkedList<NodeD>();
 				}
+				public void prove() {
+					expanded = false;
+				}
+
 			}
 
 		//#endregion COLLECTION
@@ -430,6 +445,7 @@ public class Nodes {
 				// SET
 				//public void addChild(MNKCell move);
 				//public void expand();
+				//public void prove(Value value);
 				//public void setProofDisproof(short proof, short disproof);
 				//public void reset(M move);
 				//public void setParent(S parent);
@@ -486,7 +502,11 @@ public class Nodes {
 
 				public void addChild(MNKCell move) {
 					children[children_n++] = new NodeA(new Move(move), this, children.length);
-				}				
+				}
+				public void prove(Value value) {
+					super.prove(value);
+					expanded = false;
+				}
 			}
 			// INSTANCE for PnSearchADelete
 			public static class NodeAD extends Node_ae<NodeAD> {
