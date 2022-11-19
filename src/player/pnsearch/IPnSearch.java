@@ -198,9 +198,8 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				if(root.proof == 0) root.value = Value.TRUE;
 				else if(root.disproof == 0) root.value = Value.FALSE;			
 				else root.value = Value.UNKNOWN;
-			} catch(Exception e) {
-				System.out.println("VISIT: " + exception);
 			} finally {
+				System.out.println("VISIT: " + exception);
 				System.out.println("VISIT: last select:");
 				System.out.println("\tstart =\t" + select_time_start);
 				System.out.println("\tend =\t" + select_time_end);
