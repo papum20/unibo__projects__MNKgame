@@ -50,7 +50,6 @@ public class PnSearchUpdate extends PnSearchDelete {
 					debug.node(root);
 					
 					exception = "select most proving";
-
 					select_time_start = System.currentTimeMillis() - timer_start;
 					NodeD mostProvingNode = selectMostProving(currentNode);
 					select_time_end = System.currentTimeMillis() - timer_start;

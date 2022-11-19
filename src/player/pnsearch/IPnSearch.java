@@ -163,6 +163,8 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		 */
 		protected void visit(N root) {
 			String exception = "";
+			long select_time_start = 0;
+			long select_time_end = 0;
 			try{
 				exception = "evaluate root";
 				evaluate(root);
@@ -173,7 +175,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					debug.node(root);
 					
 					exception = "select most proving";
+					select_time_start = System.currentTimeMillis() - timer_start;
 					N mostProvingNode = selectMostProving(root);
+					select_time_end = System.currentTimeMillis() - timer_start;
+
 					
 					debug.markedCells(0);
 					debug.freeCells(0);
@@ -195,6 +200,10 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				else root.value = Value.UNKNOWN;
 			} catch(Exception e) {
 				System.out.println("VISIT: " + exception);
+			} finally {
+				System.out.println("VISIT: last select:");
+				System.out.println("\tstart =\t" + select_time_start);
+				System.out.println("\tend =\t" + select_time_end);
 			}
 		}
 
