@@ -44,9 +44,8 @@ public class PnSearchAUpdateD extends PnSearchAUpdate {
 
 				// delete children
 				if((node.proof == 0 || node.disproof == 0) && node != current_root && node.getParent() != current_root) {
-					node.value = (node.proof == 0) ? Value.TRUE : Value.FALSE;
 					nodes_alive -= node.getChildrenLength();
-					node.children = null;
+					node.prove( (node.proof == 0) ? Value.TRUE : Value.FALSE);
 				}
 				// update ancestors
 				previousNode = node;

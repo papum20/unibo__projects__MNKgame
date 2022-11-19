@@ -345,7 +345,8 @@ public class Nodes {
 					expanded = true;
 					children = new LinkedList<NodeD>();
 				}
-				public void prove() {
+				public void prove(Value value) {
+					super.prove(value);
 					expanded = false;
 				}
 
@@ -445,9 +446,20 @@ public class Nodes {
 				// SET
 				//public void addChild(MNKCell move);
 				//public void expand();
-				//public void prove(Value value);
+				public void prove(Value value) {
+					super.prove(value);
+					children_n = 0;
+				}
 				//public void setProofDisproof(short proof, short disproof);
-				//public void reset(M move);
+				public void reset(M move) {
+					this.move = move;
+					value = Value.UNKNOWN;
+					proof = 1;
+					disproof = 1;
+					parent = null;
+					children = null;
+					children_n = 0;
+				}
 				//public void setParent(S parent);
 			}
 			/**
@@ -482,6 +494,10 @@ public class Nodes {
 				public void expand() {
 					expanded = true;
 				}
+				public void prove(Value value) {
+					super.prove(value);
+					expanded = false;
+				}
 				public void reset(Move move) {
 					super.reset(move);
 					expanded = false;
@@ -503,10 +519,6 @@ public class Nodes {
 				public void addChild(MNKCell move) {
 					children[children_n++] = new NodeA(new Move(move), this, children.length);
 				}
-				public void prove(Value value) {
-					super.prove(value);
-					expanded = false;
-				}
 			}
 			// INSTANCE for PnSearchADelete
 			public static class NodeAD extends Node_ae<NodeAD> {
@@ -523,6 +535,7 @@ public class Nodes {
 					this.disproof = disproof;
 					this.parent = parent;
 					children = null;
+					children_n = 0;
 				}
 				
 				// FUNCTIONS
