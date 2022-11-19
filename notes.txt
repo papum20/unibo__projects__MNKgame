@@ -1,3 +1,9 @@
+ERRORI:
+	- pnsearchADeleteD :
+		- selected illegal move (dopo qualche mossa)
+		- -1 out of bounds for 49, dopo il primo print prima del visit (dopo qualche mossa)
+
+
 LINK (da leggere):
 https://ieee-cog.org/2019/papers/paper_115.pdf (paper from wikipedia)
 https://en.wikipedia.org/wiki/M,n,k-game

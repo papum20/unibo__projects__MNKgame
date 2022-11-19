@@ -79,7 +79,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 
 			// DEBUG
-			System.out.println("------------------");
+			System.out.println("-----\t" + MC.length + "\t-----");
 			debug.open();
 			nodes_created = 0;
 			nodes_alive = 0;
