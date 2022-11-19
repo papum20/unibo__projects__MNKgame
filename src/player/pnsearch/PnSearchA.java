@@ -24,7 +24,7 @@ public class PnSearchA extends IPnSearchA<Move, NodeA> {
 			return "PnSearchA";
 		}
 
-	//#endregion
+	//#endregion PLAYER
 
 
 

@@ -93,15 +93,15 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				board.markCell(opponent_move.i, opponent_move.j);
 				//update current_root (with last opponent move)
 				//assumption: current_root != null
-				N new_root = current_root.findChild(opponent_move);
-				if(new_root != null) {
-					System.out.println("found move in tree.");
+			N new_root = current_root.findChild(opponent_move);
+			if(new_root != null) {
+				System.out.println("found move in tree.");
 					nodes_alive_tot -= current_root.getChildrenLength();
 					current_root = new_root;
 					current_root.setParent(null);
 				}
 				else current_root.setMove(newMove(opponent_move));
-
+				
 				// DEBUG
 				System.out.println("last/opponent: " + MC[MC.length - 1]);
 			}

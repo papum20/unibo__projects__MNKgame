@@ -356,7 +356,8 @@ public class Nodes {
 				//#region FUNCTIONS
 				public short getChildren_sumProof() {
 					short sum = 0;
-					for(S child : children) {
+					for(int i = 0; i < children_n; i++) {
+						S child = children[i];
 						if(child.proof == PROOF_N_INFINITE) return PROOF_N_INFINITE;
 						else sum += child.proof;
 					}
@@ -364,7 +365,8 @@ public class Nodes {
 				}
 				public short getChildren_sumDisproof() {
 					short sum = 0;
-					for(S child : children) {
+					for(int i = 0; i < children_n; i++) {
+						S child = children[i];
 						if(child.disproof == PROOF_N_INFINITE) return PROOF_N_INFINITE;
 						else sum += child.disproof;
 					}
@@ -372,38 +374,39 @@ public class Nodes {
 				}
 				public short getChildren_minProof() {
 					short min = PROOF_N_INFINITE;
-					for(S child : children)
-					if (child.proof < min) min = child.proof;
+					for(int i = 0; i < children_n; i++) {
+						S child = children[i];
+						if (child.proof < min) min = child.proof;
+					}
 					return min;
 				}
 				public short getChildren_minDisproof() {
 					short min = PROOF_N_INFINITE;
-					for(S child : children) 
-					if(child.disproof < min) min = child.disproof;
+					for(int i = 0; i < children_n; i++) {
+						S child = children[i];
+						if(child.disproof < min) min = child.disproof;
+					}
 					return min;
 				}
 				public S findChild(MNKCell move) {
 					S res = null;
-					for(S child : children) {
-						if(equalMNKMoves(move, child.move.position)) {
-							res = child;
-							break;
-						}
-					}
-					return res;
+					int i = 0;
+					while(i < children_n && !equalMNKMoves(move, (res=children[i]).move.position) ) i++;
+					if(i == children_n) return null;
+					else return res;
 				}
 				public S findChildProof(short proof) {
 					S res = null;
 					int i = 0;
-					while(i < children.length && (res = children[i]).proof != proof) i++;
-					if(i == children.length) return null;
+					while(i < children_n && (res = children[i]).proof != proof) i++;
+					if(i == children_n) return null;
 					else return res;
 				}
 				public S findChildDisproof(short disproof) {
 					S res = null;
 					int i = 0;
-					while(i < children.length && (res = children[i]).disproof != disproof) i++;
-					if(i == children.length) return null;
+					while(i < children_n && (res = children[i]).disproof != disproof) i++;
+					if(i == children_n) return null;
 					else return res;
 				}
 				//#endregion FUNCTIONS
@@ -481,8 +484,40 @@ public class Nodes {
 					children[children_n++] = new NodeA(new Move(move), this, children.length);
 				}				
 			}
-			// INSTANCE
-			//public static class NodeAD extends Node_ae
+			// INSTANCE for PnSearchADelete
+			public static class NodeAD extends Node_ae<NodeAD> {
+				public NodeAD() {super(0);}
+				//public NodeAD(int children_max) {super(children_max);}
+				public NodeAD(Move move, NodeAD parent) {super(move, parent, 0);}
+				//public NodeAD(Move move, NodeAD parent, int children_max) {super(move, parent, children_max);}
+				//public NodeAD(Move move, Value value, short proof, short disproof, int children_max) {super(move, value, proof, disproof, children_max);}
+				@Override
+				protected void init(Move move, Value value, short proof, short disproof, NodeAD parent, int children_max) {
+					this.move = move;
+					this.value = value;
+					this.proof = proof;
+					this.disproof = disproof;
+					this.parent = parent;
+					children = null;
+				}
+				
+				// FUNCTIONS
+				//functions about children should be redefined to check whether children==null;
+				//however some are only called if node is expanded
+				@Override
+				public NodeAD findChild(MNKCell move) {
+					if(children == null) return null;
+					else return super.findChild(move);
+				}
+				// SET
+				public void addChild(MNKCell move) {
+					children[children_n++] = new NodeAD(new Move(move), this);
+				}		
+				public void expand(int children_max) {
+					expanded = true;
+					children = new NodeAD[children_max];
+				}
+			}
 
 		//#endregion ARRAY
 	
