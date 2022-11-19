@@ -37,7 +37,9 @@ public class PnSearchUpdate extends PnSearchDelete {
 
 		protected void visit(NodeD root) {
 			String exception = "";
-			try{
+			long select_time_start = 0;
+			long select_time_end = 0;
+			try {
 				exception = "evaluate root";
 				evaluate(root);
 				exception = "set proof root";
@@ -48,7 +50,10 @@ public class PnSearchUpdate extends PnSearchDelete {
 					debug.node(root);
 					
 					exception = "select most proving";
+
+					select_time_start = System.currentTimeMillis() - timer_start;
 					NodeD mostProvingNode = selectMostProving(currentNode);
+					select_time_end = System.currentTimeMillis() - timer_start;
 					
 					debug.markedCells(0);
 					debug.freeCells(0);
@@ -72,8 +77,12 @@ public class PnSearchUpdate extends PnSearchDelete {
 				if(root.proof == 0) root.value = Value.TRUE;
 				else if(root.disproof == 0) root.value = Value.FALSE;			
 				else root.value = Value.UNKNOWN;
-			} finally {
+			} catch(Exception e) {
 				System.out.println("VISIT: " + exception);
+			} finally {
+				System.out.println("VISIT: last select:");
+				System.out.println("\tstart =\t" + select_time_start);
+				System.out.println("\tend =\t" + select_time_end);
 			}
 		}
 		/**
