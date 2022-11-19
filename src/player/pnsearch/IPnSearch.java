@@ -109,7 +109,11 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			debug.markedCells(0);
 			if(current_root.getMove() != null) System.out.println(current_root.getPosition());
 			//recursive call for each possible move
-			visit(current_root);
+			try{
+				visit(current_root);
+			} catch (NullPointerException e) {
+				System.out.println("visit null");
+			}
 			// DEBUG
 			debug.markedCells(0);
 			if(current_root.getMove() != null) System.out.println(current_root.getPosition());
