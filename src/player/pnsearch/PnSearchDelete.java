@@ -27,7 +27,7 @@ public class PnSearchDelete extends IPnSearchL<Move, NodeD, LinkedList<NodeD>> {
 		 * @return string 
 		 */
 		public String playerName() {
-			return "PnSearchDelete";
+			return "PnSearchADelete";
 		}
 
 		

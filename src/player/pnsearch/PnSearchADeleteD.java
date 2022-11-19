@@ -17,7 +17,7 @@ public class PnSearchADeleteD extends PnSearchADelete {
 		* @return string 
 	*/
 	public String playerName() {
-		return "PnSearchDelete2";
+		return "PnSearchADelete2";
 	}
 
 //#endregion PLAYER
