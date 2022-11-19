@@ -3,11 +3,12 @@
  */
 
 
-package player.pnsearch;
+package player.pnsearch.array.obj;
 
 import mnkgame.MNKCell;
+import player.pnsearch.array.template.IPnSearchA;
 import player.pnsearch.structures.Nodes.Move;
-import player.pnsearch.structures.Nodes.NodeA;
+import player.pnsearch.structures.NodesA.NodeA;
 
 
 

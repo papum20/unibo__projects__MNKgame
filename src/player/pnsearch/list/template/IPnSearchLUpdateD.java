@@ -1,19 +1,26 @@
-package player.pnsearch;
+/*
+ * PnSearch Update WITH PnSearch Delete2 ENHANCEMENT
+ */
 
-import player.pnsearch.structures.Nodes.NodeAD;
+package player.pnsearch.list.template;
+
+import player.pnsearch.structures.INodesC.Node_d;
 import player.pnsearch.structures.Nodes.Value;
 
-public class PnSearchAUpdateD extends PnSearchAUpdate {
+
+
+public abstract class IPnSearchLUpdateD<N extends Node_d<N>> extends IPnSearchLUpdate<N> {	
+	
 	
 	//#region PLAYER
 
-	public PnSearchAUpdateD() {
+	public IPnSearchLUpdateD() {
 		super();
 	}
 
 	@Override
 	public String playerName() {
-		return "PnSearchAUpdate2";
+		return "PnSearchLUpdateD";
 	}
 	
 	//#endregion PLAYER
@@ -21,7 +28,7 @@ public class PnSearchAUpdateD extends PnSearchAUpdate {
 	//#region ALGORITHM
 
 		@Override
-		protected void developNode(NodeAD node) {
+		protected void developNode(N node) {
 			super.developNode(node);
 		}
 		/**
@@ -32,8 +39,8 @@ public class PnSearchAUpdateD extends PnSearchAUpdate {
 		 * @param my_turn
 		 */
 		@Override
-		protected NodeAD updateAncestorsUpto(NodeAD node) {
-			NodeAD previousNode = node;
+		protected N updateAncestorsUpto(N node) {
+			N previousNode = node;
 			boolean changed = true;
 			while(node != null && changed) {
 				int oldProof = node.proof, oldDisproof = node.disproof;
@@ -56,5 +63,6 @@ public class PnSearchAUpdateD extends PnSearchAUpdate {
 		}
 	
 	//#endregion ALGORITHM
+
 
 }

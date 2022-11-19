@@ -4,21 +4,27 @@
  */
 
 
-package player.pnsearch;
+package player.pnsearch.list.template;
 
+import java.util.Collection;
 
-
-import player.ArrayBoard;
+import player.pnsearch.IPnSearch;
 import player.pnsearch.structures.Nodes.Move;
-import player.pnsearch.structures.Nodes.Node_a;
+import player.pnsearch.structures.INodesC.Node_c;
 
 
 
-/**
- * @param <A> : array of N
- */
-public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends IPnSearch<M,N,N[]> {
+public abstract class IPnSearchL<M extends Move, N extends Node_c<M,N,A>, A extends Collection<N>> extends IPnSearch<M,N,A> {
 	
+
+	//#region PLAYER
+
+		@Override
+		public String playerName() {
+			return "PnSearchL";
+		}
+	
+	//#endregion PLAYER
 
 	//#region ALGORITHM
 
@@ -29,8 +35,7 @@ public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends 
 		protected void developNode(N node) {
 			node.expand();
 			generateAllChildren(node);
-			for(int i = 0; i < node.getChildrenLength(); i++) {
-				N child = node.children[i];
+			for(N child : node.children) {
 				board.markCell(child.getPosition().i, child.getPosition().j);
 				evaluate(child);
 				setProofAndDisproofNumbers(child, isMyTurn());
@@ -42,23 +47,6 @@ public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends 
 
 	//#endregion ALGORITHM
 
-	//#region INIT
-
-		protected void initAttributes() {
-			board = new ArrayBoard(M, N, K);
-			timer_end = timeout_in_millisecs - 1000;
-			runtime = Runtime.getRuntime();
-			current_root = newNode();
-
-			nodes_created_tot = 0;
-			nodes_alive_tot = 0;
-			debug = new Debug("debug/debug-" + playerName(), false);
-		}
-
-		protected abstract N newNode(int children_max);
-
-	//#endregion INIT
-
 	//#region AUXILIARY
 
 		//returns move to make on this turn
@@ -68,8 +56,7 @@ public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends 
 			else {
 				N best = current_root.getFirstChild();
 				if(current_root.proof == 0) {
-					for(int i = 0; i < current_root.getChildrenLength(); i++) {
-						N child = current_root.children[i];
+					for(N child : current_root.children) {
 						if(child.proof == 0) {
 							best = child;
 							break;
@@ -78,10 +65,8 @@ public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends 
 				}
 				// else: return the move with highest (proof-disproof)
 				else {
-					for(int i = 0; i < current_root.getChildrenLength(); i++) {
-						N child = current_root.children[i];
+					for(N child : current_root.children)
 						if(child.proof - child.disproof > best.proof - best.disproof) best = child;
-					}
 				}
 				return best;
 			}

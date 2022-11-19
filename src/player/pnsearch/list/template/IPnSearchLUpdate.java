@@ -5,18 +5,18 @@
  */
 
 
-package player.pnsearch;
+package player.pnsearch.list.template;
 
-import player.pnsearch.structures.Nodes.NodeD;
+import player.pnsearch.structures.INodesC.Node_d;
 import player.pnsearch.structures.Nodes.Value;
 
 
 
-public class PnSearchUpdate extends PnSearchDelete {
+public abstract class IPnSearchLUpdate<N extends Node_d<N>> extends IPnSearchLDelete<N> {
 	
 	//#region PLAYER
 
-		public PnSearchUpdate() {
+		public IPnSearchLUpdate() {
 			super();
 		}
 
@@ -26,16 +26,14 @@ public class PnSearchUpdate extends PnSearchDelete {
 		* @return string
 		*/
 		public String playerName() {
-			return "PnSearchUpdate";
+			return "PnSearchLUpdate";
 		}
 
 	//#endregion PLAYER
 
-
-
 	//#region ALOGRITHM
 
-		protected void visit(NodeD root) {
+		protected void visit(N root) {
 			String exception = "";
 			long select_time_start = 0;
 			long select_time_end = 0;
@@ -44,14 +42,14 @@ public class PnSearchUpdate extends PnSearchDelete {
 				evaluate(root);
 				exception = "set proof root";
 				setProofAndDisproofNumbers(root, true);
-				NodeD currentNode = root;
+				N currentNode = root;
 				while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
 					
 					debug.node(root);
 					
 					exception = "select most proving";
 					select_time_start = System.currentTimeMillis() - timer_start;
-					NodeD mostProvingNode = selectMostProving(currentNode);
+					N mostProvingNode = selectMostProving(currentNode);
 					select_time_end = System.currentTimeMillis() - timer_start;
 					
 					debug.markedCells(0);
@@ -90,8 +88,8 @@ public class PnSearchUpdate extends PnSearchDelete {
 		 * @param node
 		 * @param my_turn
 		 */
-		protected NodeD updateAncestorsUpto(NodeD node) {
-			NodeD previousNode = node;
+		protected N updateAncestorsUpto(N node) {
+			N previousNode = node;
 			boolean changed = true;
 			while(node != null && changed) {
 				int oldProof = node.proof, oldDisproof = node.disproof;
@@ -110,9 +108,4 @@ public class PnSearchUpdate extends PnSearchDelete {
 	//#endregion ALGORITHM
 
 	
-	
-	//#region INIT
-
-	//#endregion INIT
-
 }

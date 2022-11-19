@@ -2,19 +2,19 @@
  * DELETES POINTERS TO SOLVED NODES
  */
 
-package player.pnsearch;
+package player.pnsearch.list.template;
 
-import player.pnsearch.structures.Nodes.NodeD;
+import player.pnsearch.structures.INodesC.Node_d;
 import player.pnsearch.structures.Nodes.Value;
 
 
 
-public class PnSearchDeleteD extends PnSearchDelete {
+public abstract class IPnSearchLDeleteD<N extends Node_d<N>> extends IPnSearchLDelete<N> {
 
 	
 	//#region PLAYER
 
-		public PnSearchDeleteD() {
+		public IPnSearchLDeleteD() {
 			super();
 		}
 	
@@ -24,7 +24,7 @@ public class PnSearchDeleteD extends PnSearchDelete {
 			* @return string 
 		*/
 		public String playerName() {
-			return "PnSearchDelete2";
+			return "PnSearchLDeleteD";
 		}
 
 	//#endregion PLAYER
@@ -37,15 +37,15 @@ public class PnSearchDeleteD extends PnSearchDelete {
 		 * @param my_turn
 		 */
 		@Override
-		protected void setProofAndDisproofNumbers(NodeD node, boolean my_turn) {
+		protected void setProofAndDisproofNumbers(N node, boolean my_turn) {
 			if(node.isExpanded()) {
 				if(my_turn) node.setProofDisproof(node.getChildren_minProof(), node.getChildren_sumDisproof());
 				else node.setProofDisproof(node.getChildren_sumProof(), node.getChildren_minDisproof());
 				//if proved/disproved: delete all children but the next in order
 				if(node.proof == 0 || node.disproof == 0) {
 					nodes_alive -= node.getChildrenLength() - 1;
-					NodeD next = null;
-					for(NodeD child : node.children) {
+					N next = null;
+					for(N child : node.children) {
 						if(child.proof == node.proof || child.disproof == node.disproof) {
 							next = child;
 							break;

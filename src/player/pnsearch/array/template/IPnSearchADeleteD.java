@@ -1,13 +1,15 @@
-package player.pnsearch;
+package player.pnsearch.array.template;
 
-import player.pnsearch.structures.Nodes.NodeAD;
+import player.pnsearch.structures.INodesA.Node_ad;
 import player.pnsearch.structures.Nodes.Value;
 
-public class PnSearchADeleteD extends PnSearchADelete {
+
+
+public abstract class IPnSearchADeleteD<N extends Node_ad<N>> extends IPnSearchADelete<N> {
 
 	//#region PLAYER
 
-	public PnSearchADeleteD() {
+	public IPnSearchADeleteD() {
 		super();
 	}
 
@@ -17,7 +19,7 @@ public class PnSearchADeleteD extends PnSearchADelete {
 		* @return string 
 	*/
 	public String playerName() {
-		return "PnSearchADelete2";
+		return "PnSearchADeleteD";
 	}
 
 //#endregion PLAYER
@@ -30,7 +32,7 @@ public class PnSearchADeleteD extends PnSearchADelete {
 	 * @param my_turn
 	 */
 	@Override
-	protected void setProofAndDisproofNumbers(NodeAD node, boolean my_turn) {
+	protected void setProofAndDisproofNumbers(N node, boolean my_turn) {
 		if(node.isExpanded()) {
 			if(my_turn) node.setProofDisproof(node.getChildren_minProof(), node.getChildren_sumDisproof());
 			else node.setProofDisproof(node.getChildren_sumProof(), node.getChildren_minDisproof());

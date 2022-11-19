@@ -3,31 +3,26 @@
  */
 
 
-package player.pnsearch;
+package player.pnsearch.list.obj;
 
 import java.util.LinkedList;
 import mnkgame.MNKCell;
+import player.pnsearch.list.template.IPnSearchL;
 import player.pnsearch.structures.Nodes.Move;
-import player.pnsearch.structures.Nodes.Node;
+import player.pnsearch.structures.NodesC.Node;
 
 
 
-public class PnSearch extends IPnSearchL<Move, Node, LinkedList<Node>> {
+public class PnSearchL extends IPnSearchL<Move, Node, LinkedList<Node>> {
 
 
 	//#region PLAYER
 
-		public PnSearch() {
-			
+		public PnSearchL() {
+			super();
 		}
 		
-		public String playerName() {
-			return "PnSearch";
-		}
-
-	//#endregion
-
-
+	//#endregion PLAYER
 
 	//#region INIT
 
@@ -35,7 +30,6 @@ public class PnSearch extends IPnSearchL<Move, Node, LinkedList<Node>> {
 		protected Move newMove(MNKCell move) {
 			return new Move(move);
 		}
-
 		@Override
 		protected Node newNode() {
 			return new Node();

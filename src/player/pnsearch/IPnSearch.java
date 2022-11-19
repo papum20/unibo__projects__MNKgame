@@ -28,7 +28,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 	protected final short PROOF_N_ZERO = Nodes.PROOF_N_ZERO;
 	protected final short PROOF_N_INFINITE = Nodes.PROOF_N_INFINITE;
 
-	ArrayBoard board;
+	protected ArrayBoard board;
 
 	protected long timer_start;					//turn start (milliseconds)
 	protected long timer_end;					//time (millisecs) at which to stop timer
@@ -403,7 +403,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			}
 			
 			// print up to last one minus "minus"
-			protected void freeCells(int minus) {
+			public void freeCells(int minus) {
 				if(active) {
 					String fc = "";
 					for(int i = 0; i < board.FreeCells_length() - minus; i++) fc += Integer.toString(board.getFreeCell(i).i) + Integer.toString(board.getFreeCell(i).j) + " ";
@@ -415,7 +415,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					}
 				}
 			}
-			protected void markedCells(int minus) {
+			public void markedCells(int minus) {
 				if(active) {
 					String mc = "";
 					for(int i = 0; i < board.MarkedCells_length() - minus; i++) mc += Integer.toString(board.getMarkedCell(i).i) + Integer.toString(board.getMarkedCell(i).j) + " ";
@@ -427,7 +427,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					}
 				}
 			}
-			protected void node(N node) {
+			public void node(N node) {
 				if(active) {
 					String txt = (isMyTurn() ? "P" : "D") + ((node.getMove() == null) ? "root" : node.getPosition()) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
 					System.out.println(txt);
@@ -438,7 +438,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					}
 				}
 			}
-			protected void nestedNode(N node, int minus) {
+			public void nestedNode(N node, int minus) {
 				if(active) {
 					String txt = tabs(minus) + (isMyTurn() ? "P" : "D") + ((node.getMove() == null) ? "root" : node.getPosition()) + " " + Short.toString(node.proof) + " " + Short.toString(node.disproof);
 					System.out.println(txt);
@@ -449,7 +449,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					}
 				}
 			}
-			protected void info() {
+			public void info() {
 				System.out.println("time" + Long.toString(System.currentTimeMillis() - timer_start));
 				System.out.println("nodes created:\t\t" + Integer.toString(nodes_created));
 				System.out.println("nodes alive:\t\t" + Integer.toString(nodes_alive));
@@ -457,7 +457,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				System.out.println("nodes alive tot:\t" + Integer.toString(nodes_alive_tot));
 			}
 			// return string with a tab for each depth level
-			protected String tabs(int minus) {
+			public String tabs(int minus) {
 				String tab = "\t";
 				for(int i = 0; i < board.MarkedCells_length(); i++) tab += "\t";
 				return tab;

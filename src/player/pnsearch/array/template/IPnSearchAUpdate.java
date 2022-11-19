@@ -1,15 +1,15 @@
-package player.pnsearch;
+package player.pnsearch.array.template;
 
-import player.pnsearch.structures.Nodes.NodeAD;
+import player.pnsearch.structures.INodesA.Node_ad;
 import player.pnsearch.structures.Nodes.Value;
 
 
 
-public class PnSearchAUpdate extends PnSearchADelete {
+public abstract class IPnSearchAUpdate<N extends Node_ad<N>> extends IPnSearchADelete<N> {
 	
-		//#region PLAYER
+	//#region PLAYER
 
-		public PnSearchAUpdate() {
+		public IPnSearchAUpdate() {
 			super();
 		}
 
@@ -26,15 +26,15 @@ public class PnSearchAUpdate extends PnSearchADelete {
 
 	//#region ALOGRITHM
 
-		protected void visit(NodeAD root) {
+		protected void visit(N root) {
 			evaluate(root);
 			setProofAndDisproofNumbers(root, true);
-			NodeAD currentNode = root;
+			N currentNode = root;
 			while(root.proof != 0 && root.disproof != 0 && !isTimeEnded()) {
 			
 				debug.node(root);
 
-				NodeAD mostProvingNode = selectMostProving(currentNode);
+				N mostProvingNode = selectMostProving(currentNode);
 				
 				debug.markedCells(0);
 				debug.freeCells(0);
@@ -62,8 +62,8 @@ public class PnSearchAUpdate extends PnSearchADelete {
 		 * @param node
 		 * @param my_turn
 		 */
-		protected NodeAD updateAncestorsUpto(NodeAD node) {
-			NodeAD previousNode = node;
+		protected N updateAncestorsUpto(N node) {
+			N previousNode = node;
 			boolean changed = true;
 			while(node != null && changed) {
 				int oldProof = node.proof, oldDisproof = node.disproof;
@@ -81,8 +81,4 @@ public class PnSearchAUpdate extends PnSearchADelete {
 	
 	//#endregion ALGORITHM
 
-	//#region INIT
-
-	//#endregion INIT
-	
 }

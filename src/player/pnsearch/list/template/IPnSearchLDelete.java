@@ -3,22 +3,22 @@
  * DELETES POINTERS TO SOLVED NODES; (to implement in sublcasses)
  */
 
-package player.pnsearch;
+package player.pnsearch.list.template;
 
 import java.util.LinkedList;
 import mnkgame.MNKCell;
+import player.pnsearch.structures.INodesC.Node_d;
 import player.pnsearch.structures.Nodes.Move;
-import player.pnsearch.structures.Nodes.NodeD;
 
 
 
-public class PnSearchDelete extends IPnSearchL<Move, NodeD, LinkedList<NodeD>> {
+public abstract class IPnSearchLDelete<N extends Node_d<N>> extends IPnSearchL<Move, N, LinkedList<N>> {
 	
 
 
 	//#region PLAYER	
 	
-		public PnSearchDelete() {
+		public IPnSearchLDelete() {
 			super();
 		}
 				
@@ -27,7 +27,7 @@ public class PnSearchDelete extends IPnSearchL<Move, NodeD, LinkedList<NodeD>> {
 		 * @return string 
 		 */
 		public String playerName() {
-			return "PnSearchADelete";
+			return "PnSearchLDelete";
 		}
 
 		
@@ -48,11 +48,8 @@ public class PnSearchDelete extends IPnSearchL<Move, NodeD, LinkedList<NodeD>> {
 		protected Move newMove(MNKCell move) {
 			return new Move(move);
 		}
-
 		@Override
-		protected NodeD newNode() {
-			return new NodeD();
-		}
+		protected abstract N newNode();
 		
 	//#endregion INIT
 	
