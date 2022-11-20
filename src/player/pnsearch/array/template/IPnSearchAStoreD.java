@@ -42,7 +42,10 @@ public abstract class IPnSearchAStoreD<N extends Node_ads<N>> extends IPnSearchA
 		@Override
 		protected N selectMostProving(N node) {
 			if(!node.isExpanded()) return node;
-			else if(node.most_proving != null) return node.most_proving;
+			else if(node.most_proving != null) {
+				board.markCell(node.most_proving.getPosition().i, node.most_proving.getPosition().j);
+				return selectMostProving(node.most_proving);
+			}
 			else {
 				N res = super.selectMostProving(node);
 				node.most_proving = res;

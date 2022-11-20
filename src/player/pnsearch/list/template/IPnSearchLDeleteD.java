@@ -44,16 +44,7 @@ public abstract class IPnSearchLDeleteD<N extends Node_d<N>> extends IPnSearchLD
 				//if proved/disproved: delete all children but the next in order
 				if(node.proof == 0 || node.disproof == 0) {
 					nodes_alive -= node.getChildrenLength() - 1;
-					N next = null;
-					for(N child : node.children) {
-						if(child.proof == node.proof || child.disproof == node.disproof) {
-							next = child;
-							break;
-						}
-					}
-					node.value = (node.proof == 0) ? Value.TRUE : Value.FALSE;
-					node.children.clear();
-					node.children.add(next);
+					node.reduce();
 				}
 			}
 			else if(node.value != Value.UNKNOWN) {

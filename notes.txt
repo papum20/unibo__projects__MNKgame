@@ -35,6 +35,8 @@ MINIMAX:
 PNSEARCH:
 	-	per avere effettivo numero di nodi alive (tot), si dovrebbe memorizzare nel nodo i nodi figli (ricorsivamente), altrimenti non si sa quanti se ne tolgono tagliando
 		l'albero tra una mossa e l'altra
+	-	PnSearchStore.selectMostProving : serve l'else? forse non ci si arriva mai
+	-	PnSearchA : inizializzare l'array a più piccolo
 
 
 

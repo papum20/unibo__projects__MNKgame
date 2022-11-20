@@ -52,6 +52,7 @@ public class INodes {
 			public S findChild(MNKCell move);
 			public S findChildProof(short proof);
 			public S findChildDisproof(short disproof);
+			public void reduce();
 			// BOOL
 			public boolean isExpanded();
 			// GET

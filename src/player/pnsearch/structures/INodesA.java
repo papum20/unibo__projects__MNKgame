@@ -75,6 +75,15 @@ public class INodesA extends INodes {
 			if(i == children_n) return null;
 			else return res;
 		}
+		// deletes all children but the one with the same values of proof-disproof
+		// assumes that this node is proved
+		public void reduce() {
+			value = (proof == 0) ? Value.TRUE : Value.FALSE;
+			int i = 0;
+			while(i < children_n && (children[i].proof != proof || children[i].disproof != disproof)) i++;
+			children[0] = children[i];
+			children_n = 1;
+		}
 		//#endregion FUNCTIONS
 		// BOOL
 		//public boolean isExpanded();
@@ -173,17 +182,6 @@ public class INodesA extends INodes {
 		// FUNCTIONS
 		//functions about children should be redefined to check whether children==null;
 		//however some are only called if node is expanded
-
-		// deletes all children but the one with the same values of proof-disproof
-		// assumes that this node is proved
-		public void reduce() {
-			value = (proof == 0) ? Value.TRUE : Value.FALSE;
-			int i = 0;
-			//just checks child.proof==proof: child.disproof==disproof is obvious, if the nodes are proved
-			while(i < children_n && children[i].proof != proof) i++;
-			children[0] = children[i];
-			children_n = 1;
-		}
 		// SET
 		public abstract void addChild(MNKCell move);
 		public abstract void expand(int children_max);
@@ -201,6 +199,13 @@ public class INodesA extends INodes {
 			most_proving = null;
 		}
 
+		// FUNCTIONS
+		@Override
+		public void reduce() {
+			value = (proof == 0) ? Value.TRUE : Value.FALSE;
+			children[0] = most_proving;
+			children_n = 1;
+		}
 		// SET
 		@Override
 		public void reset(Move move) {

@@ -37,9 +37,9 @@ public abstract class IPnSearchAUpdateD<N extends Node_ad<N>> extends IPnSearchA
 				int oldProof = node.proof, oldDisproof = node.disproof;
 				setProofAndDisproofNumbers(node, isMyTurn());
 				changed = (oldProof != node.proof || oldDisproof != node.disproof);
-
+				
 				debug.nestedNode(node, 0);
-
+				
 				// delete children
 				if((node.proof == 0 || node.disproof == 0) && node != current_root && node.getParent() != current_root) {
 					nodes_alive -= node.getChildrenLength();

@@ -228,7 +228,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				if(node.value == Value.TRUE) node.setProofDisproof(PROOF_N_ZERO, PROOF_N_INFINITE);
 				else node.setProofDisproof(PROOF_N_INFINITE, PROOF_N_ZERO);
 			}
-			else initProofAndDisproofNumbers(node);;
+			else initProofAndDisproofNumbers(node);
 		}
 		/**
 		 * 

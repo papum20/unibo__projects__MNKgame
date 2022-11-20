@@ -45,6 +45,7 @@ public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends 
 
 	//#region INIT
 
+		@Override
 		protected void initAttributes() {
 			board = new ArrayBoard(M, N, K);
 			timer_end = timeout_in_millisecs - 1000;

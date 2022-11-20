@@ -80,6 +80,18 @@ public class INodesC extends INodes {
 			}
 			return res;
 		}
+		public void reduce() {
+			S next = null;
+			for(S child : children) {
+				if(child.proof == proof && child.disproof == disproof) {
+					next = child;
+					break;
+				}
+			}
+			value = (proof == 0) ? Value.TRUE : Value.FALSE;
+			children.clear();
+			children.add(next);
+		}
 		// BOOL
 		//public boolean isExpanded();
 		// GET
@@ -204,6 +216,13 @@ public class INodesC extends INodes {
 			most_proving = null;
 		}
 
+		// FUNCTIONS
+		@Override
+		public void reduce() {
+			value = (proof == 0) ? Value.TRUE : Value.FALSE;
+			children.clear();;
+			children.add(most_proving);
+		}
 		// SET
 		@Override
 		public void reset(Move move) {
