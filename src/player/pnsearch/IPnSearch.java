@@ -8,14 +8,14 @@ import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
 import player.ArrayBoard;
 import player.pnsearch.structures.INodes;
-import player.pnsearch.structures.INodes.Move;
+import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodes.Node_t;
 import player.pnsearch.structures.INodes.Value;
 
 
 
 
-public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> implements mnkgame.MNKPlayer {
+public abstract class IPnSearch<M extends IMove, V, N extends Node_t<M,V,N,A>, A> implements mnkgame.MNKPlayer {
 
 	protected int M;
 	protected int N;
@@ -88,9 +88,9 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			timer_start = System.currentTimeMillis();
 			//update my istance of board
 			if(MC.length > 0) {
-				MNKCell opponent_move = MC[MC.length - 1];
+				M opponent_move = newMove(MC[MC.length - 1]);
 				//mark opponent cell
-				board.markCell(opponent_move.i, opponent_move.j);
+				board.markCell(opponent_move.i(), opponent_move.j());
 				//update current_root (with last opponent move)
 				//assumption: current_root != null
 				N new_root = current_root.findChild(opponent_move);
@@ -100,7 +100,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					current_root = new_root;
 					current_root.setParent(null);
 				}
-				else current_root.reset(newMove(opponent_move));
+				else current_root.reset(opponent_move);
 				
 				// DEBUG
 				System.out.println("last/opponent: " + MC[MC.length - 1]);
@@ -126,7 +126,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 			MNKCell res = FC[0];
 			if(best_node != null) {
 				System.out.println("FOUND BEST NODE");
-				res = best_node.getPosition();
+				res = new MNKCell(best_node.i(), best_node.j());
 				//update current_root (with my last move)
 				nodes_alive_tot -= current_root.getChildrenLength();
 				current_root = best_node;
@@ -195,9 +195,11 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 					
 					debug.node(mostProvingNode);
 				}
+				/*
 				if(root.proof == 0) root.value = Value.TRUE;
 				else if(root.disproof == 0) root.value = Value.FALSE;			
 				else root.value = Value.UNKNOWN;
+				*/
 			} finally {
 				System.out.println("VISIT: " + exception);
 				System.out.println("VISIT: last select:");
@@ -212,7 +214,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		 */
 		protected void evaluate(N node) {
 			Value current = gameState_to_value(board.gameState());
-			node.value = current;
+			node.setValue(current);
 		}
 		/**
 		 * 
@@ -224,8 +226,8 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				if(my_turn) node.setProofDisproof(node.getChildren_minProof().proof, node.getChildren_sumDisproof());
 				else node.setProofDisproof(node.getChildren_sumProof(), node.getChildren_minDisproof().disproof);
 			}
-			else if(node.value != Value.UNKNOWN) {
-				if(node.value == Value.TRUE) node.setProofDisproof(PROOF_N_ZERO, PROOF_N_INFINITE);
+			else if(node.getValue() != Value.UNKNOWN) {
+				if(node.getValue() == Value.TRUE) node.setProofDisproof(PROOF_N_ZERO, PROOF_N_INFINITE);
 				else node.setProofDisproof(PROOF_N_INFINITE, PROOF_N_ZERO);
 			}
 			else initProofAndDisproofNumbers(node);
@@ -241,7 +243,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 				N res = null;
 				if(isMyTurn()) res = node.findChildProof(node.proof);
 				else res = node.findChildDisproof(node.disproof);
-				board.markCell(res.getPosition().i, res.getPosition().j);
+				board.markCell(res.i(), res.j());
 
 				debug.nestedNode(node, 0);
 				
@@ -274,7 +276,7 @@ public abstract class IPnSearch<M extends Move, N extends Node_t<M,N,A>, A> impl
 		 */
 		protected void generateAllChildren(N node) {
 			for(int i = 0; i < board.FreeCells_length(); i++)
-				node.addChild(board.getFreeCell(i));
+				node.addChild(newMove(board.getFreeCell(i)));
 		}
 		/**
 		 * unmarks cells in board until current node reaches root node

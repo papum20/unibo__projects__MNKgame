@@ -8,6 +8,7 @@ public class INodes {
 
 	public static final short PROOF_N_ZERO = 0;
 	public static final short PROOF_N_INFINITE = 32767;
+	public static final short SHORT_ERROR = -1;
 
 	
 	//#region INTERFACES
@@ -18,15 +19,48 @@ public class INodes {
 			UNKNOWN
 		}
 
-		public static class Move {
+		public static interface IMove {
+			public MovePair getPair();
+			public short i();
+			public short j();
+			@Override public String toString();
+		}
+		public static class MovePair implements IMove {
+			protected short i, j;
+			public MovePair(short i, short j) {
+				this.i = i;
+				this.j = j;
+			}
+			public MovePair(MovePair move) {
+				this.i = move.i;
+				this.j = move.j;
+			}
+			public MovePair(MNKCell move) {
+				this.i = (short)move.j;
+				this.j = (short)move.i;
+			}
+
+			public MovePair getPair() {return this;}
+			public short i() {return i;}
+			public short j() {return j;}
+			public String toString() {
+				return "[" + i + "," + j + "]";
+			}
+		}
+		
+		public static class MoveMNK implements IMove {
 			protected MNKCell position;
 
-			public Move() {
+			public MoveMNK() {
 
 			}
-			public Move(MNKCell move) {
+			public MoveMNK(MNKCell move) {
 				this.position = move;
 			}
+			public MovePair getPair() {return new MovePair((short)position.j, (short)position.i);}
+			public short i() {return (short)position.j;}
+			public short j() {return (short)position.i;}
+			public String toString() {return position.toString();}
 		}
 		
 		/**
@@ -34,7 +68,7 @@ public class INodes {
 		 * @param <V> value
 		 * @param <S> self (same type)
 		 */
-		public static interface INode<M extends Move, V, S extends INode<M,V,S>> {
+		public static interface INode<M extends IMove, V, S extends INode<M,V,S>> {
 			// protected M move;
 			// public Value value;
 			// public short proof;
@@ -49,24 +83,35 @@ public class INodes {
 			public short getChildren_sumDisproof();
 			public S getChildren_minProof();
 			public S getChildren_minDisproof();
-			public S findChild(MNKCell move);
+			public S findChild(M move);
 			public S findChildProof(short proof);
 			public S findChildDisproof(short disproof);
-			public void reduce();
+			
 			// BOOL
 			public boolean isExpanded();
 			// GET
 			public M getMove();
-			public MNKCell getPosition();
+			public MovePair getPosition();
+			public short i();
+			public short j();
+			
 			public int getChildrenLength();
 			public S getFirstChild();
 			public S getParent();
+			
+			public V getValue();
 			// SET
-			public void addChild(MNKCell move);
-			public void expand();
-			public void prove(V value);			//prove or disprove node (making it not expanded)
-			public void setProofDisproof(short proof, short disproof);
 			public void reset(M move);
+			public void reduce();
+			
+			public void prove();				//prove or disprove node (making it not expanded)
+			public void prove(Value value);
+			public void setProofDisproof(short proof, short disproof);
+			
+			public void expand();
+			public abstract void setValue(Value value);
+
+			public void addChild(M move);
 			public void setParent(S parent);
 
 		}
@@ -76,74 +121,63 @@ public class INodes {
 		 * @param <S> self (same type)
 		 * @param <A> collection (children)
 		 */
-		public static abstract class Node_t<M extends Move, S extends Node_t<M,S,A>, A> implements INode<M,Value,S> {
-			protected M move;
-			public Value value;
+		public static abstract class Node_t<M extends IMove, V, S extends Node_t<M,V,S,A>, A> implements INode<M,V,S> {
 			public short proof;
 			public short disproof;
 			protected S parent;
 			public A children;
 
-			public Node_t() {
-				init(null, Value.UNKNOWN, PROOF_N_ZERO, PROOF_N_ZERO, null);
-			}
-			public Node_t(M move, S parent) {
-				init(move, Value.UNKNOWN, PROOF_N_ZERO, PROOF_N_ZERO, parent);
-			}
-			public Node_t(M move, Value value, short proof, short disproof) {
-				init(move, value, proof, disproof, null);
-			}
-			protected void init(M move, Value value, short proof, short disproof, S parent) {
-				this.move = move;
-				this.value = value;
+			public Node_t()								{init(null, PROOF_N_ZERO, PROOF_N_ZERO, null);}
+			public Node_t(M move, S parent)				{init(move, PROOF_N_ZERO, PROOF_N_ZERO, parent);}
+			//public Node_t(short i, short j, V value, short proof, short disproof) {init(i, j, proof, disproof, null, value);}
+			protected void init(M move, short proof, short disproof, S parent) {
+				setMove(move);
 				this.proof = proof;
 				this.disproof = disproof;
 				this.parent = parent;
-				//init this.children
+				initChildren();
+			}
+			protected void init(M move, short proof, short disproof, S parent, Value value) {
+				setMove(move);
+				setValue(value);
+				this.proof = proof;
+				this.disproof = disproof;
+				this.parent = parent;
+				initChildren();
 			}
 
-			// FUNCTIONS
-			//public short getChildren_sumProof();
-			//public short getChildren_sumDisproof();
-			//public S getChildren_minProof();
-			//public S getChildren_minDisproof();
-			//public S findChild(MNKCell move);
-			//public S findChildProof(short proof);
-			//public S findChildDisproof(short disproof);
 			// BOOL
-			//public boolean isExpanded();
+			protected abstract boolean equalMoves(M a, M b);
 			// GET
-			public M getMove() {
-				return move;
-			}
-			//public S getFirstChild();
-			public S getParent() {
-				return parent;
-			}
-			//public MNKCell getPosition();
-			//public int getChildrenLength();
+			@Override public S getParent() {return parent;}
 			// SET
-			//public void addChild(MNKCell move);
-			//public void expand();
-			public void prove(Value value) {
-				this.value = value;
+			@Override public void prove() {
+				evalValue();
 				children = null;
 			}
-			public void setProofDisproof(short proof, short disproof) {
+			@Override public void prove(Value value) {
+				setValue(value);
+				children = null;
+			}
+			@Override public void setProofDisproof(short proof, short disproof) {
 				this.proof = proof;
 				this.disproof = disproof;
 			}
-			public void reset(M move) {
-				this.move = move;
-				value = Value.UNKNOWN;
+			@Override public void reset(M move) {
+				setMove(move);
+				resetValue();
 				proof = 1;
 				disproof = 1;
 				parent = null;
 				children = null;
 			}
-			public void setParent(S parent) {
-				this.parent = parent;
-			}
+			@Override public void setParent(S parent) {this.parent = parent;}
+			// INIT
+			protected abstract void setMove(M move);
+			protected abstract void resetValue();
+			protected abstract void evalValue();	//value = (proof == 0) ? Value.TRUE : Value.FALSE;
+			protected abstract void initChildren();
+			protected abstract void generateChildren();
 		}
 
 	//#endregion INTERFACES
@@ -155,6 +189,11 @@ public class INodes {
 
 		}
 
+		/*
+		protected static <M extends MovePair> boolean equalMovePairs(M a, M b) {
+			return a.i == b.i && a.j == b.j;
+		}
+		*/
 		protected static boolean equalMNKMoves(MNKCell a, MNKCell b) {
 			return a.i == b.i && a.j == b.j;
 		}

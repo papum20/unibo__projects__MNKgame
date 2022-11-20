@@ -37,6 +37,7 @@ PNSEARCH:
 		l'albero tra una mossa e l'altra
 	-	PnSearchStore.selectMostProving : serve l'else? forse non ci si arriva mai
 	-	PnSearchA : inizializzare l'array a più piccolo
+	-	TODO : fai nodi senza bool expanded; togli value
 
 
 

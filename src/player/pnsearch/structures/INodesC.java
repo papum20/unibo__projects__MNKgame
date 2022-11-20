@@ -3,7 +3,7 @@ package player.pnsearch.structures;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import mnkgame.MNKCell;
+
 
 public class INodesC extends INodes {
 
@@ -14,15 +14,15 @@ public class INodesC extends INodes {
 	 * @param <S> self (same type)
 	 * @param <A> collection (children)
 	 */
-	public abstract static class Node_c<M extends Move, S extends Node_c<M,S,A>, A extends Collection<S>> extends Node_t<M,S,A> {
+	public abstract static class Node_c<M extends IMove, V, S extends Node_c<M,V,S,A>, A extends Collection<S>> extends Node_t<M,V,S,A> {
 
-		public Node_c() {super();}
-		public Node_c(M move, S parent) {super(move, parent);}
-		public Node_c(M move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
+		public Node_c()													{super();}
+		public Node_c(M move, S parent)						{super(move, parent);}
+		//public Node_c(M move, Value value, short proof, short disproof)	{super(move, value, proof, disproof);}
 		//protected void init(M move, Value value, short proof, short disproof, S parent);
 
 		// FUNCTIONS
-		public short getChildren_sumProof() {
+		@Override public short getChildren_sumProof() {
 			short sum = 0;
 			for(S child : children) {
 				if(child.proof == PROOF_N_INFINITE) return PROOF_N_INFINITE;
@@ -30,7 +30,7 @@ public class INodesC extends INodes {
 			}
 			return sum;
 		}
-		public short getChildren_sumDisproof() {
+		@Override public short getChildren_sumDisproof() {
 			short sum = 0;
 			for(S child : children) {
 				if(child.disproof == PROOF_N_INFINITE) return PROOF_N_INFINITE;
@@ -38,29 +38,29 @@ public class INodesC extends INodes {
 			}
 			return sum;
 		}
-		public S getChildren_minProof() {
+		@Override public S getChildren_minProof() {
 			S min = getFirstChild();
 			for(S child : children)
 			if (child.proof < min.proof) min = child;
 			return min;
 		}
-		public S getChildren_minDisproof() {
+		@Override public S getChildren_minDisproof() {
 			S min = getFirstChild();
 			for(S child : children) 
 			if(child.disproof < min.disproof) min = child;
 			return min;
 		}
-		public S findChild(MNKCell move) {
+		@Override public S findChild(M move) {
 			S res = null;
 			for(S child : children) {
-				if(equalMNKMoves(move, child.move.position)) {
+				if(equalMoves(move, child.getMove())) {
 					res = child;
 					break;
 				}
 			}
 			return res;
 		}
-		public S findChildProof(short proof) {
+		@Override public S findChildProof(short proof) {
 			S res = null;
 			for(S child : children) {
 				if(child.proof == proof) {
@@ -70,7 +70,7 @@ public class INodesC extends INodes {
 			}
 			return res;
 		}
-		public S findChildDisproof(short disproof) {
+		@Override public S findChildDisproof(short disproof) {
 			S res = null;
 			for(S child : children) {
 				if(child.disproof == disproof) {
@@ -80,7 +80,10 @@ public class INodesC extends INodes {
 			}
 			return res;
 		}
-		public void reduce() {
+		// GET
+		@Override public int getChildrenLength() {return children.size();}
+		// SET
+		@Override public void reduce() {
 			S next = null;
 			for(S child : children) {
 				if(child.proof == proof && child.disproof == disproof) {
@@ -88,144 +91,98 @@ public class INodesC extends INodes {
 					break;
 				}
 			}
-			value = (proof == 0) ? Value.TRUE : Value.FALSE;
+			evalValue();
 			children.clear();
 			children.add(next);
 		}
-		// BOOL
-		//public boolean isExpanded();
-		// GET
-		//public M getMove();
-		//public MNKCell getPosition();
-		public int getChildrenLength() {
-			return children.size();
-		}
-		//public S getFirstChild();
-		//public S getParent():
-		// SET
-		//public void addChild(MNKCell move);
-		//public void expand();
-		//public void prove(Value value);
-		//public void reset(M move);
-		//public void setProofDisproof(short proof, short disproof);
-		//public void setParent(S parent);
 	}
 
 	/**
 	 * expand, linkedlist
 	 * @param <S> self
 	 */
-	public abstract static class Node_e<S extends Node_e<S>> extends Node_c<Move, S, LinkedList<S>> {
+	public abstract static class Node_e<M extends IMove, V, S extends Node_e<M,V,S>> extends Node_c<M,V,S,LinkedList<S>> {
 		protected boolean expanded;
 		
-		public Node_e() {super();}
-		public Node_e(Move move, S parent) {super(move, parent);}
-		public Node_e(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
-		@Override
-		protected void init(Move move, Value value, short proof, short disproof, S parent) {
-			super.init(move, value, proof, disproof, parent);
+		public Node_e()								{super();}
+		public Node_e(M move, S parent)	{super(move, parent);}
+		//public Node_e(M move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
+		@Override protected void init(M move, short proof, short disproof, S parent) {
+			super.init(move, proof, disproof, parent);
 			this.expanded = false;
-			this.children = new LinkedList<S>();
 		}
-
-		// FUNCTIONS
-		//public short getChildren_sumProof();
-		//public short getChildren_sumDisproof();
-		//public short getChildren_minProof();
-		//public short getChildren_minDisproof();
-		//public S findChild(MNKCell move);
-		//public S findChildProof(short proof);
-		//public S findChildDisproof(short disproof);
+		
 		// BOOL
-		public boolean isExpanded() {
-			return expanded;
-		}
+		@Override public boolean isExpanded() {return expanded;}
 		// GET
-		//public M getMove();
-		public MNKCell getPosition() {
-			return move.position;
-		}
-		//public int getChildrenLength();
-		public S getFirstChild() {
-			return children.getFirst();
-		}
-		//public S getParent():
+		@Override public S getFirstChild() {return children.getFirst();}
 		// SET
-		public abstract void addChild(MNKCell move);
-		public void expand() {
-			expanded = true;
+		@Override public void expand() {expanded = true;}
+		@Override public void prove() {
+			super.prove();
+			expanded = false;
 		}
-		@Override
-		public void prove(Value value) {
+		@Override public void prove(Value value) {
 			super.prove(value);
 			expanded = false;
 		}
-		@Override
-		public void reset(Move move) {
+		@Override public void reset(M move) {
 			super.reset(move);
 			expanded = false;
 		}
-		//public void setProofDisproof(short proof, short disproof);
-		//public void setParent(S parent);
+		// INIT
+		@Override protected void initChildren() {this.children = new LinkedList<S>();}
 	}
 
-	public abstract static class Node_d<S extends Node_d<S>> extends Node_e<S> {
-		public Node_d() {super();}
-		public Node_d(Move move, S parent) {super(move, parent);}
-		public Node_d(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
-		@Override
-		protected void init(Move move, Value value, short proof, short disproof, S parent) {
-			this.move = move;
-			this.value = value;
-			this.proof = proof;
-			this.disproof = disproof;
-			this.parent = parent;
-			this.expanded = false;
-			this.children = null;
-		}
+	public abstract static class Node_ed<M extends IMove, V, S extends Node_ed<M,V,S>> extends Node_e<M,V,S> {
+		public Node_ed()							{super();}
+		public Node_ed(M move, S parent)	{super(move, parent);}
+		//public Node_d(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
 		
 		// FUNCTIONS
 		//functions about children should be redefined to check whether children==null;
 		//however some are only called if node is expanded
-		public S findChild(MNKCell move) {
+		@Override public S findChild(M move) {
 			if(children == null) return null;
 			else return super.findChild(move);
 		}
 		// SET
-		public abstract void addChild(MNKCell move);
-		public void expand() {
+		@Override public void expand() {
 			expanded = true;
 			children = new LinkedList<S>();
 		}
-		public void prove(Value value) {
+		@Override public void prove() {
+			super.prove();
+			expanded = false;
+		}
+		@Override public void prove(Value value) {
 			super.prove(value);
 			expanded = false;
 		}
+		// INIT
+		@Override protected void initChildren() {this.children = null;}
 	}
 
 	// STORES THE MOST PROVING NODE
-	public abstract static class Node_ds<S extends Node_ds<S>> extends Node_d<S> {
+	public abstract static class Node_eds<M extends IMove, V, S extends Node_eds<M,V,S>> extends Node_ed<M,V,S> {
 		public S most_proving;
 		
-		public Node_ds() {super();}
-		public Node_ds(Move move, S parent) {super(move, parent);}
-		public Node_ds(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
-		@Override
-		protected void init(Move move, Value value, short proof, short disproof, S parent) {
-			super.init(move, value, proof, disproof, parent);
+		public Node_eds()							{super();}
+		public Node_eds(M move, S parent)	{super(move, parent);}
+		//public Node_eds(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
+		@Override protected void init(M move, short proof, short disproof, S parent) {
+			super.init(move, proof, disproof, parent);
 			most_proving = null;
 		}
 
 		// FUNCTIONS
-		@Override
-		public void reduce() {
-			value = (proof == 0) ? Value.TRUE : Value.FALSE;
+		@Override public void reduce() {
+			evalValue();
 			children.clear();;
 			children.add(most_proving);
 		}
 		// SET
-		@Override
-		public void reset(Move move) {
+		@Override public void reset(M move) {
 			super.reset(move);
 			most_proving = null;
 		}
