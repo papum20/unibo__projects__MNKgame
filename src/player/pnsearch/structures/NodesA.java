@@ -31,8 +31,10 @@ public class NodesA extends INodesA {
 		public void addChild(MovePair move) {children[children_n++] = new NodeA(move, this, children.length);}
 		// INIT
 		@Override protected void setMove(MovePair move) {
-			this.i = move.i();
-			this.j = move.j();
+			if(move != null) {
+				this.i = move.i();
+				this.j = move.j();
+			}
 		}
 		@Override protected void initChildren(int children_max) {
 			children = new NodeA[children_max];
@@ -68,8 +70,10 @@ public class NodesA extends INodesA {
 		public void addChild(MovePair move) {children[children_n++] = new NodeAD(move, this);}
 		// INIT
 		@Override protected void setMove(MovePair move) {
-			this.i = move.i();
-			this.j = move.j();
+			if(move != null) {
+				this.i = move.i();
+				this.j = move.j();
+			}
 		}
 		@Override protected void initChildren(int children_max) {
 			children = new NodeAD[children_max];
@@ -103,8 +107,10 @@ public class NodesA extends INodesA {
 		@Override public void addChild(MovePair move) {children[children_n++] = new NodeADS(move, this);}
 		// INIT
 		@Override protected void setMove(MovePair move) {
-			this.i = move.i();
-			this.j = move.j();
+			if(move != null) {
+				this.i = move.i();
+				this.j = move.j();
+			}
 		}
 		@Override protected void initChildren(int children_max) {
 			children = new NodeADS[children_max];

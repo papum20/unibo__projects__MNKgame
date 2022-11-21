@@ -33,8 +33,10 @@ public class NodesC extends INodesC {
 		public void addChild(MovePair move) {children.addLast(new NodeL(move, this));}
 		// INIT
 		@Override protected void setMove(MovePair move) {
-			this.i = move.i();
-			this.j = move.j();
+			if(move != null) {
+				this.i = move.i();
+				this.j = move.j();
+			}
 		}
 		@Override protected void generateChildren() {this.children = new LinkedList<NodeL>();}
 	}
@@ -66,8 +68,10 @@ public class NodesC extends INodesC {
 		public void addChild(MovePair move) {children.addLast(new NodeLD(move, this));}
 		// INIT
 		@Override protected void setMove(MovePair move) {
-			this.i = move.i();
-			this.j = move.j();
+			if(move != null) {
+				this.i = move.i();
+				this.j = move.j();
+			}
 		}
 		@Override protected void generateChildren() {this.children = new LinkedList<NodeLD>();}
 	}
@@ -98,8 +102,10 @@ public class NodesC extends INodesC {
 		public void addChild(MovePair move) {children.addLast(new NodeLDS(move, this));}
 		// INIT
 		@Override protected void setMove(MovePair move) {
-			this.i = move.i();
-			this.j = move.j();
+			if(move != null) {
+				this.i = move.i();
+				this.j = move.j();
+			}
 		}
 		@Override protected void generateChildren() {this.children = new LinkedList<NodeLDS>();}
 	}
