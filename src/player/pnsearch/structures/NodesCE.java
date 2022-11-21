@@ -107,7 +107,10 @@ public class NodesCE extends INodesC {
 		// BOOL
 		@Override public boolean isExpanded() {return expanded;}
 		// SET
-		@Override public void expand() {expanded = true;}
+		@Override public void expand() {
+			super.expand();
+			expanded = true;
+		}
 		@Override public void prove() {
 			super.prove();
 			expanded = false;
@@ -164,7 +167,10 @@ public class NodesCE extends INodesC {
 		// BOOL
 		@Override public boolean isExpanded() {return expanded;}
 		// SET
-		@Override public void expand() {expanded = true;}
+		@Override public void expand() {
+			super.expand();
+			expanded = true;
+		}
 		@Override public void prove() {
 			super.prove();
 			expanded = false;

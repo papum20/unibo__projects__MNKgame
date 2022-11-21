@@ -140,7 +140,14 @@ public class NodesAE extends INodesA {
 		// BOOL
 		@Override public boolean isExpanded() {return expanded;}
 		// SET
-		@Override public void expand() {expanded = true;}
+		@Override public void expand() {
+			super.expand();
+			expanded = true;
+		}
+		@Override public void expand(int children_max) {
+			super.expand(children_max);
+			expanded = true;
+		}
 		@Override public void prove() {
 			super.prove();
 			expanded = false;
@@ -212,7 +219,14 @@ public class NodesAE extends INodesA {
 		// BOOL
 		@Override public boolean isExpanded() {return expanded;}
 		// SET
-		@Override public void expand() {expanded = true;}
+		@Override public void expand() {
+			super.expand();
+			expanded = true;
+		}
+		@Override public void expand(int children_max) {
+			super.expand(children_max);
+			expanded = true;
+		}
 		@Override public void prove() {
 			super.prove();
 			expanded = false;
