@@ -38,6 +38,7 @@ PNSEARCH:
 	-	PnSearchStore.selectMostProving : serve l'else? forse non ci si arriva mai
 	-	PnSearchA : inizializzare l'array a più piccolo
 	-	TODO : fai nodi senza bool expanded; togli value
+	-	il reset dei nodi dovrebbe chiamare l'init children, non metterli a null
 
 
 

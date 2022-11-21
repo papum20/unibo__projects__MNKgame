@@ -37,8 +37,8 @@ public class INodes {
 				this.j = move.j;
 			}
 			public MovePair(MNKCell move) {
-				this.i = (short)move.j;
-				this.j = (short)move.i;
+				this.i = (short)move.i;
+				this.j = (short)move.j;
 			}
 
 			public MovePair getPair() {return this;}
