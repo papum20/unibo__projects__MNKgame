@@ -121,7 +121,7 @@ public class INodesA extends INodes {
 			children_n = 0;
 		}
 		protected abstract void initChildren(int children_max);
-		@Override @Deprecated protected void generateChildren() {}
+		@Override protected void generateChildren() {}
 	}
 
 	// for PnSearchADelete
@@ -137,11 +137,11 @@ public class INodesA extends INodes {
 		//functions about children should be redefined to check whether children==null;
 		//however some are only called if node is expanded
 		// SET
-		@Override @Deprecated public void expand() {}
+		@Override public void expand() {}
 		public void expand(int children_max) {generateChildren(children_max);}
 		// INIT
-		@Override @Deprecated protected void initChildren(int children_max) {initChildren();}
-		@Override @Deprecated protected void generateChildren() {}
+		@Override protected void initChildren(int children_max) {initChildren();}
+		@Override protected void generateChildren() {}
 		protected abstract void generateChildren(int children_max);
 	}
 
