@@ -10,7 +10,7 @@ package player.pnsearch.array.template;
 
 import player.ArrayBoard;
 import player.pnsearch.IPnSearch;
-import player.pnsearch.structures.INodes.Move;
+import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodesA.Node_a;
 
 
@@ -18,7 +18,7 @@ import player.pnsearch.structures.INodesA.Node_a;
 /**
  * @param <A> : array of N
  */
-public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends IPnSearch<M,N,N[]> {
+public abstract class IPnSearchA<M extends IMove, V, N extends Node_a<M,V,N>> extends IPnSearch<M,V,N,N[]> {
 	
 
 	//#region ALGORITHM
@@ -32,7 +32,7 @@ public abstract class IPnSearchA<M extends Move, N extends Node_a<M,N>> extends 
 			generateAllChildren(node);
 			for(int i = 0; i < node.getChildrenLength(); i++) {
 				N child = node.children[i];
-				board.markCell(child.getPosition().i, child.getPosition().j);
+				board.markCell(child.i(), child.j());
 				evaluate(child);
 				setProofAndDisproofNumbers(child, isMyTurn());
 				board.unmarkCell();

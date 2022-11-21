@@ -1,11 +1,11 @@
 package player.pnsearch.array.template;
 
 import player.pnsearch.structures.INodesA.Node_ad;
-import player.pnsearch.structures.INodes.Value;
+import player.pnsearch.structures.INodes.IMove;
 
 
 
-public abstract class IPnSearchAUpdate<N extends Node_ad<N>> extends IPnSearchADelete<N> {
+public abstract class IPnSearchAUpdate<M extends IMove, V, N extends Node_ad<M,V,N>> extends IPnSearchADelete<M,V,N> {
 	
 	//#region PLAYER
 
@@ -64,9 +64,11 @@ public abstract class IPnSearchAUpdate<N extends Node_ad<N>> extends IPnSearchAD
 				exception += ", reset board 2";
 				resetBoard(currentNode, root);
 				// set root value
+				/*
 				if(root.proof == 0) root.value = Value.TRUE;
 				else if(root.disproof == 0) root.value = Value.FALSE;			
 				else root.value = Value.UNKNOWN;
+				*/
 			} finally {
 				System.out.println("VISIT: " + exception);
 				System.out.println("VISIT: last select:");

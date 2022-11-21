@@ -8,12 +8,13 @@ package player.pnsearch.list.obj;
 import java.util.LinkedList;
 import mnkgame.MNKCell;
 import player.pnsearch.list.template.IPnSearchL;
-import player.pnsearch.structures.INodes.Move;
-import player.pnsearch.structures.NodesC.Node;
+import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.structures.INodes.Value;
+import player.pnsearch.structures.NodesC.NodeL;
 
 
 
-public class PnSearchL extends IPnSearchL<Move, Node, LinkedList<Node>> {
+public class PnSearchL extends IPnSearchL<MovePair, Value, NodeL, LinkedList<NodeL>> {
 
 
 	//#region PLAYER
@@ -27,12 +28,12 @@ public class PnSearchL extends IPnSearchL<Move, Node, LinkedList<Node>> {
 	//#region INIT
 
 		@Override
-		protected Move newMove(MNKCell move) {
-			return new Move(move);
+		protected MovePair newMove(MNKCell move) {
+			return new MovePair(move);
 		}
 		@Override
-		protected Node newNode() {
-			return new Node();
+		protected NodeL newNode() {
+			return new NodeL();
 		}
 
 	//#endregion INIT

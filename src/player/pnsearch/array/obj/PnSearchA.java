@@ -7,12 +7,13 @@ package player.pnsearch.array.obj;
 
 import mnkgame.MNKCell;
 import player.pnsearch.array.template.IPnSearchA;
-import player.pnsearch.structures.INodes.Move;
+import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.structures.INodes.Value;
 import player.pnsearch.structures.NodesA.NodeA;
 
 
 
-public class PnSearchA extends IPnSearchA<Move, NodeA> {
+public class PnSearchA extends IPnSearchA<MovePair, Value, NodeA> {
 
 
 	//#region PLAYER
@@ -32,8 +33,8 @@ public class PnSearchA extends IPnSearchA<Move, NodeA> {
 	//#region INIT
 
 		@Override
-		protected Move newMove(MNKCell move) {
-			return new Move(move);
+		protected MovePair newMove(MNKCell move) {
+			return new MovePair(move);
 		}
 		@Override
 		protected NodeA newNode() {

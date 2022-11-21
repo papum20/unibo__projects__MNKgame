@@ -6,13 +6,12 @@
 package player.pnsearch.list.template;
 
 import java.util.LinkedList;
-import mnkgame.MNKCell;
-import player.pnsearch.structures.INodesC.Node_d;
-import player.pnsearch.structures.INodes.Move;
+import player.pnsearch.structures.INodesC.Node_ld;
+import player.pnsearch.structures.INodes.IMove;
 
 
 
-public abstract class IPnSearchLDelete<N extends Node_d<N>> extends IPnSearchL<Move, N, LinkedList<N>> {
+public abstract class IPnSearchLDelete<M extends IMove, V, N extends Node_ld<M,V,N>> extends IPnSearchL<M,V,N,LinkedList<N>> {
 	
 
 
@@ -44,10 +43,6 @@ public abstract class IPnSearchLDelete<N extends Node_d<N>> extends IPnSearchL<M
 
 	//#region INIT
 
-		@Override
-		protected Move newMove(MNKCell move) {
-			return new Move(move);
-		}
 		@Override
 		protected abstract N newNode();
 		

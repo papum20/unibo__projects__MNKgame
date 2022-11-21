@@ -24,6 +24,7 @@ public class INodes {
 			public short i();
 			public short j();
 			@Override public String toString();
+			public <M extends IMove> boolean equals(M move);
 		}
 		public static class MovePair implements IMove {
 			protected short i, j;
@@ -43,9 +44,8 @@ public class INodes {
 			public MovePair getPair() {return this;}
 			public short i() {return i;}
 			public short j() {return j;}
-			public String toString() {
-				return "[" + i + "," + j + "]";
-			}
+			public String toString() {return "[" + i + "," + j + "]";}
+			@Override public <M extends IMove> boolean equals(M move) {return i == move.i() && j == move.j();}
 		}
 		
 		public static class MoveMNK implements IMove {
@@ -61,6 +61,7 @@ public class INodes {
 			public short i() {return (short)position.j;}
 			public short j() {return (short)position.i;}
 			public String toString() {return position.toString();}
+			@Override public <M extends IMove> boolean equals(M move) {return position.i == move.i() && position.j == move.j();}
 		}
 		
 		/**
@@ -146,8 +147,6 @@ public class INodes {
 				initChildren();
 			}
 
-			// BOOL
-			protected abstract boolean equalMoves(M a, M b);
 			// GET
 			@Override public S getParent() {return parent;}
 			// SET
@@ -174,8 +173,8 @@ public class INodes {
 			@Override public void setParent(S parent) {this.parent = parent;}
 			// INIT
 			protected abstract void setMove(M move);
-			protected abstract void resetValue();
-			protected abstract void evalValue();	//value = (proof == 0) ? Value.TRUE : Value.FALSE;
+			protected void resetValue() {}
+			protected void evalValue() {}	//value = (proof == 0) ? Value.TRUE : Value.FALSE;
 			protected abstract void initChildren();
 			protected abstract void generateChildren();
 		}

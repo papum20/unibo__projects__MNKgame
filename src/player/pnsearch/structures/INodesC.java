@@ -16,8 +16,8 @@ public class INodesC extends INodes {
 	 */
 	public abstract static class Node_c<M extends IMove, V, S extends Node_c<M,V,S,A>, A extends Collection<S>> extends Node_t<M,V,S,A> {
 
-		public Node_c()													{super();}
-		public Node_c(M move, S parent)						{super(move, parent);}
+		public Node_c()							{super();}
+		public Node_c(M move, S parent)			{super(move, parent);}
 		//public Node_c(M move, Value value, short proof, short disproof)	{super(move, value, proof, disproof);}
 		//protected void init(M move, Value value, short proof, short disproof, S parent);
 
@@ -53,7 +53,7 @@ public class INodesC extends INodes {
 		@Override public S findChild(M move) {
 			S res = null;
 			for(S child : children) {
-				if(equalMoves(move, child.getMove())) {
+				if(move.equals(child.getMove())) {
 					res = child;
 					break;
 				}
@@ -80,6 +80,9 @@ public class INodesC extends INodes {
 			}
 			return res;
 		}
+		// BOOL
+		//return true if node value is "unknown" and has children
+		@Override public boolean isExpanded() {return proof != 0 && disproof != 0 && children != null && children.size() > 0;}
 		// GET
 		@Override public int getChildrenLength() {return children.size();}
 		// SET
@@ -101,42 +104,23 @@ public class INodesC extends INodes {
 	 * expand, linkedlist
 	 * @param <S> self
 	 */
-	public abstract static class Node_e<M extends IMove, V, S extends Node_e<M,V,S>> extends Node_c<M,V,S,LinkedList<S>> {
-		protected boolean expanded;
+	public abstract static class Node_l<M extends IMove, V, S extends Node_l<M,V,S>> extends Node_c<M,V,S,LinkedList<S>> {
 		
-		public Node_e()								{super();}
-		public Node_e(M move, S parent)	{super(move, parent);}
+		public Node_l()								{super();}
+		public Node_l(M move, S parent)	{super(move, parent);}
 		//public Node_e(M move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
-		@Override protected void init(M move, short proof, short disproof, S parent) {
-			super.init(move, proof, disproof, parent);
-			this.expanded = false;
-		}
-		
-		// BOOL
-		@Override public boolean isExpanded() {return expanded;}
+
+		// SET
+		@Override public void expand() {}
 		// GET
 		@Override public S getFirstChild() {return children.getFirst();}
-		// SET
-		@Override public void expand() {expanded = true;}
-		@Override public void prove() {
-			super.prove();
-			expanded = false;
-		}
-		@Override public void prove(Value value) {
-			super.prove(value);
-			expanded = false;
-		}
-		@Override public void reset(M move) {
-			super.reset(move);
-			expanded = false;
-		}
 		// INIT
 		@Override protected void initChildren() {this.children = new LinkedList<S>();}
 	}
 
-	public abstract static class Node_ed<M extends IMove, V, S extends Node_ed<M,V,S>> extends Node_e<M,V,S> {
-		public Node_ed()							{super();}
-		public Node_ed(M move, S parent)	{super(move, parent);}
+	public abstract static class Node_ld<M extends IMove, V, S extends Node_ld<M,V,S>> extends Node_l<M,V,S> {
+		public Node_ld()					{super();}
+		public Node_ld(M move, S parent)	{super(move, parent);}
 		//public Node_d(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
 		
 		// FUNCTIONS
@@ -147,28 +131,17 @@ public class INodesC extends INodes {
 			else return super.findChild(move);
 		}
 		// SET
-		@Override public void expand() {
-			expanded = true;
-			children = new LinkedList<S>();
-		}
-		@Override public void prove() {
-			super.prove();
-			expanded = false;
-		}
-		@Override public void prove(Value value) {
-			super.prove(value);
-			expanded = false;
-		}
+		@Override public void expand() {children = new LinkedList<S>();}
 		// INIT
 		@Override protected void initChildren() {this.children = null;}
 	}
 
 	// STORES THE MOST PROVING NODE
-	public abstract static class Node_eds<M extends IMove, V, S extends Node_eds<M,V,S>> extends Node_ed<M,V,S> {
+	public abstract static class Node_lds<M extends IMove, V, S extends Node_lds<M,V,S>> extends Node_ld<M,V,S> {
 		public S most_proving;
 		
-		public Node_eds()							{super();}
-		public Node_eds(M move, S parent)	{super(move, parent);}
+		public Node_lds()					{super();}
+		public Node_lds(M move, S parent)	{super(move, parent);}
 		//public Node_eds(Move move, Value value, short proof, short disproof) {super(move, value, proof, disproof);}
 		@Override protected void init(M move, short proof, short disproof, S parent) {
 			super.init(move, proof, disproof, parent);
@@ -178,7 +151,7 @@ public class INodesC extends INodes {
 		// FUNCTIONS
 		@Override public void reduce() {
 			evalValue();
-			children.clear();;
+			children.clear();
 			children.add(most_proving);
 		}
 		// SET

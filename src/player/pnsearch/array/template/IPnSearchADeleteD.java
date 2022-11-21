@@ -1,11 +1,12 @@
 package player.pnsearch.array.template;
 
 import player.pnsearch.structures.INodesA.Node_ad;
+import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodes.Value;
 
 
 
-public abstract class IPnSearchADeleteD<N extends Node_ad<N>> extends IPnSearchADelete<N> {
+public abstract class IPnSearchADeleteD<M extends IMove, V, N extends Node_ad<M,V,N>> extends IPnSearchADelete<M,V,N> {
 
 	//#region PLAYER
 
@@ -43,8 +44,8 @@ public abstract class IPnSearchADeleteD<N extends Node_ad<N>> extends IPnSearchA
 				node.reduce();
 			}
 		}
-		else if(node.value != Value.UNKNOWN) {
-			if(node.value == Value.TRUE) node.setProofDisproof(PROOF_N_ZERO, PROOF_N_INFINITE);
+		else if(node.getValue() != Value.UNKNOWN) {
+			if(node.getValue() == Value.TRUE) node.setProofDisproof(PROOF_N_ZERO, PROOF_N_INFINITE);
 			else node.setProofDisproof(PROOF_N_INFINITE, PROOF_N_ZERO);
 		}
 		else initProofAndDisproofNumbers(node);;

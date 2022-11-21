@@ -13,6 +13,8 @@ public class INodesA extends INodes {
 		protected int children_n;
 
 		public Node_a()										{super();}
+		public Node_a(int children_max) 					{init(null, PROOF_N_ZERO, PROOF_N_ZERO, null, children_max);}
+		public Node_a(M move, S parent)						{init(move, PROOF_N_ZERO, PROOF_N_ZERO, parent);}
 		public Node_a(M move, S parent, int children_max)	{init(move, PROOF_N_ZERO, PROOF_N_ZERO, parent, children_max);}
 		//public Node_a(short i, short j, V value, short proof, short disproof, int children_max) {init(i, j, proof, disproof, null, children_max, value);}
 		protected void init(M move, short proof, short disproof, S parent, int children_max) {
@@ -65,7 +67,7 @@ public class INodesA extends INodes {
 		@Override public S findChild(M move) {
 			S res = null;
 			int k = 0;
-			while(k < children_n && !equalMoves(move, (res=children[k]).getMove()) ) k++;
+			while(k < children_n && !move.equals((res=children[k]).getMove()) ) k++;
 			if(k == children_n) return null;
 			else return res;
 		}
@@ -86,6 +88,9 @@ public class INodesA extends INodes {
 		// deletes all children but the one with the same values of proof-disproof
 		// assumes that this node is proved
 		//#endregion FUNCTIONS
+		// BOOL
+		//return true if node value is "unknown" and has children
+		@Override public boolean isExpanded() {return proof != 0 && disproof != 0 && children_n > 0;}
 		// GET
 		@Override public int getChildrenLength() {return children_n;}
 		@Override public S getFirstChild() {return children[0];}
@@ -109,108 +114,14 @@ public class INodesA extends INodes {
 			super.prove(value);
 			children_n = 0;
 		}
+		@Override public void expand() {}
 		// INIT
 		@Override protected void initChildren() {
 			children = null;
 			children_n = 0;
 		}
 		protected abstract void initChildren(int children_max);
-	}
-	
-	/**
-	 * expand, linkedlist
-	 * @param <S> self
-	 */
-	public abstract static class Node_ae<M extends IMove, V, S extends Node_ae<M,V,S>> extends Node_a<M, V, S> {
-		protected boolean expanded;
-		
-		public Node_ae()										{init(null, PROOF_N_ZERO, PROOF_N_ZERO, null);}
-		public Node_ae(int children_max) 						{init(null, PROOF_N_ZERO, PROOF_N_ZERO, null, children_max);}
-		public Node_ae(M move, S parent)						{init(move, PROOF_N_ZERO, PROOF_N_ZERO, parent);}
-		public Node_ae(M move, S parent, int children_max)	{init(move, PROOF_N_ZERO, PROOF_N_ZERO, parent, children_max);}
-		//public Node_ae(Move move, Value value, short proof, short disproof, int children_max) {init(move, value, proof, disproof, null, children_max);}
-		@Override protected void init(M move, short proof, short disproof, S parent) {
-			super.init(move, proof, disproof, parent);
-			expanded = false;
-		}
-		@Override protected void init(M move, short proof, short disproof, S parent, Value value) {
-			super.init(move, proof, disproof, parent, value);
-			expanded = false;
-		}
-		@Override protected void init(M move, short proof, short disproof, S parent, int children_max) {
-			super.init(move, proof, disproof, parent, children_max);
-			expanded = false;
-		}
-		@Override protected void init(M move, short proof, short disproof, S parent, int children_max, Value value) {
-			super.init(move, proof, disproof, parent, children_max, value);
-			expanded = false;
-		}
-
-		// BOOL
-		@Override public boolean isExpanded() {return expanded;}
-		// SET
-		@Override public void expand() {expanded = true;}
-		@Override public void prove() {
-			super.prove();
-			expanded = false;
-		}
-		@Override public void prove(Value value) {
-			super.prove(value);
-			expanded = false;
-		}
-		@Override public void reset(M move) {
-			super.reset(move);
-			expanded = false;
-		}
-		// INIT
-		@Override protected void generateChildren() {}
-	}
-
-	// for PnSearchADelete
-	public abstract static class Node_aed<M extends IMove, V, S extends Node_aed<M,V,S>> extends Node_ae<M,V,S> {
-
-		public Node_aed()					{super();}
-		//public NodeAD(int children_max) {super(children_max);}
-		public Node_aed(M move, S parent)	{super(move, parent);}
-		//public NodeAD(Move move, NodeAD parent, int children_max) {super(move, parent, children_max);}
-		//public NodeAD(Move move, Value value, short proof, short disproof, int children_max) {super(move, value, proof, disproof, children_max);}
-		
-		// FUNCTIONS
-		//functions about children should be redefined to check whether children==null;
-		//however some are only called if node is expanded
-		// SET
-		@Override @Deprecated public void expand() {}
-		public void expand(int children_max) {
-			super.expand();
-			generateChildren(children_max);
-		}
-		// INIT
-		@Override @Deprecated protected void initChildren(int children_max) {initChildren();}
 		@Override @Deprecated protected void generateChildren() {}
-		protected abstract void generateChildren(int children_max);
-	}
-
-	// for PnSearchStore : STORES THE MOST PROVING NODE
-	public abstract static class Node_aeds<M extends IMove, V, S extends Node_aeds<M,V,S>> extends Node_aed<M,V,S> {
-		public S most_proving;
-		
-		public Node_aeds()					{super();}
-		public Node_aeds(M move, S parent)	{super(move, parent);}
-		@Override protected void init(M move, short proof, short disproof, S parent) {
-			super.init(move, proof, disproof, parent);
-			most_proving = null;
-		}
-
-		// SET
-		@Override public void reset(M move) {
-			super.reset(move);
-			most_proving = null;
-		}
-		@Override public void reduce() {
-			evalValue();
-			children[0] = most_proving;
-			children_n = 1;
-		}
 	}
 
 	// for PnSearchADelete
@@ -225,7 +136,7 @@ public class INodesA extends INodes {
 		// FUNCTIONS
 		//functions about children should be redefined to check whether children==null;
 		//however some are only called if node is expanded
-		// GET
+		// SET
 		@Override @Deprecated public void expand() {}
 		public void expand(int children_max) {generateChildren(children_max);}
 		// INIT
@@ -235,7 +146,7 @@ public class INodesA extends INodes {
 	}
 
 	// for PnSearchStore : STORES THE MOST PROVING NODE
-	public abstract static class Node_ads<M extends IMove, V, S extends Node_ads<M,V,S>> extends Node_aed<M,V,S> {
+	public abstract static class Node_ads<M extends IMove, V, S extends Node_ads<M,V,S>> extends Node_ad<M,V,S> {
 		public S most_proving;
 		
 		public Node_ads()					{super();}

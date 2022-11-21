@@ -5,15 +5,13 @@ package player.pnsearch.structures;
 public class NodesA extends INodesA {
 	
 	//INSTANCE : Node with arrays
-	public static class NodeAE extends Node_ae<MovePair,Value,NodeAE> {
-		short i, j;
+	public static class NodeA extends Node_a<MovePair,Value,NodeA> {
+		protected short i, j;
 		
-		public NodeAE(int children_max)									{super(children_max);}
-		public NodeAE(MovePair move, NodeAE parent, int children_max)	{super(move, parent, children_max);}
+		public NodeA(int children_max)								{super(children_max);}
+		public NodeA(MovePair move, NodeA parent, int children_max)	{super(move, parent, children_max);}
 		//public NodeAE(Move move, Value value, short proof, short disproof, int children_max) {super(move, value, proof, disproof, children_max);}
 		
-		// BOOL
-		@Override protected boolean equalMoves(MovePair a, MovePair b) {return a.i == b.i && a.j == b.j;}
 		// GET
 		@Override public MovePair getMove() {return new MovePair(i, j);}
 		@Override public MovePair getPosition() {return new MovePair(i, j);}
@@ -30,31 +28,27 @@ public class NodesA extends INodesA {
 			else if(value == Value.FALSE) setProofDisproof(PROOF_N_INFINITE, PROOF_N_ZERO);
 			else setProofDisproof((short)1, (short)1);
 		}
-		public void addChild(MovePair move) {children[children_n++] = new NodeAE(move, this, children.length);}
+		public void addChild(MovePair move) {children[children_n++] = new NodeA(move, this, children.length);}
 		// INIT
 		@Override protected void setMove(MovePair move) {
 			this.i = move.i();
 			this.j = move.j();
 		}
-		@Override @Deprecated protected void resetValue() {}
-		@Override @Deprecated protected void evalValue() {}
 		@Override protected void initChildren(int children_max) {
-			children = new NodeAE[children_max];
+			children = new NodeA[children_max];
 			children_n = 0;
 		}
 	}
 	
-	public static class NodeAED extends Node_aed<MovePair,Value,NodeAED> {
-		short i, j;
+	public static class NodeAD extends Node_ad<MovePair,Value,NodeAD> {
+		protected short i, j;
 
-		public NodeAED()								{super();}
+		public NodeAD()								{super();}
 		//public NodeAD(int children_max) {super(children_max);}
-		public NodeAED(MovePair move, NodeAED parent)	{super(move, parent);}
+		public NodeAD(MovePair move, NodeAD parent)	{super(move, parent);}
 		//public NodeAD(Move move, NodeAD parent, int children_max) {super(move, parent, children_max);}
 		//public NodeAD(Move move, Value value, short proof, short disproof, int children_max) {super(move, value, proof, disproof, children_max);}
 		
-		// BOOL
-		@Override protected boolean equalMoves(MovePair a, MovePair b) {return a.i == b.i && a.j == b.j;}
 		// GET
 		@Override public MovePair getMove() {return new MovePair(i, j);}
 		@Override public MovePair getPosition() {return new MovePair(i, j);}
@@ -71,29 +65,25 @@ public class NodesA extends INodesA {
 			else if(value == Value.FALSE) setProofDisproof(PROOF_N_INFINITE, PROOF_N_ZERO);
 			else setProofDisproof((short)1, (short)1);
 		}
-		public void addChild(MovePair move) {children[children_n++] = new NodeAED(move, this);}
+		public void addChild(MovePair move) {children[children_n++] = new NodeAD(move, this);}
 		// INIT
 		@Override protected void setMove(MovePair move) {
 			this.i = move.i();
 			this.j = move.j();
 		}
-		@Override @Deprecated protected void resetValue() {}
-		@Override @Deprecated protected void evalValue() {}
 		@Override protected void initChildren(int children_max) {
-			children = new NodeAED[children_max];
+			children = new NodeAD[children_max];
 			children_n = 0;
 		}
-		@Override protected void generateChildren(int children_max) {children = new NodeAED[children_max];}
+		@Override protected void generateChildren(int children_max) {children = new NodeAD[children_max];}
 	}
 
-	public static class NodeAEDS extends Node_aeds<MovePair,Value,NodeAEDS> {
-		short i, j;
+	public static class NodeADS extends Node_ads<MovePair,Value,NodeADS> {
+		protected short i, j;
 		
-		public NodeAEDS()								{super();}
-		public NodeAEDS(MovePair move, NodeAEDS parent) {super(move, parent);}
+		public NodeADS()								{super();}
+		public NodeADS(MovePair move, NodeADS parent) {super(move, parent);}
 
-		// BOOL
-		@Override protected boolean equalMoves(MovePair a, MovePair b) {return a.i == b.i && a.j == b.j;}
 		// GET
 		@Override public MovePair getMove() {return new MovePair(i, j);}
 		@Override public MovePair getPosition() {return new MovePair(i, j);}
@@ -110,19 +100,17 @@ public class NodesA extends INodesA {
 			else if(value == Value.FALSE) setProofDisproof(PROOF_N_INFINITE, PROOF_N_ZERO);
 			else setProofDisproof((short)1, (short)1);
 		}
-		@Override public void addChild(MovePair move) {children[children_n++] = new NodeAEDS(move, this);}
+		@Override public void addChild(MovePair move) {children[children_n++] = new NodeADS(move, this);}
 		// INIT
 		@Override protected void setMove(MovePair move) {
 			this.i = move.i();
 			this.j = move.j();
 		}
-		@Override @Deprecated protected void resetValue() {}
-		@Override @Deprecated protected void evalValue() {}
 		@Override protected void initChildren(int children_max) {
-			children = new NodeAEDS[children_max];
+			children = new NodeADS[children_max];
 			children_n = 0;
 		}
-		@Override protected void generateChildren(int children_max) {children = new NodeAEDS[children_max];}
+		@Override protected void generateChildren(int children_max) {children = new NodeADS[children_max];}
 	}
 
 }

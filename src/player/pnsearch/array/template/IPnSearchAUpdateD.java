@@ -1,11 +1,12 @@
 package player.pnsearch.array.template;
 
 import player.pnsearch.structures.INodesA.Node_ad;
+import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodes.Value;
 
 
 
-public abstract class IPnSearchAUpdateD<N extends Node_ad<N>> extends IPnSearchAUpdate<N> {
+public abstract class IPnSearchAUpdateD<M extends IMove, V, N extends Node_ad<M,V,N>> extends IPnSearchAUpdate<M,V,N> {
 	
 	//#region PLAYER
 

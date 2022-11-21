@@ -4,12 +4,13 @@
 
 package player.pnsearch.list.template;
 
-import player.pnsearch.structures.INodesC.Node_d;
+import player.pnsearch.structures.INodesC.Node_ld;
+import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodes.Value;
 
 
 
-public abstract class IPnSearchLUpdateD<N extends Node_d<N>> extends IPnSearchLUpdate<N> {	
+public abstract class IPnSearchLUpdateD<M extends IMove, V, N extends Node_ld<M,V,N>> extends IPnSearchLUpdate<M,V,N> {	
 	
 	
 	//#region PLAYER

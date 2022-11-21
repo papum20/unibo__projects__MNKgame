@@ -1,11 +1,14 @@
 package player.pnsearch.list.obj;
 
+import mnkgame.MNKCell;
 import player.pnsearch.list.template.IPnSearchLDelete;
-import player.pnsearch.structures.NodesC.NodeD;
+import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.structures.INodes.Value;
+import player.pnsearch.structures.NodesC.NodeLD;
 
 
 
-public class PnSearchLDelete extends IPnSearchLDelete<NodeD> {
+public class PnSearchLDelete extends IPnSearchLDelete<MovePair, Value, NodeLD> {
 	
 	//#region PLAYER
 
@@ -18,8 +21,12 @@ public class PnSearchLDelete extends IPnSearchLDelete<NodeD> {
 	//#region INIT
 
 		@Override
-		protected NodeD newNode() {
-			return new NodeD();
+		protected MovePair newMove(MNKCell move) {
+			return new MovePair(move);
+		}
+		@Override
+		protected NodeLD newNode() {
+			return new NodeLD();
 		}
 
 	//#endregion INIT

@@ -1,10 +1,11 @@
 package player.pnsearch.array.template;
 
+import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodesA.Node_ads;
 
 
 
-public abstract class IPnSearchAStoreD<N extends Node_ads<N>> extends IPnSearchAUpdateD<N> {
+public abstract class IPnSearchAStoreD<M extends IMove, V, N extends Node_ads<M,V,N>> extends IPnSearchAUpdateD<M,V,N> {
 
 	//#region PLAYER
 
@@ -43,7 +44,7 @@ public abstract class IPnSearchAStoreD<N extends Node_ads<N>> extends IPnSearchA
 		protected N selectMostProving(N node) {
 			if(!node.isExpanded()) return node;
 			else if(node.most_proving != null) {
-				board.markCell(node.most_proving.getPosition().i, node.most_proving.getPosition().j);
+				board.markCell(node.most_proving.i(), node.most_proving.j());
 				return selectMostProving(node.most_proving);
 			}
 			else {

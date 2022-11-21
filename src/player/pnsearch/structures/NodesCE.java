@@ -4,11 +4,12 @@ import java.util.LinkedList;
 
 
 
-public class NodesC extends INodesC {
+public class NodesCE extends INodesC {
 	
 	// INSTANCE FOR PnSearch
 	public static class NodeL extends Node_l<MovePair,Value,NodeL> {
 		protected short i, j;
+		protected boolean expanded;
 		
 		public NodeL()								{super();}
 		public NodeL(MovePair move, NodeL parent)	{super(move, parent);}
@@ -37,11 +38,34 @@ public class NodesC extends INodesC {
 			this.j = move.j();
 		}
 		@Override protected void generateChildren() {this.children = new LinkedList<NodeL>();}
+
+		// EXPANDED:
+		@Override protected void init(MovePair move, short proof, short disproof, NodeL parent) {
+			super.init(move, proof, disproof, parent);
+			this.expanded = false;
+		}
+		// BOOL
+		@Override public boolean isExpanded() {return expanded;}
+		// SET
+		@Override public void expand() {expanded = true;}
+		@Override public void prove() {
+			super.prove();
+			expanded = false;
+		}
+		@Override public void prove(Value value) {
+			super.prove(value);
+			expanded = false;
+		}
+		@Override public void reset(MovePair move) {
+			super.reset(move);
+			expanded = false;
+		}
 	}
 	
 	// INSTANCE FOR PnSearchDelete
 	public static class NodeLD extends Node_ld<MovePair,Value,NodeLD> {
 		protected short i, j;
+		protected boolean expanded;
 		
 		public NodeLD()										{super();}
 		public NodeLD(MovePair move, NodeLD parent)			{super(move, parent);}
@@ -70,10 +94,33 @@ public class NodesC extends INodesC {
 			this.j = move.j();
 		}
 		@Override protected void generateChildren() {this.children = new LinkedList<NodeLD>();}
+
+		// EXPANDED:
+		@Override protected void init(MovePair move, short proof, short disproof, NodeLD parent) {
+			super.init(move, proof, disproof, parent);
+			this.expanded = false;
+		}
+		// BOOL
+		@Override public boolean isExpanded() {return expanded;}
+		// SET
+		@Override public void expand() {expanded = true;}
+		@Override public void prove() {
+			super.prove();
+			expanded = false;
+		}
+		@Override public void prove(Value value) {
+			super.prove(value);
+			expanded = false;
+		}
+		@Override public void reset(MovePair move) {
+			super.reset(move);
+			expanded = false;
+		}
 	}
 	
 	public static class NodeLDS extends Node_lds<MovePair,Value,NodeLDS> {
 		protected short i, j;
+		protected boolean expanded;
 
 		public NodeLDS()								{super();}
 		public NodeLDS(MovePair move, NodeLDS parent)	{super(move, parent);}
@@ -102,6 +149,28 @@ public class NodesC extends INodesC {
 			this.j = move.j();
 		}
 		@Override protected void generateChildren() {this.children = new LinkedList<NodeLDS>();}
+
+		// EXPANDED:
+		@Override protected void init(MovePair move, short proof, short disproof, NodeLDS parent) {
+			super.init(move, proof, disproof, parent);
+			this.expanded = false;
+		}
+		// BOOL
+		@Override public boolean isExpanded() {return expanded;}
+		// SET
+		@Override public void expand() {expanded = true;}
+		@Override public void prove() {
+			super.prove();
+			expanded = false;
+		}
+		@Override public void prove(Value value) {
+			super.prove(value);
+			expanded = false;
+		}
+		@Override public void reset(MovePair move) {
+			super.reset(move);
+			expanded = false;
+		}
 	}
 	
 }

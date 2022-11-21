@@ -9,12 +9,12 @@ package player.pnsearch.list.template;
 import java.util.Collection;
 
 import player.pnsearch.IPnSearch;
-import player.pnsearch.structures.INodes.Move;
+import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodesC.Node_c;
 
 
 
-public abstract class IPnSearchL<M extends Move, N extends Node_c<M,N,A>, A extends Collection<N>> extends IPnSearch<M,N,A> {
+public abstract class IPnSearchL<M extends IMove, V, N extends Node_c<M,V,N,A>, A extends Collection<N>> extends IPnSearch<M,V,N,A> {
 	
 
 	//#region PLAYER
@@ -36,7 +36,7 @@ public abstract class IPnSearchL<M extends Move, N extends Node_c<M,N,A>, A exte
 			node.expand();
 			generateAllChildren(node);
 			for(N child : node.children) {
-				board.markCell(child.getPosition().i, child.getPosition().j);
+				board.markCell(child.i(), child.j());
 				evaluate(child);
 				setProofAndDisproofNumbers(child, isMyTurn());
 				board.unmarkCell();
