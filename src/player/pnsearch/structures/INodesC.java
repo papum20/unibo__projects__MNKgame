@@ -82,7 +82,7 @@ public class INodesC extends INodes {
 		}
 		// BOOL
 		//return true if node value is "unknown" and has children
-		@Override public boolean isExpanded() {return proof != 0 && disproof != 0 && children != null && children.size() > 0;}
+		@Override public boolean isExpanded() {return children != null && children.size() > 0;}
 		// GET
 		@Override public int getChildrenLength() {return children.size();}
 		// SET

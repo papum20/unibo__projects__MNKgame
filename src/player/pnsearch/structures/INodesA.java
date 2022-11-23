@@ -90,7 +90,7 @@ public class INodesA extends INodes {
 		//#endregion FUNCTIONS
 		// BOOL
 		//return true if node value is "unknown" and has children
-		@Override public boolean isExpanded() {return proof != 0 && disproof != 0 && children_n > 0;}
+		@Override public boolean isExpanded() {return children != null && children_n > 0;}
 		// GET
 		@Override public int getChildrenLength() {return children_n;}
 		@Override public S getFirstChild() {return children[0];}

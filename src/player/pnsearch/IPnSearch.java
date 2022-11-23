@@ -113,8 +113,10 @@ public abstract class IPnSearch<M extends IMove, V, N extends Node_t<M,V,N,A>, A
 				visit(current_root);
 			} catch (NullPointerException e) {
 				System.out.println("VISIT: NULL EXCEPTION");
+				throw e;
 			} catch(ArrayIndexOutOfBoundsException e) {
 				System.out.println("VISIT: ARRAY BOUNDS EXCEPTION");
+				throw e;
 			}
 			// DEBUG
 			debug.markedCells(0);
