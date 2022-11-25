@@ -1,0 +1,402 @@
+c:p-112-0.
+c:m-109-0.
+0 - myjava
+1 - -cp
+2 - out
+3 - -Xmx3g
+4 - mnkgame.MNKPlayerTester
+5 - 7
+6 - 7
+7 - 4
+8 - -r
+9 - 3
+10 - player.pnsearch.array.obj.PnSearchADeleteD
+11 - mnkgame.QuasiRandomPlayer
+
+C:\Users\danie\Desktop\Java\MNKgame2.0>start /b cmd /c "C:\Program Files\Common Files\Oracle\Java\javapath\java.exe" -cp out -Xmx3g mnkgame.MNKPlayerTester 7 7 4 -r 3 player.pnsearch.array.obj.PnSearchADeleteD mnkgame.QuasiRandomPlayer 
+--------	0	--------
+[0,0]
+VISIT: ancestors
+VISIT: last select:
+	start =	8992
+	end =	8992
+[0,0]
+FOUND BEST NODE
+time9581
+nodes created:		20817375
+nodes alive:		20817375
+nodes created tot:	20817375
+nodes alive tot:	20817326
+my move: [0,2] -> FREE
+--------	2	--------
+found opponent move in tree.
+last/opponent: [0,1] -> P2
+[0,1]
+VISIT: ancestors
+VISIT: last select:
+	start =	8890
+	end =	8890
+[0,1]
+FOUND BEST NODE
+time9090
+nodes created:		34024200
+nodes alive:		33944736
+nodes created tot:	54841575
+nodes alive tot:	54761967
+my move: [0,4] -> FREE
+--------	4	--------
+found opponent move in tree.
+last/opponent: [2,0] -> P2
+[2,0]
+VISIT: ancestors
+VISIT: last select:
+	start =	8965
+	end =	8965
+[2,0]
+FOUND BEST NODE
+time9113
+nodes created:		29300478
+nodes alive:		28917246
+nodes created tot:	84142053
+nodes alive tot:	83679122
+my move: [0,0] -> FREE
+--------	6	--------
+found opponent move in tree.
+last/opponent: [0,5] -> P2
+[0,5]
+VISIT: ancestors
+VISIT: last select:
+	start =	8998
+	end =	8998
+[0,5]
+FOUND BEST NODE
+time9026
+nodes created:		12626175
+nodes alive:		12626175
+nodes created tot:	96768228
+nodes alive tot:	96305210
+my move: [6,6] -> FREE
+--------	8	--------
+found opponent move in tree.
+last/opponent: [5,3] -> P2
+[5,3]
+VISIT: ancestors
+VISIT: last select:
+	start =	8997
+	end =	8997
+[5,3]
+FOUND BEST NODE
+time9000
+nodes created:		22968061
+nodes alive:		21308576
+nodes created tot:	119736289
+nodes alive tot:	117613703
+my move: [3,2] -> FREE
+--------	10	--------
+last/opponent: [6,1] -> P2
+[6,1]
+VISIT: ancestors
+VISIT: last select:
+	start =	60
+	end =	60
+[6,1]
+FOUND BEST NODE
+time60
+nodes created:		226717
+nodes alive:		214445
+nodes created tot:	119963006
+nodes alive tot:	117828147
+my move: [2,2] -> FREE
+--------	12	--------
+last/opponent: [1,2] -> P2
+[1,2]
+VISIT: ancestors
+VISIT: last select:
+	start =	25
+	end =	25
+[1,2]
+FOUND BEST NODE
+time25
+nodes created:		89369
+nodes alive:		79836
+nodes created tot:	120052375
+nodes alive tot:	117907982
+my move: [1,1] -> FREE
+--------	14	--------
+last/opponent: [3,3] -> P2
+[3,3]
+VISIT: ancestors
+VISIT: last select:
+	start =	22
+	end =	22
+[3,3]
+FOUND BEST NODE
+time22
+nodes created:		67175
+nodes alive:		58903
+nodes created tot:	120119550
+nodes alive tot:	117966884
+my move: [5,2] -> FREE
+--------	16	--------
+last/opponent: [4,2] -> P2
+[4,2]
+VISIT: ancestors
+VISIT: last select:
+	start =	18
+	end =	18
+[4,2]
+FOUND BEST NODE
+time18
+nodes created:		45259
+nodes alive:		38110
+nodes created tot:	120164809
+nodes alive tot:	118004993
+my move: [3,1] -> FREE
+--------	18	--------
+last/opponent: [1,3] -> P2
+[1,3]
+VISIT: ancestors
+VISIT: last select:
+	start =	14
+	end =	14
+[1,3]
+FOUND BEST NODE
+time14
+nodes created:		43209
+nodes alive:		38045
+nodes created tot:	120208018
+nodes alive tot:	118043037
+my move: [2,1] -> FREE
+--------	20	--------
+last/opponent: [4,1] -> P2
+[4,1]
+VISIT: ancestors
+VISIT: last select:
+	start =	6
+	end =	6
+[4,1]
+FOUND BEST NODE
+time6
+nodes created:		16177
+nodes alive:		11884
+nodes created tot:	120224195
+nodes alive tot:	118054920
+my move: [4,3] -> FREE
+--------	22	--------
+last/opponent: [5,4] -> P2
+[5,4]
+VISIT: ancestors
+VISIT: last select:
+	start =	0
+	end =	0
+[5,4]
+FOUND BEST NODE
+time4
+nodes created:		27
+nodes alive:		1
+nodes created tot:	120224222
+nodes alive tot:	118054920
+my move: [1,0] -> FREE
+--------	0	--------
+[0,0]
+VISIT: ancestors
+VISIT: last select:
+	start =	8985
+	end =	8985
+[0,0]
+FOUND BEST NODE
+time9001
+nodes created:		39885963
+nodes alive:		39885963
+nodes created tot:	39885963
+nodes alive tot:	39885914
+my move: [0,4] -> FREE
+--------	2	--------
+found opponent move in tree.
+last/opponent: [6,4] -> P2
+[6,4]
+VISIT: ancestors
+VISIT: last select:
+	start =	8999
+	end =	8999
+[6,4]
+FOUND BEST NODE
+time9000
+nodes created:		24816922
+nodes alive:		24399943
+nodes created tot:	64702885
+nodes alive tot:	64285762
+my move: [0,3] -> FREE
+--------	4	--------
+found opponent move in tree.
+last/opponent: [1,6] -> P2
+[1,6]
+VISIT: ancestors
+VISIT: last select:
+	start =	273
+	end =	273
+[1,6]
+FOUND BEST NODE
+time274
+nodes created:		401406
+nodes alive:		394385
+nodes created tot:	65104291
+nodes alive tot:	64680100
+my move: [0,2] -> FREE
+--------	6	--------
+last/opponent: [0,1] -> P2
+[0,1]
+VISIT: ancestors
+VISIT: last select:
+	start =	0
+	end =	0
+[0,1]
+FOUND BEST NODE
+time1
+nodes created:		43
+nodes alive:		1
+nodes created tot:	65104334
+nodes alive tot:	64680100
+my move: [0,5] -> FREE
+--------	0	--------
+[0,0]
+VISIT: ancestors
+VISIT: last select:
+	start =	8999
+	end =	8999
+[0,0]
+FOUND BEST NODE
+time9000
+nodes created:		42047651
+nodes alive:		42047651
+nodes created tot:	42047651
+nodes alive tot:	42047602
+my move: [0,4] -> FREE
+--------	2	--------
+found opponent move in tree.
+last/opponent: [1,5] -> P2
+[1,5]
+VISIT: ancestors
+VISIT: last select:
+	start =	8998
+	end =	8998
+[1,5]
+FOUND BEST NODE
+time9018
+nodes created:		17893496
+nodes alive:		17814032
+nodes created tot:	59941147
+nodes alive tot:	59861539
+my move: [0,2] -> FREE
+--------	4	--------
+found opponent move in tree.
+last/opponent: [4,5] -> P2
+[4,5]
+VISIT: ancestors
+VISIT: last select:
+	start =	55
+	end =	55
+[4,5]
+FOUND BEST NODE
+time56
+nodes created:		155660
+nodes alive:		151919
+nodes created tot:	60096807
+nodes alive tot:	60013411
+my move: [0,3] -> FREE
+--------	6	--------
+last/opponent: [0,1] -> P2
+[0,1]
+VISIT: ancestors
+VISIT: last select:
+	start =	0
+	end =	0
+[0,1]
+FOUND BEST NODE
+time0
+nodes created:		43
+nodes alive:		1
+nodes created tot:	60096850
+nodes alive tot:	60013411
+my move: [0,5] -> FREE
+PnSearchADeleteD Score: 6 Won: 3 Lost: 0 Draw: 0 Error: 0
+R4nd0m++ Score: 0 Won: 0 Lost: 3 Draw: 0 Error: 0
+e tot:	172998535
+my move: [3,6] -> FREE
+--------	16	--------
+last/opponent: [4,6] -> P2
+[4,6]
+VISIT: ancestors
+VISIT: last select:
+	start =	7
+	end =	7
+[4,6]
+FOUND BEST NODE
+time7
+nodes created:		66923
+nodes alive:		63003
+nodes created tot:	180037602
+nodes alive tot:	173061537
+my move: [1,4] -> FREE
+--------	18	--------
+last/opponent: [2,5] -> P2
+[2,5]
+VISIT: ancestors
+VISIT: last select:
+	start =	9
+	end =	9
+[2,5]
+FOUND BEST NODE
+time9
+nodes created:		43731
+nodes alive:		40804
+nodes created tot:	180081333
+nodes alive tot:	173102340
+my move: [5,4] -> FREE
+--------	20	--------
+last/opponent: [4,5] -> P2
+[4,5]
+VISIT: ancestors
+VISIT: last select:
+	start =	7
+	end =	7
+[4,5]
+FOUND BEST NODE
+time7
+nodes created:		16699
+nodes alive:		14643
+nodes created tot:	180098032
+nodes alive tot:	173116982
+my move: [5,5] -> FREE
+--------	22	--------
+last/opponent: [5,3] -> P2
+[5,3]
+VISIT: ancestors
+VISIT: last select:
+	start =	7
+	end =	7
+[5,3]
+FOUND BEST NODE
+time8
+nodes created:		15129
+nodes alive:		13830
+nodes created tot:	180113161
+nodes alive tot:	173130811
+my move: [4,4] -> FREE
+--------	24	--------
+last/opponent: [3,4] -> P2
+[3,4]
+VISIT: ancestors
+VISIT: last select:
+	start =	0
+	end =	0
+[3,4]
+FOUND BEST NODE
+time0
+nodes created:		25
+nodes alive:		1
+nodes created tot:	180113186
+nodes alive tot:	173130811
+my move: [3,3] -> FREE
+PnSearchADeleteD Score: 6 Won: 3 Lost: 0 Draw: 0 Error: 0
+R4nd0m++ Score: 0 Won: 0 Lost: 3 Draw: 0 Error: 0

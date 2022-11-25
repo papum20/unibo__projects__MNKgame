@@ -1,0 +1,2 @@
+player.pnsearch.array.obj.PnSearchADeleteD mnkgame.QuasiRandomPlayer
+player.pnsearch.array.obj.PnSearchAUpdateD mnkgame.QuasiRandomPlayer
