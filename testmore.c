@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 
@@ -47,6 +48,19 @@ char *stringCopy(char *s) {
 	return t;
 }
 
+// read f until end of line/file, store the words in strings, starting from index start
+int readLine_storeArray(FILE *f, char *strings[], int start) {
+	int read = 0;
+	char c, w[ARG_LEN];
+	while((c = nextWord(f, NULL, NULL)) != EOF && c != '\n') {
+		printf("c:%c-%d-%d.\n",c,c,c=='\n');
+		fscanf(f, "%s", w);
+		int i = start + read++;
+		strings[i] = stringCopy(w);
+	}
+	return read;
+}
+
 
 
 
@@ -59,6 +73,7 @@ int main(int argc, char *argv[]) {
 
 	//retrieve command and parameters
 	char *java_exe = NULL, *command_txt = NULL, *players_txt = NULL, *out_txt = NULL;	//files to read
+	char *out_path;
 	int verbose = 0;
 	int opt;
 
@@ -92,71 +107,81 @@ int main(int argc, char *argv[]) {
 	if(out_txt == NULL) {
 		out_txt = stringCopy(OUT_NAME);
 	}
-	char *out_path = stringCopy(OUT_PATH);
+	out_path = stringCopy(OUT_PATH);
 	strcat(out_path, out_txt);
-	free(out_txt);
-	out_txt = out_path;
-	strcat(out_txt, OUT_EXTENSION);
-
-	//DEBUG
-	printf("%s\n%s\n%s\n%s\n\n", java_exe, command_txt, players_txt, out_txt);
 
 
 	//read parameters for execve from command and players
 	FILE *f;					//file stream
 	size_t bufsize = 0;
-
 	int command_len, player_len;
+	int test_number;
 	char c, w[ARG_LEN];			//for implementation (while loops)
 
 	//retrieve java executable
 	newargv[0] = stringCopy(java_exe);
-
-	//DEBUG
-	printf("%s\n\n", newargv[0]);
-
 	//retrieve command paramters
-	command_len = 0;
 	f = fopen(command_txt, "r");
-	while(fscanf(f, "%s", w) != EOF) {
-		int newargv_i = 1 + command_len++;
-		newargv[newargv_i] = stringCopy(w);
-	}
+	command_len = readLine_storeArray(f, newargv, 1);
 	fclose(f);
 
 	//DEBUG
+	printf("%s\n%s\n%s\n%s\n\n", java_exe, command_txt, players_txt, out_txt);
 	for(int i = 0; i < 1 + command_len; i++) printf("%d - %s\n", i, newargv[i]);
-
-	//open output file
-	int out_fd = open(out_txt, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-	dup2(out_fd, 1);	//make stdout go to file
-	dup2(out_fd, 2);	//make stderr go to file
-	close(out_fd);
 
 	//execute command with each line of players
 	f = fopen(players_txt, "r");
-	c = '.';
-	while(c != EOF) {
+	c = '.';				//any char != EOF
+	test_number = 0;
+	while(c != EOF)
+	{
 		//retrieve players, and put them in newargv
-		char arg[ARG_LEN];
 		player_len = 0;
 		while((c = nextWord(f, NULL, NULL)) != EOF && c != '\n') {
 			printf("c:%c-%d-%d.\n",c,c,c=='\n');
-			fscanf(f, "%s", arg);
-			int newargv_i = 1 + command_len + player_len++;
-			newargv[newargv_i] = stringCopy(arg);
+			fscanf(f, "%s", w);
+			int i = 1 + command_len + player_len++;
+			newargv[i] = stringCopy(w);
 		}
+		
 		newargv[1 + command_len + player_len] = NULL;
 
 		//DEBUG
 		for(int i = 0; i < 1 + command_len + player_len; i++) printf("%d - %s\n", i, newargv[i]);
 	
+
+
 		//execute
-		execve(java_exe, newargv, newenv);
+		if(fork() == 0) {
+			//child processs
+			char *out = malloc(sizeof(char) * ARG_LEN);
+			strcat(out, out_path);
+			char number[2] = {test_number+48, '\0'};
+			strcat(out, number);
+			strcat(out, OUT_EXTENSION);
+			//open output file
+			int out_fd = open(out, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+			dup2(out_fd, 1);	//make stdout go to file
+			dup2(out_fd, 2);	//make stderr go to file
+			close(out_fd);
+			//exec
+			execve(java_exe, newargv, newenv);
+			free(out);
+			break;
+		} else {
+			//parent process
+			wait(NULL);
+		}
+		test_number++;
 	}
 	fclose(f);
 
 
-
+	// CLEAN MEMORY
+	free(java_exe);
+	free(command_txt);
+	free(players_txt);
+	free(out_txt);
+	free(out_path);
 
 }
