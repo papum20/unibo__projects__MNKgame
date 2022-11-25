@@ -5,8 +5,12 @@
 bin/*
 out/*
 
-#OTHER FOLDERS
-debug/*
-
 #JAVA FILES
 *.class
+
+#DEBUG
+#debug/player
+#debug/testmore/out
+myjava*
+
+#TRASH
