@@ -95,9 +95,13 @@ public class INodesA extends INodes {
 		@Override public int getChildrenLength() {return children_n;}
 		@Override public S getFirstChild() {return children[0];}
 		// SET
-		@Override public void reset(M move) {
-			super.reset(move);
-			children_n = 0;
+		public void reset(M move, int children_max) {
+			setMove(move);
+			resetValue();
+			proof = 1;
+			disproof = 1;
+			parent = null;
+			initChildren(children_max);
 		}
 		@Override public void reduce() {
 			evalValue();
@@ -120,8 +124,12 @@ public class INodesA extends INodes {
 			children = null;
 			children_n = 0;
 		}
-		protected abstract void initChildren(int children_max);
+		protected void initChildren(int children_max) {
+			generateChildren(children_max);
+			children_n = 0;	
+		}
 		@Override protected void generateChildren() {}
+		protected abstract void generateChildren(int children_max);
 	}
 
 	// for PnSearchADelete
@@ -142,7 +150,6 @@ public class INodesA extends INodes {
 		// INIT
 		@Override protected void initChildren(int children_max) {initChildren();}
 		@Override protected void generateChildren() {}
-		protected abstract void generateChildren(int children_max);
 	}
 
 	// for PnSearchStore : STORES THE MOST PROVING NODE

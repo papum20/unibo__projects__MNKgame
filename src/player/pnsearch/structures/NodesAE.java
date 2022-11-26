@@ -40,9 +40,8 @@ public class NodesAE extends INodesA {
 				this.j = move.j();
 			}
 		}
-		@Override protected void initChildren(int children_max) {
+		@Override protected void generateChildren(int children_max) {
 			children = new NodeAE[children_max];
-			children_n = 0;
 		}
 
 		// EXPANDED:
@@ -113,10 +112,6 @@ public class NodesAE extends INodesA {
 				this.i = move.i();
 				this.j = move.j();
 			}
-		}
-		@Override protected void initChildren(int children_max) {
-			children = new NodeAED[children_max];
-			children_n = 0;
 		}
 		@Override protected void generateChildren(int children_max) {children = new NodeAED[children_max];}
 		
@@ -192,10 +187,6 @@ public class NodesAE extends INodesA {
 				this.i = move.i();
 				this.j = move.j();
 			}
-		}
-		@Override protected void initChildren(int children_max) {
-			children = new NodeAEDS[children_max];
-			children_n = 0;
 		}
 		@Override protected void generateChildren(int children_max) {children = new NodeAEDS[children_max];}
 		

@@ -168,7 +168,7 @@ public class INodes {
 				proof = 1;
 				disproof = 1;
 				parent = null;
-				children = null;
+				initChildren();
 			}
 			@Override public void setParent(S parent) {this.parent = parent;}
 			// INIT

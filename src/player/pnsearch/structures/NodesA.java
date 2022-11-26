@@ -36,10 +36,7 @@ public class NodesA extends INodesA {
 				this.j = move.j();
 			}
 		}
-		@Override protected void initChildren(int children_max) {
-			children = new NodeA[children_max];
-			children_n = 0;
-		}
+		@Override protected void generateChildren(int children_max) {children = new NodeA[children_max]; }
 	}
 	
 	public static class NodeAD extends Node_ad<MovePair,Value,NodeAD> {
@@ -75,10 +72,6 @@ public class NodesA extends INodesA {
 				this.j = move.j();
 			}
 		}
-		@Override protected void initChildren(int children_max) {
-			children = new NodeAD[children_max];
-			children_n = 0;
-		}
 		@Override protected void generateChildren(int children_max) {children = new NodeAD[children_max];}
 	}
 
@@ -111,10 +104,6 @@ public class NodesA extends INodesA {
 				this.i = move.i();
 				this.j = move.j();
 			}
-		}
-		@Override protected void initChildren(int children_max) {
-			children = new NodeADS[children_max];
-			children_n = 0;
 		}
 		@Override protected void generateChildren(int children_max) {children = new NodeADS[children_max];}
 	}

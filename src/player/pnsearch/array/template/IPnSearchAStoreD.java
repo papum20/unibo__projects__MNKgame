@@ -40,6 +40,7 @@ public abstract class IPnSearchAStoreD<M extends IMove, V, N extends Node_ads<M,
 				super.setProofAndDisproofNumbers(node, my_turn);
 		}
 	
+		//probably the else is useless, because that condition will never happen; check needed
 		@Override
 		protected N selectMostProving(N node) {
 			if(!node.isExpanded()) return node;

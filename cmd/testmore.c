@@ -64,7 +64,6 @@ int readLine_storeArray(FILE *f, char *strings[], int start) {
 	int read = 0;
 	char c, w[ARG_LEN];
 	while((c = nextWord(f, NULL, NULL)) != EOF && c != '\n') {
-		printf("c:%c-%d-%d.\n",c,c,c=='\n');
 		fscanf(f, "%s", w);
 		int i = start + read++;
 		strings[i] = stringCopy(w);
@@ -141,7 +140,6 @@ int main(int argc, char *argv[]) {
 	do {
 		strcpy(out_t, out_txt);
 		char *num_str = toString(num++, NULL);
-		printf("..%s..%d..%c,%c,\n", num_str, strlen(num_str), num_str[0], num_str[1]);
 		strcat(out_t, num_str);
 		strcat(out_t, "-");
 		free(num_str);
@@ -169,7 +167,7 @@ int main(int argc, char *argv[]) {
 
 	//DEBUG
 	printf("%s\n%s\n%s\n%s\n\n", java_exe, command_txt, players_txt, out_txt);
-	for(int i = 0; i < 1 + command_len; i++) printf("%d - %s\n", i, newargv[i]);
+	for(int i = 0; i < 1 + command_len; i++) printf("%d\t- %s\n", i, newargv[i]);
 
 	//execute command with each line of players
 	f = fopen(players_txt, "r");
@@ -180,7 +178,6 @@ int main(int argc, char *argv[]) {
 		//retrieve players, and put them in newargv
 		player_len = 0;
 		while((c = nextWord(f, NULL, NULL)) != EOF && c != '\n') {
-			printf("c:%c-%d-%d.\n",c,c,c=='\n');
 			fscanf(f, "%s", w);
 			int i = 1 + command_len + player_len++;
 			newargv[i] = stringCopy(w);
@@ -189,7 +186,7 @@ int main(int argc, char *argv[]) {
 		newargv[1 + command_len + player_len] = NULL;
 
 		//DEBUG
-		for(int i = 0; i < 1 + command_len + player_len; i++) printf("%d - %s\n", i, newargv[i]);
+		for(int i = 0; i < 1 + command_len + player_len; i++) printf("%d\t- %s\n", i, newargv[i]);
 	
 
 
@@ -225,5 +222,6 @@ int main(int argc, char *argv[]) {
 	free(players_txt);
 	free(out_txt);
 	free(out_path);
+	for(int i = 0; newargv[i] != NULL; i++) free(newargv[i]);
 
 }
