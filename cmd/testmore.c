@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +48,16 @@ char *stringCopy(char *s) {
 	strcpy(t, s);
 	return t;
 }
+char *toString(int n, char *s) {
+	if(n > 0 || s == NULL) {
+		if(s == NULL) s = malloc(sizeof(char) * ARG_LEN);
+			//s[0] = '\0';
+		toString(n / 10, s);
+		s[strlen(s)] = (char)(n % 10 + 48);
+		s[strlen(s)] = '\0';
+	}
+	return s;
+}
 
 // read f until end of line/file, store the words in strings, starting from index start
 int readLine_storeArray(FILE *f, char *strings[], int start) {
@@ -60,6 +71,25 @@ int readLine_storeArray(FILE *f, char *strings[], int start) {
 	}
 	return read;
 }
+
+int stringStartsWith(const char *s, const char *start) {
+	int i = 0;
+	while(i < strlen(s) && i < strlen(start) && s[i] == start[i]) i++;
+	return (i == strlen(start));
+}
+
+int findFilenameStart(const char *filename) {
+	char *dirname = OUT_PATH;
+	struct dirent *d;
+	int found;
+
+	DIR *dir = opendir(dirname);
+	while((d = readdir(dir)) != NULL && !(found = stringStartsWith(d->d_name, filename)) );
+	closedir(dir);
+
+	return found;
+}
+
 
 
 
@@ -104,9 +134,21 @@ int main(int argc, char *argv[]) {
 	if(java_exe == NULL)	java_exe	= stringCopy(JAVA_DFLT);
 	if(command_txt == NULL) command_txt	= stringCopy(COMMAND_DFLT);
 	if(players_txt == NULL) players_txt = stringCopy(PLAYERS_DFLT);
-	if(out_txt == NULL) {
-		out_txt = stringCopy(OUT_NAME);
-	}
+	if(out_txt == NULL) out_txt = stringCopy(OUT_NAME);
+	//make such that the out name is not used
+	int num = 0;
+	char *out_t = malloc(sizeof(char) * ARG_LEN);
+	do {
+		strcpy(out_t, out_txt);
+		char *num_str = toString(num++, NULL);
+		printf("..%s..%d..%c,%c,\n", num_str, strlen(num_str), num_str[0], num_str[1]);
+		strcat(out_t, num_str);
+		strcat(out_t, "-");
+		free(num_str);
+	} while(findFilenameStart(out_t));
+	free(out_txt);
+	out_txt = out_t;
+	
 	out_path = stringCopy(OUT_PATH);
 	strcat(out_path, out_txt);
 

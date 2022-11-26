@@ -1,1 +1,1 @@
--cp out -Xmx3g mnkgame.MNKPlayerTester 7 7 4 -r 3
+-cp out -Xmx3g mnkgame.MNKPlayerTester 7 7 4 -r 3 -t 3
