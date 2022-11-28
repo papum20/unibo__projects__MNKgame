@@ -121,7 +121,7 @@ public abstract class IPnSearchA<M extends IMove, V, N extends Node_a<M,V,N>> ex
 		@Override
 		protected void initAttributes() {
 			board = new ArrayBoard(M, N, K);
-			timer_end = timeout_in_millisecs - 3000;
+			timer_end = timeout_in_millisecs - 1000;
 			runtime = Runtime.getRuntime();
 			current_root = newNode();
 

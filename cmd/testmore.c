@@ -11,7 +11,7 @@
 #define JAVA_DFLT		"myjava"
 #define COMMAND_DFLT	"debug/testmore/in/testcmd.txt"
 #define PLAYERS_DFLT	"debug/testmore/in/testlist.txt"
-#define OUT_NAME		"test_out"
+#define OUT_NAME		"test"
 #define OUT_PATH		"debug/testmore/out/"
 #define OUT_EXTENSION	".txt"
 
