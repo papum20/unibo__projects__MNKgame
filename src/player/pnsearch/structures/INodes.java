@@ -32,6 +32,10 @@ public class INodes {
 				this.i = i;
 				this.j = j;
 			}
+			public MovePair(int i, int j) {
+				this.i = (short)i;
+				this.j = (short)j;
+			}
 			public MovePair(MovePair move) {
 				this.i = move.i;
 				this.j = move.j;
