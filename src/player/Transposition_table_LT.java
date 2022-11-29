@@ -1,7 +1,7 @@
 package player;
 import java.util.Random;
 import mnkgame.MNKCellState;
-import player.ArrayBoard;
+import player.boards.ArrayBoard;
 
 
 public class Transposition_table_LT {

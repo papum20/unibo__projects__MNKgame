@@ -9,18 +9,18 @@
  */
 
 
-package player;
+package player.boards;
 
 
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import player.pnsearch.structures.INodes.MovePair;
+import player.dbsearch.structures.Operator;
 
 
 
-public class ArrayBoardDb {
+public class ArrayBoardDb implements IBoardDB {
 	
 	public final int M;		// rows
 	public final int N;		// columns
@@ -75,22 +75,6 @@ public class ArrayBoardDb {
 	
 		copyArrays(AB);
 	}
-
- 	/**
-	 * Resets the MNKBoard
-	 */
-	public void reset() {
-	  	currentPlayer = 0;
-	  	initBoard();
-	  	initFreeCells();
-	  	initMarkedCells();
- 	}
-	public void copyArrays(ArrayBoardDb AB) {
-		copyBoard(AB);
-		copyFreeCells(AB);
-		copyMarkedCells(AB);
-		copyFCindexes(AB);
-	}
   
  
  	/**
@@ -124,6 +108,43 @@ public class ArrayBoardDb {
 		gameState = MNKGameState.OPEN;
  	}
 
+	//#region DB
+		@Override public boolean isOperatorInCell(int i, int j, short dir, Operator f, MNKCellState player) {
+			int i_last = i + DIRECTIONS[dir].i() * f.precondition.length,
+				j_last = i + DIRECTIONS[dir].j() * f.precondition.length;
+			if(i_last < 0 || i_last >= M || j_last < 0 || j_last >= N) return false;
+			else {
+				MNKCellState[] precondition = Operator.toMNKCellState(f.precondition, player);
+				for(int len = 0; len < f.precondition.length; len++) {
+					if(cellState(i, j) != precondition[len]) return false;
+					else {
+						i += DIRECTIONS[dir].i();
+						j += DIRECTIONS[dir].j();
+					}
+				}
+				return true;
+			}
+		}
+		@Override public void applyOperator(int i, int j, short dir, Operator f, MNKCellState attacker) {
+			MNKCellState defender = (attacker == MNKCellState.P1)? MNKCellState.P1 : MNKCellState.P2;
+			for(int k = 0; k < f.length(); k++) {
+				if(f.add[k] != Operator.FREE)
+					B[i][j] = (f.add[k] == Operator.ATTACKER)? attacker : defender;
+				i += DIRECTIONS[dir].i();
+				j += DIRECTIONS[dir].j();
+			}
+		}
+		@Override public void undoOperator(int i, int j, short dir, Operator f, MNKCellState attacker) {
+			MNKCellState defender = (attacker == MNKCellState.P1)? MNKCellState.P1 : MNKCellState.P2;
+			for(int k = 0; k < f.length(); k++) {
+				if(f.precondition[k] == Operator.FREE) B[i][j] = MNKCellState.FREE;
+				else B[i][j] = (f.precondition[k] == Operator.ATTACKER)? attacker : defender;
+				i += DIRECTIONS[dir].i();
+				j += DIRECTIONS[dir].j();
+			}
+		}
+	//#endregion DB
+
 	
 	//#region GET
 
@@ -131,9 +152,9 @@ public class ArrayBoardDb {
 		 * @param c : cell to convert
 		 * @return : converts cell in single number (giving an index to each cell of the board from top left to bottom right)
 		 */
-		public int single(MNKCell c) {
+		/*public int single(MNKCell c) {
 			return c.i * N + c.j;
-		}
+		}*/
 		/**
 		 * @param c : single index to convert in cell
 		 * @return : converts  single number in cell (inverse of single())
@@ -230,16 +251,14 @@ public class ArrayBoardDb {
 		}
 		private void addMC(int y, int x) {
 			MC[MC_n++] = new MNKCell(y, x);
-		}
-		
+		}	
 		//Checks if a cell is within the bounds of the matrix
-		private boolean in_bounds(int y, int x){
+		/*private boolean in_bounds(int y, int x){
 			if (y >= 0 && y < M && x >= 0 && x < N)
 				return true;
 			else
 				return false;
-		}
-
+		}*/
 		// Check winning state from cell y, x
 		private boolean isWinningCell(int y, int x) {
 			MNKCellState s = B[y][x];
@@ -306,6 +325,21 @@ public class ArrayBoardDb {
 		// copies an MNKCell
 		private MNKCell copyCell(MNKCell c) {
 			return new MNKCell(c.i, c.j, c.state);
+		}
+		/**
+		 * Resets the MNKBoard
+		 */
+		public void reset() {
+			currentPlayer = 0;
+			initBoard();
+			initFreeCells();
+			initMarkedCells();
+		}
+		public void copyArrays(ArrayBoardDb AB) {
+			copyBoard(AB);
+			copyFreeCells(AB);
+			copyMarkedCells(AB);
+			copyFCindexes(AB);
 		}
 	//#endregion INIT
 		

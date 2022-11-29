@@ -5,7 +5,7 @@
  */
 
 
-package player;
+package player.boards;
 
 
 

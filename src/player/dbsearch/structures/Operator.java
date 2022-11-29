@@ -20,6 +20,10 @@ public class Operator {
 		this.add = add;
 	}
 
+	public int length() {
+		return precondition.length;
+	}
+	
 	public static MNKCellState[] toMNKCellState(short[] V, MNKCellState attacker) {
 		MNKCellState[] res = new MNKCellState[V.length];
 		for(int i = 0; i < V.length; i++) res[i] = shortToMNKCellState(V[i], attacker);

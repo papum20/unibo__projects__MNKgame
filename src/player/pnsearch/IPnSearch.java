@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
-import player.ArrayBoard;
+import player.boards.ArrayBoard;
 import player.pnsearch.structures.INodes;
 import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodes.Node_t;

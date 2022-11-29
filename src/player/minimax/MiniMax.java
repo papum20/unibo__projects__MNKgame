@@ -6,9 +6,9 @@ package player.minimax;
 //package player.mnkgame;
 
 import mnkgame.MNKPlayer;
+import player.boards.ArrayBoard;
 import mnkgame.MNKCell;
 import mnkgame.MNKGameState;
-import player.ArrayBoard;
 import structures.PHElement;
  
 

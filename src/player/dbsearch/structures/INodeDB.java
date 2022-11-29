@@ -1,9 +1,14 @@
 package player.dbsearch.structures;
 
-import player.pnsearch.structures.INodes.MovePair;
+
 
 public interface INodeDB<N extends INodeDB<N>> {
 
+	public void combine(N node);
+	
 	public boolean equals(N node);
+	public boolean inConflict(N node);
+	
+	public void addChild(N node);
 	
 }

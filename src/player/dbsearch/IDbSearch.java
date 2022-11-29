@@ -15,16 +15,16 @@ import java.util.ListIterator;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
+import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
-import player.ArrayBoard;
-import player.ArrayBoardDb;
+import player.boards.IBoardDB;
 import player.dbsearch.structures.INodeDB;
 import player.dbsearch.structures.Operator;
 import player.pnsearch.structures.INodes.MovePair;
 
 
 
-public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
+public abstract class IDbSearch<B extends IBoardDB, N extends INodeDB<N>> implements MNKPlayer {
 	
 	public static final MovePair DIRECTIONS[] = {
 		new MovePair(-1, 0),
@@ -46,12 +46,15 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 
 	protected MNKCellState MY_MNK_PLAYER;
 	protected MNKCellState YOUR_MNK_PLAYER;
-	//protected MNKGameState MY_WIN;
+	protected MNKGameState MY_WIN;
+	protected MNKGameState YOUR_WIN;
 	protected int MY_PLAYER;
 	//protected final short PROOF_N_ZERO = INodes.PROOF_N_ZERO;
 	//protected final short PROOF_N_INFINITE = INodes.PROOF_N_INFINITE;
 
-	protected ArrayBoardDb board;
+	protected B board;
+	protected MNKCell best_move;
+	protected MNKCell last_move;
 	
 	protected long timer_start;					//turn start (milliseconds)
 	protected long timer_end;					//time (millisecs) at which to stop timer
@@ -114,15 +117,15 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 			timer_start = System.currentTimeMillis();
 			//update my istance of board
 			if(MC.length > 0) {
-				MNKCell opponent_move = MC[MC.length - 1];
+				last_move = MC[MC.length - 1];
 				//mark opponent cell
-				board.markCell(opponent_move.i, opponent_move.j);
+				board.markCell(last_move.i, last_move.j);
 				// DEBUG
 				System.out.println("last/opponent: " + MC[MC.length - 1]);
 			}
 
 			//new root
-			N root = newNode(board);
+			N root = createRoot();
 
 			//recursive call for each possible move
 			try{
@@ -139,7 +142,6 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 			nodes_created_tot += nodes_created;
 			nodes_alive_tot += nodes_alive;
 			
-			MNKCell best_move = getBestMove();
 			if(best_move != null) System.out.println("FOUND BEST NODE");
 			else best_move = FC[0];
 			//update my istance of board
@@ -169,56 +171,89 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 	//#region ALGORITHM
 
 		/**
-		 * @param node
-		 * @param attacker : true if i'm attacker
+		 * @param root : root for this db-search
+		 * @param my_attacker : true if i'm attacker
 		 * @param goal_squares : if one occupied by attacker, terminates search
 		 * @param attacking : potential winning threat sequences only investigated for attacker
 		 * @param max_tier : only threats <= this category can be applied
+		 * @return true if there's a winning sequence
 		 */
-		protected void visit(N root, boolean attacker, MovePair[] goal_squares, boolean attacking, short max_tier) {
+		protected boolean visit(N root, boolean my_attacker, MovePair[] goal_squares, boolean attacking, short max_tier) {
 			short level = 1;
-			while(!isTimeEnded() && isTreeChanged()) {
-				addDependencyStage(root, level);
-				addCombinationStage(root, root);
+			boolean won = false;
+			while(!isTimeEnded() && isTreeChanged() && !won) {
+				won = addDependencyStage(root, level, my_attacker);
+				if(!won) won = addCombinationStage(root, root);
+				if(won) ;	//save best node
 				level++;
 			}
+			return won;
 		}
 
 		/** (for now) assumptions:
 		 * - the game ends only after a dependency stage is added (almost certain about proof)
 		 * 	actually not true for mnk game (if you put 3 lined in a board, other 2 in another one, then merge the boards...)
 		 */
-		protected void addDependencyStage(N node, short level) {
+		protected boolean addDependencyStage(N node, short level, boolean my_attacker) {
 			if(node != null) {
-				if(isLastCombination(node))
-					addDependentChildren(node);
-				addDependencyStage_next(node);
+				//if(isLastCombination(node))
+					return addDependentChildren(node, my_attacker);
+				//iterate through children and siblings
 			}
+			else return false;
+		}
+		protected boolean addCombinationStage(N node, N root) {
+			if(node != null) {
+				//if(isLastDependency(node))
+					return findAllCombinationNodes(node, root);
+				//iterate through children and siblings
+			}
+			else return false;
 		}
 
-		protected void addDependentChildren(N node) {
-			Operator[] applicableOperators = getApplicableOperators(node);
-			for(Operator f : applicableOperators) {
-				N newChild = addChild(node, f);
-				addDependentChildren(newChild);
+		protected boolean addDependentChildren(N node, boolean my_attacker) {
+			//node.board.gameState()
+			if(board.gameState() == MY_WIN) {
+				setBestMove();
+				return true;
 			}
-		}
-
-		protected void addCombinationStage(N node, N root) {
-			if(node != null) {
-				if(isLastDependency(node))
-					findAllCombinationNodes(node, root);
-				addCombinationStage_next(node, root);
-			}
-		}
-
-		protected void findAllCombinationNodes(N partner, N node) {
-			if(node != null) {
-				if(!inConflict(partner, node)) {
-					if(isDependencyNode(node)) addDependingCombinations(partner, node);
-					findAllCombinationNodes_next(partner, node);
+			else if(board.gameState() == YOUR_WIN) return false;
+			else {
+				boolean won = false;
+				LinkedList<AppliedOperator> applicableOperators = getApplicableOperators(node, MAX_CHILDREN, my_attacker);
+				for(AppliedOperator f : applicableOperators) {
+					N newChild = addDependentChild(node, f);
+					board.applyOperator(f.y, f.x, f.dir, threats[f.tier][f.i], my_attacker? MY_MNK_PLAYER:YOUR_MNK_PLAYER);
+					won = addDependentChildren(newChild, my_attacker);
+					board.undoOperator(f.y, f.x, f.dir, threats[f.tier][f.i], my_attacker? MY_MNK_PLAYER:YOUR_MNK_PLAYER);
+					if(won) {
+						//save best node
+						break;
+					}
 				}
+				return won;
 			}
+		}
+		/**
+		 * @param partner : fixed node for combination
+		 * @param node : iterating node for combination
+		 */
+		protected boolean findAllCombinationNodes(N partner, N node) {
+			//node.board
+			if(board.gameState() == MY_WIN) {
+				setBestMove();
+				return true;
+			}
+			else if(board.gameState() == YOUR_WIN) return false;
+			else if(node != null) {
+				boolean won = false;
+				if(!partner.inConflict(node)) {
+					if(isDependencyNode(node)) won = addCombination(partner, node);
+					//iterate through children and siblings
+				}
+				return won;
+			}
+			else return false;
 		}
 		
 	//#endregion ALGORITHM
@@ -227,91 +262,81 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 	
 	//#region AUXILIARY
 	
-		/**
-		 * @param node
-		 * @return wether node is a combination node (or root) and was created in the last turn (level)
-		 */
-		protected abstract boolean isLastCombination(N node);
-		/**
-		 * @param node
-		 * @return wether node is a combination node (or root) and was created in this turn turn (level)
-		 */
-		protected abstract boolean isLastDependency(N node);
-		/**
-		 * recursive call to addDependencyStage, for children and siblings
-		 * @param node
-		 */
-		protected abstract boolean isCombinationNode(N node);
-		protected abstract boolean isDependencyNode(N node);
-		protected abstract void addDependencyStage_next(N node);
-		protected abstract void addCombinationStage_next(N node, N root);
-		protected abstract Operator[] getApplicableOperators(N node);
-		protected abstract N addChild(N node, Operator f);
-		protected abstract boolean isTreeChanged();
-		protected abstract boolean inConflict(N A, N B);
-		protected abstract void addDependingCombinations(N A, N B);
-		protected abstract void findAllCombinationNodes_next(N partner, N next);
+		//#region BOOL
+			protected abstract boolean isDependencyNode(N node);
+			protected abstract boolean isTreeChanged();
+			protected boolean isMyTurn() {
+				return board.currentPlayer() == MY_PLAYER;
+			}
+			//returns true if it's time to end the turn
+			protected boolean isTimeEnded() {
+				return (System.currentTimeMillis() - timer_start) >= timer_end;
+			}
+			//returns true if available memory is less than a small percentage of max memory
+			protected boolean isMemoryEnded() {
+				// max memory useable by jvm - (allocatedMemory = memory actually allocated by system for jvm - free memory in totalMemory)
+				long freeMemory = runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory());
+				return freeMemory < runtime.maxMemory() * (5 / 100);
+			}
+			protected static boolean equalMNKMoves(MNKCell a, MNKCell b) {
+				return a.i == b.i && a.j == b.j;
+			}
+		//#endregion BOOL
+		
+		//#region CREATE
+			protected N createRoot() {
+				N root = newNode(board, true);
+				return root;
+			}
+			protected abstract N addChild(N parent, AppliedOperator f, boolean is_combination);
+			protected abstract N addDependentChild(N node, AppliedOperator f);
+			// ENHANCEMENT: ONLY ADD COMBINATIONS WITH AT LEAST ONE OPERATOR APPLICABLE, SO YOU
+			// DON'T ADD USELESS NODES
+			protected abstract boolean addCombination(N A, N B);
+		//#endregion CREATE
 
-		//returns true if it's time to end the turn
-		protected boolean isTimeEnded() {
-			return (System.currentTimeMillis() - timer_start) >= timer_end;
-		}
-		//returns true if available memory is less than a small percentage of max memory
-		protected boolean isMemoryEnded() {
-			// max memory useable by jvm - (allocatedMemory = memory actually allocated by system for jvm - free memory in totalMemory)
-			long freeMemory = runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory());
-			return freeMemory < runtime.maxMemory() * (5 / 100);
-		}
-		protected boolean isMyTurn() {
-			return board.currentPlayer() == MY_PLAYER;
-		}
-		protected abstract MNKCell getBestMove();
-		protected MovePair[] getGoalSquares(ArrayBoardDb board, short max, boolean my_attacker) {
-			LinkedList<ThreatCell> threats = getThreats(board, max, my_attacker);
-			int min = (threats.size() < max) ? threats.size() : max;
-			MovePair[] res = new MovePair[min];
-			ListIterator<ThreatCell> it = threats.listIterator();
-			for(int i = 0; i < min; i++) {
-				ThreatCell tmp = it.next();
-				res[i] = new MovePair(tmp.y, tmp.x);
-			}
-			return res;
-		}
-		protected LinkedList<ThreatCell> getThreats(ArrayBoardDb board, short max, boolean my_attacker) {
-			short tier = 0, i = 0, j = 0;
-			LinkedList<ThreatCell> res = new LinkedList<ThreatCell>();
-			while(res.size() < max && tier <= max_tier) {
-				for(short fi = 0; fi < threats[tier].length; fi++) {
-					for(short dir = 0; dir < DIRECTIONS.length; dir++) {
-						if(isOperatorInCell(board, i, j, dir, threats[tier][fi], my_attacker))
-							res.addFirst(new ThreatCell(tier, (short)fi, (short)dir, i, j));
+		//#region GET
+			protected abstract LinkedList<AppliedOperator> getApplicableOperators(N node, short max, boolean my_attacker);
+			protected LinkedList<AppliedOperator> getApplicableOperators(B board, short max, boolean my_attacker) {
+				short tier = 0, i = 0, j = 0;
+				LinkedList<AppliedOperator> res = new LinkedList<AppliedOperator>();
+				while(res.size() < max && tier <= max_tier) {
+					for(short fi = 0; fi < threats[tier].length; fi++) {
+						for(short dir = 0; dir < DIRECTIONS.length; dir++) {
+							if(board.isOperatorInCell(i, j, dir, threats[tier][fi], my_attacker? MY_MNK_PLAYER : YOUR_MNK_PLAYER))
+								res.addFirst(new AppliedOperator(tier, (short)fi, (short)dir, i, j));
+						}
 					}
-				}
-				if(j < N - 1) j++;
-				else if(i < M - 1) {
-					i++;
-					j = 0;
-				}
-				else tier++;
-			}
-			return res;
-		}
-		protected boolean isOperatorInCell(ArrayBoardDb board, int i, int j, short dir, Operator f, boolean my_attacker) {
-			int i_last = i + DIRECTIONS[dir].i() * f.precondition.length,
-				j_last = i + DIRECTIONS[dir].j() * f.precondition.length;
-			if(i_last < 0 || i_last >= M || j_last < 0 || j_last >= N) return false;
-			else {
-				MNKCellState[] precondition = Operator.toMNKCellState(f.precondition, my_attacker? MY_MNK_PLAYER : YOUR_MNK_PLAYER);
-				for(int len = 0; len < f.precondition.length; len++) {
-					if(board.cellState(i, j) != precondition[len]) return false;
-					else {
-						i += DIRECTIONS[dir].i();
-						j += DIRECTIONS[dir].j();
+					if(j < N - 1) j++;
+					else if(i < M - 1) {
+						i++;
+						j = 0;
 					}
+					else tier++;
 				}
-				return true;
+				return res;
 			}
-		}
+			protected MovePair[] getGoalSquares(B board, short max, boolean my_attacker) {
+				LinkedList<AppliedOperator> threats = getApplicableOperators(board, max, my_attacker);
+				int min = (threats.size() < max) ? threats.size() : max;
+				MovePair[] res = new MovePair[min];
+				ListIterator<AppliedOperator> it = threats.listIterator();
+				for(int i = 0; i < min; i++) {
+					AppliedOperator tmp = it.next();
+					res[i] = new MovePair(tmp.y, tmp.x);
+				}
+				return res;
+			}
+		//#endregion GET
+		//#region SET
+			protected void setBestMove() {
+				int i = 0;
+				if(last_move != null)
+					while(!last_move.equals(board.getMarkedCell(i)) ) i++;
+				while(board.getMarkedCell(i).state != MY_MNK_PLAYER) i++;
+				best_move = board.getMarkedCell(i);
+			}
+		//#endregion SET
 		
 	//#endregion AUXILIARY
 	
@@ -334,14 +359,16 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 				MY_MNK_PLAYER = MNKCellState.P1;
 				YOUR_MNK_PLAYER = MNKCellState.P2;
 				//player_opponent = MNKCellState.P2;
-				//MY_WIN = MNKGameState.WINP1;
+				MY_WIN = MNKGameState.WINP1;
+				YOUR_WIN = MNKGameState.WINP2;
 				MY_PLAYER = 0;
 				//your_win = MNKGameState.WINP2;
 			} else {
 				MY_MNK_PLAYER = MNKCellState.P2;
 				YOUR_MNK_PLAYER = MNKCellState.P1;
 				//player_opponent = MNKCellState.P1;
-				//MY_WIN = MNKGameState.WINP2;
+				MY_WIN = MNKGameState.WINP2;
+				YOUR_WIN = MNKGameState.WINP1;
 				MY_PLAYER = 1;
 				//your_win = MNKGameState.WINP1;
 			}
@@ -350,6 +377,7 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 		// INIT BOARD!
 		protected void initAttributes() {
 			// init board
+			last_move = null;
 			timer_end = timeout_in_millisecs - 1000;
 			runtime = Runtime.getRuntime();
 			initThreats();
@@ -357,7 +385,7 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 
 			nodes_created_tot = 0;
 			nodes_alive_tot = 0;
-			debug = new Debug("debug/debug-" + playerName(), false);
+			debug = new Debug("debug/debug-" + playerName(), true);
 		}
 
 		protected void initThreats() {
@@ -365,7 +393,7 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 		}
 
 		// create N object
-		protected abstract N newNode(ArrayBoardDb board);
+		protected abstract N newNode(B board, boolean is_combination);
 
 	//#endregion INIT
 
@@ -373,12 +401,12 @@ public abstract class IDbSearch<N extends INodeDB<N>> implements MNKPlayer {
 
 	//#region CLASSES
 
-		protected class ThreatCell {
+		protected class AppliedOperator {
 			public short tier;	//threat tier
 			public short i;		//index in threat of such tier
 			public short dir;	//direction
 			public short y, x;
-			public ThreatCell(short tier, short i, short dir, short y, short x) {
+			public AppliedOperator(short tier, short i, short dir, short y, short x) {
 				this.tier = tier;
 				this.i = i;
 				this.dir = dir;

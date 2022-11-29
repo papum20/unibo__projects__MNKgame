@@ -11,8 +11,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import mnkgame.MNKCell;
-import player.ArrayBoard;
-import player.ArrayBoardHeuristic;
+import player.boards.ArrayBoard;
+import player.boards.ArrayBoardHeuristic;
 import structures.PHElement;
 import structures.PHOrder;
 import structures.PriorityHeap;

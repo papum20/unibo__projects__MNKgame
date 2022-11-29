@@ -9,7 +9,7 @@
  */
 
 
-package player;
+package player.boards;
 
 
 
@@ -19,7 +19,7 @@ import mnkgame.MNKGameState;
 
 
 
-public class ArrayBoard {
+public class ArrayBoard implements IBoard {
 
 	public final int M;		// rows
 	public final int N;		// columns

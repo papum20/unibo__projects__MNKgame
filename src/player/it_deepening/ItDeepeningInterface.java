@@ -7,7 +7,7 @@
 package player.it_deepening;
 
 import mnkgame.MNKCell;
-import player.ArrayBoardHeuristic;
+import player.boards.ArrayBoardHeuristic;
 import player.minimax.AlphaBeta;
 
 

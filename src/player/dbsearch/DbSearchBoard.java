@@ -1,97 +1,92 @@
 package player.dbsearch;
 
+import java.util.LinkedList;
+import java.util.ListIterator;
+
 import mnkgame.MNKCell;
-import player.ArrayBoardDb;
+import mnkgame.MNKCellState;
+import player.boards.ArrayBoardDb;
 import player.dbsearch.structures.NodeBoard;
-import player.dbsearch.structures.Operator;
-import player.pnsearch.structures.INodes.MovePair;
 
-public class DbSearchBoard extends IDbSearch<NodeBoard> {
+public class DbSearchBoard extends IDbSearchQ<ArrayBoardDb, NodeBoard> {
 
 
 	
-	@Override
-	protected boolean isLastCombination(NodeBoard node) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	//#region PLAYER
 
-	@Override
-	protected boolean isLastDependency(NodeBoard node) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+		DbSearchBoard() { }
 
-	@Override
-	protected boolean isCombinationNode(NodeBoard node) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	protected boolean isDependencyNode(NodeBoard node) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	protected void addDependencyStage_next(NodeBoard node) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void addCombinationStage_next(NodeBoard node, NodeBoard root) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected Operator[] getApplicableOperators(NodeBoard node) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected NodeBoard addChild(NodeBoard node, Operator f) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected boolean isTreeChanged() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	protected boolean inConflict(NodeBoard A, NodeBoard B) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	protected void addDependingCombinations(NodeBoard A, NodeBoard B) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void findAllCombinationNodes_next(NodeBoard partner, NodeBoard next) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected MNKCell getBestMove() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected NodeBoard newNode(ArrayBoardDb board) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		@Override public String playerName() {
+			return "DbSearchBoard";
+		}
 	
+	//#endregion PLAYER
+
+
+	//#region ALGORITHM
+
+		protected boolean findAllCombinationNodes(NodeBoard partner, NodeBoard node) {
+			//node.board
+			if(board.gameState() == MY_WIN) {
+				setBestMove();
+				return true;
+			}
+			else if(node != null) {
+				boolean won = false;
+				if(!partner.inConflict(node)) {
+					if(isDependencyNode(node)) won = addCombination(partner, node);
+					//iterate through children and siblings
+				}
+				if(won) {
+					setBestMove();
+					return true;
+				}
+				else if(findAllCombinationNodes(partner, node.getSibling())) return true;
+				else return findAllCombinationNodes(partner, node.getFirstChild());
+			}
+			else return false;
+		}
+	
+	//#endregion ALGORITHM
+
+	
+	//#region AUXILIARY
+		//#region BOOL
+			@Override protected boolean isDependencyNode(NodeBoard node) {
+				return !node.is_combination;
+			}
+			@Override protected boolean addCombination(NodeBoard A, NodeBoard B) {
+				//create combination with A's board (copied)
+				NodeBoard combination = new NodeBoard(A.board, true);
+				combination.combine(B);				//add to it's board marks on B board
+				lastCombination.add(combination);
+				return combination.board.gameState() == MY_WIN;
+			}
+
+		//#endregion BOOL
+
+		//#region CREATE
+			@Override protected NodeBoard addChild(NodeBoard parent, AppliedOperator f, boolean is_combination) {
+				NodeBoard newChild = new NodeBoard(board, is_combination);
+				parent.addChild(newChild);
+				return newChild;
+			}
+		//#endregion CREATE
+
+		//#region GET
+			@Override protected LinkedList<AppliedOperator> getApplicableOperators(NodeBoard node, short max, boolean my_attacker) {
+				return getApplicableOperators(node.board, max, my_attacker);
+			}
+		//#endregion GET
+				
+	//#endregion AUXILIARY
+
+
+	
+	//#region INIT
+		@Override protected NodeBoard newNode(ArrayBoardDb board, boolean is_combination) {
+			return new NodeBoard(board, is_combination);
+		}
+	//#endregion INIT
+		
 }

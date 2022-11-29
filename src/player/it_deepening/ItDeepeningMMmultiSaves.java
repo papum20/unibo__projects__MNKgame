@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import player.ArrayBoardHeuristic;
+import player.boards.ArrayBoardHeuristic;
 import structures.PHOrder;
 
 

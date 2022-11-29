@@ -9,7 +9,7 @@ package player.pnsearch.array.template;
 
 
 import mnkgame.MNKCell;
-import player.ArrayBoard;
+import player.boards.ArrayBoard;
 import player.pnsearch.IPnSearch;
 import player.pnsearch.structures.INodes.IMove;
 import player.pnsearch.structures.INodesA.Node_a;

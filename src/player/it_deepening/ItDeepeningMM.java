@@ -24,7 +24,7 @@ package player.it_deepening;
 import java.util.Arrays;
 import java.util.LinkedList;
 import mnkgame.MNKGameState;
-import player.ArrayBoardHeuristic;
+import player.boards.ArrayBoardHeuristic;
 import structures.PHOrder;
 
 
