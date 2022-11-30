@@ -1,12 +1,10 @@
 package player.dbsearch;
 
 import java.util.LinkedList;
-import java.util.ListIterator;
 
-import mnkgame.MNKCell;
-import mnkgame.MNKCellState;
 import player.boards.ArrayBoardDb;
 import player.dbsearch.structures.NodeBoard;
+import player.dbsearch.structures.Operator;
 
 public class DbSearchBoard extends IDbSearchQ<ArrayBoardDb, NodeBoard> {
 
@@ -84,6 +82,14 @@ public class DbSearchBoard extends IDbSearchQ<ArrayBoardDb, NodeBoard> {
 
 	
 	//#region INIT
+		@Override protected void initAttributes() {
+			board = new ArrayBoardDb(M, N, K);
+			super.initAttributes();
+		}
+		@Override protected void initThreats() {
+			max_tier = 2;
+			//threats = new Operator[][];
+		}
 		@Override protected NodeBoard newNode(ArrayBoardDb board, boolean is_combination) {
 			return new NodeBoard(board, is_combination);
 		}

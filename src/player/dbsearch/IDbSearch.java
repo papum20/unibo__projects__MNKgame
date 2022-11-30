@@ -126,10 +126,11 @@ public abstract class IDbSearch<B extends IBoardDB, N extends INodeDB<N>> implem
 
 			//new root
 			N root = createRoot();
+			boolean won = false;
 
 			//recursive call for each possible move
 			try{
-				visit(root, true, getGoalSquares(board, SHORT_INFINITE, true), true, max_tier);
+				won = visit(root, true, getGoalSquares(board, SHORT_INFINITE, true), true, max_tier);
 			} catch (NullPointerException e) {
 				System.out.println("VISIT: NULL EXCEPTION");
 				throw e;
@@ -138,6 +139,7 @@ public abstract class IDbSearch<B extends IBoardDB, N extends INodeDB<N>> implem
 				throw e;
 			}
 			// DEBUG
+			System.out.println(won);
 			debug.markedCells(0);
 			nodes_created_tot += nodes_created;
 			nodes_alive_tot += nodes_alive;
@@ -388,9 +390,7 @@ public abstract class IDbSearch<B extends IBoardDB, N extends INodeDB<N>> implem
 			debug = new Debug("debug/debug-" + playerName(), true);
 		}
 
-		protected void initThreats() {
-
-		}
+		protected abstract void initThreats();
 
 		// create N object
 		protected abstract N newNode(B board, boolean is_combination);
