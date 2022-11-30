@@ -28,6 +28,7 @@ public class INodes {
 		}
 		public static class MovePair implements IMove {
 			protected short i, j;
+			public MovePair() {}
 			public MovePair(short i, short j) {
 				this.i = i;
 				this.j = j;
@@ -45,11 +46,30 @@ public class INodes {
 				this.j = (short)move.j;
 			}
 
+			public void reset(MovePair move) {
+				this.i = move.i;
+				this.j = move.j;
+			}
 			public MovePair getPair() {return this;}
 			public short i() {return i;}
 			public short j() {return j;}
 			public String toString() {return "[" + i + "," + j + "]";}
 			@Override public <M extends IMove> boolean equals(M move) {return i == move.i() && j == move.j();}
+			public void sum(MovePair B) {
+				this.i += B.i;
+				this.j += B.j;
+			}
+			public boolean inBounds(MovePair min, MovePair max) {
+				return i >= min.i && i < max.i && j >= min.j && j < max.j;
+			}
+			public void clampMin(MovePair min) {
+				if(min.i > i) i = min.i;
+				if(min.j > j) j = min.j;
+			}
+			public void clampMax(MovePair max) {
+				if(max.i < i) i = max.i;
+				if(max.j < j) j = max.j;
+			}
 		}
 		
 		public static class MoveMNK implements IMove {
