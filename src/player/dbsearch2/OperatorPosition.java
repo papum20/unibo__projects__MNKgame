@@ -28,6 +28,14 @@ public class OperatorPosition {
 		this.end = new MovePair(end);
 		this.type = type;
 	}
+	//returns the position at offset index from start towards end
+	public MovePair at(int index) {
+		int diff_i = end.i() - start.i(), diff_j = end.j() - start.j();
+		int len = (diff_i > diff_j) ? diff_i : diff_j;
+		if(-diff_i > len) len = -diff_i;
+		if(-diff_j > len) len = -diff_j;
+		return start.getSum(diff_i / len * index, diff_j / len * index);
+	}
 
 	@Override public String toString() {
 		return start + "->" + end + " : " + type;

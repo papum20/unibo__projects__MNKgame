@@ -72,7 +72,8 @@ public class ArrayBoard implements IBoard {
 		FC = new MNKCell[M*N]; 
 		MC = new MNKCell[M*N];
 		FC_indexes = new int[M][N];
-	
+		
+		currentPlayer = AB.currentPlayer;
 		copyArrays(AB);
 	}
 

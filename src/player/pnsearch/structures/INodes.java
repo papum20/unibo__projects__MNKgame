@@ -51,11 +51,16 @@ public class INodes {
 				this.i = move.i;
 				this.j = move.j;
 			}
+			public void reset(int i, int j) {
+				this.i = (short)i;
+				this.j = (short)j;
+			}
 			public MovePair getPair() {return this;}
 			public short i() {return i;}
 			public short j() {return j;}
 			public String toString() {return "[" + i + "," + j + "]";}
 			@Override public <M extends IMove> boolean equals(M move) {return i == move.i() && j == move.j();}
+			public void negate() {i = (short)(-i); j = (short)(-j);}
 			public MovePair getNegative() {return new MovePair(-i, -j);}
 			public void sum(MovePair B) {
 				this.i += B.i;
@@ -63,6 +68,12 @@ public class INodes {
 			}
 			public MovePair getSum(MovePair B) {
 				return new MovePair(i + B.i, j + B.j);
+			}
+			public MovePair getSum(int i, int j) {
+				return new MovePair(this.i + i, this.j + j);
+			}
+			public MovePair getDiff(MovePair B) {
+				return new MovePair(i - B.i, j - B.j);
 			}
 			public MovePair getProd(int t) {
 				return new MovePair(i * t, j * t);

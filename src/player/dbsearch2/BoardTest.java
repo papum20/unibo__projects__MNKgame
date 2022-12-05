@@ -5,7 +5,7 @@ import java.util.Scanner;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import player.dbsearch2.BiList.BiNode;
-import player.dbsearch2.Operator.AlignmentMap;
+import player.dbsearch2.Operators.AlignmentsMap;
 import player.pnsearch.structures.INodes.MovePair;
 
 
@@ -113,7 +113,7 @@ public class BoardTest {
 	public static void main(String[] args) {
 		DbBoard board = new DbBoard(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 
-		for(AlignmentMap al : Operator.ALIGNMENTS) System.out.println(al.size());
+		for(AlignmentsMap al : Operators.ALIGNMENTS) System.out.println(al.size());
 
 		debugBoard(board, false, false, false);
 		
