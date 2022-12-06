@@ -1,7 +1,10 @@
 package player.dbsearch2;
 
+import java.util.LinkedList;
+
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
+import player.dbsearch2.DbSearch.Combined;;
 
 
 
@@ -33,14 +36,9 @@ public class NodeBoard {
 
 		// copies all non-empty cells, assuming that they're not conflicting
 		// with this board
-		public void combine(NodeBoard node) {
-			COMBINE!!!
-			for(int i = 0; i < board.M; i++) {
-				for(int j = 0; j < board.N; j++) {
-					if(node.board.cellState(i, j) != MNKCellState.FREE)
-						board.B[i][j] = node.board.cellState(i, j);
-				}
-			}
+		public void combine(NodeBoard node, Combined combined) {
+			LinkedList<MNKCell> cells_to_add = node.getCombinedCells(this, combined);
+			board.markCells(cells_to_add, combined);
 		}
 
 		/*public boolean equals(NodeBoard node) {
@@ -54,6 +52,19 @@ public class NodeBoard {
 					return true;
 			}
 			return false;
+		}
+		
+		//assumes the boards are compatible, thus not in conflict
+		private LinkedList<MNKCell> getCombinedCells(NodeBoard node, Combined combined) {
+			LinkedList<MNKCell> res = new LinkedList<MNKCell>();
+			for(int i = 0; i < board.MC_n; i++) {
+				MNKCell cell = board.getMarkedCell(i);
+				if(cell.state != node.board.cellState(cell.i, cell.j)) {
+					res.add(cell);
+					combined.board[cell.i][cell.j] = combined.n;
+				}
+			}
+			return res;
 		}
 
 	//#endregion INodeDb

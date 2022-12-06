@@ -20,6 +20,13 @@ public class DbSearch implements MNKPlayer {
  * UP TO THE POINT IN COMMON (MAYBE SAVED AS LEVEL, POINTER OR OTHER)
  */
 
+	/* used for combining nodes: at each combination, first COMBINED_N is increased, then the cells added from 
+	 * a node's to another's board are marked in COMBINED as COMBINED_N;
+	 * then the combination node, which must combine the two boards, starting from one, adds the other one's
+	 * cells, only considering, for the implementation of markCells(), the cells in COMBINED marked as COMBINED_N
+	 */
+	private Combined COMBINED;
+ 
 	public static final short SHORT_INFINITE = 32767;
 	
 	protected int M;
@@ -430,6 +437,8 @@ public class DbSearch implements MNKPlayer {
 			lastCombination = new LinkedList<NodeBoard>();
 			lastDependency = new LinkedList<NodeBoard>();
 
+			COMBINED = new Combined(M, N);
+
 			nodes_created_tot = 0;
 			nodes_alive_tot = 0;
 		}
@@ -442,7 +451,16 @@ public class DbSearch implements MNKPlayer {
 
 	//#region CLASSES
 
-
+		public class Combined {
+			int[][] board;
+			int n;
+			private Combined(int M, int N) {
+				board = new int[M][N];
+				n = 0;
+				for(int i = 0; i < M; i++)
+					for(int j = 0; j < N; j++) board[i][j] = n;
+			}
+		}
 	
 	//#endregion CLASSES
 

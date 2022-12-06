@@ -38,6 +38,8 @@ PNSEARCH:
 	-	PnSearchStore.selectMostProving : serve l'else? forse non ci si arriva mai
 DBSEARCH:
 	-	enhancement addcombination: crea solo nodi dove applicabile almeno un operatore
+DBSEARCH2:
+	-	board: remove alignments improved for line / more cells at a time
 
 
 
