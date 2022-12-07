@@ -83,7 +83,7 @@ public class NodeBoard {
 			else first_child.addSibling(child);
 		}
 		public void addSibling(NodeBoard sibling) {
-			if(sibling == null) this.sibling = sibling;
+			if(this.sibling == null) this.sibling = sibling;
 			else this.sibling.addSibling(sibling);
 		}
 		//public void setBestChild(NodeBoard best) {first_child = best; }

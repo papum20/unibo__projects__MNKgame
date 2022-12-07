@@ -16,6 +16,7 @@ public class BiList_NodeOpPos {
 		p1 = new BiList<BiNode<OperatorPosition>>();
 		p2 = new BiList<BiNode<OperatorPosition>>();
 	}
+	
 
 	public BiNode<BiNode<OperatorPosition>> add(MNKCellState player, BiNode<OperatorPosition> node) {
 		BiList<BiNode<OperatorPosition>> list = (player == MNKCellState.P1) ? p1 : p2;

@@ -49,8 +49,10 @@ public class DbBoard {
 	 * dright:		dimension=M+N-1,	indexed: by start of diagonal on the top row, i.e. from -M+1 to N-1
 	 * dleft:		dimension=M+N-1,	indexed: by start of diagonal on the top row, i.e. from 0 to N+M-1
 	 */
-	protected AlignmentsList[] lines_per_dir;	//for each direction 0-3, contains the reference to the proper lines array(list)
-	protected int[] lines_dirs;					//indexes in DIRECTIONS, with same order as lines_per_dir
+	protected AlignmentsList[] lines_per_dir;								//for each direction 0-3, contains the reference to the proper lines array(list)
+	protected static final int[] lines_dirs = new int[]{2, 4, 3, 5};		//indexes in DIRECTIONS, with same order as lines_per_dir
+	
+
 	protected BiList_NodeOpPos[][] cells_lines;
 
 	protected final MNKCellState[] Player = {MNKCellState.P1, MNKCellState.P2};
@@ -89,7 +91,7 @@ public class DbBoard {
 		MC = new MNKCell[M*N];
 		FC_indexes = new int[M][N];
 		
-		initLinesStructures();
+		copyLinesStructures(board);
 		currentPlayer = board.currentPlayer;
 		copyArrays(board);
 	}
@@ -115,14 +117,15 @@ public class DbBoard {
 			removeFC(y, x);
 			B[y][x] = Player[currentPlayer];
 			addMC(y, x, B[y][x]);
-			currentPlayer = (currentPlayer + 1) % 2;
-			//update gameState
 			// UPDATE ALIGNMENTS
 			// remove alignments for both players involving this cell
 			removeAlignments(c, Auxiliary.opponent(B[y][x]));
 			removeAlignments(c, B[y][x]);
 			// add alignments for player
 			for(int d = 0; d < lines_dirs.length; d++) addAlignments(c, B[y][x], d);
+			//update gameState
+			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
+			currentPlayer = (currentPlayer + 1) % 2;
 		}
 		// marks cells in order, all for current player; doesn't change current player
 		// PRECONDITIONS: needed at least two moves; all must be in line
@@ -161,7 +164,6 @@ public class DbBoard {
 				addMC(c[i].i, c[i].j, c[i].state);
 				B[c[i].i][c[i].j] = c[i].state;
 			}
-			//update gameState
 			// UPDATE ALIGNMENTS
 			// remove alignments for both players involving this cell
 			for(i = 0; i < c.length; i++) {
@@ -181,6 +183,8 @@ public class DbBoard {
 					for(i = 1; i < c.length; i++) addAlignments_from(new MovePair(c[i]), new MovePair(c[i-1]), c[i].state, d);
 				}
 			}
+			//update gameState
+			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
 		}
 		public void markCells(LinkedList<MNKCell> c, Combined combined) {
 			ListIterator<MNKCell> it = c.listIterator();
@@ -190,7 +194,6 @@ public class DbBoard {
 				addMC(t);
 				B[t.i][t.j] = t.state;
 			}
-			//update gameState
 			// UPDATE ALIGNMENTS
 			// remove alignments for both players involving this cell
 			it = c.listIterator();
@@ -206,6 +209,8 @@ public class DbBoard {
 				for(int d = 0; d < lines_dirs.length; d++)
 					addAlignments_fromCombined(new MovePair(t), combined, t.state, d);
 			}
+			//update gameState
+			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
 		}
 		/**
 		 * Undoes last move
@@ -361,7 +366,7 @@ public class DbBoard {
 			 * 		new alignments of K-MIN_SYM_LINE.
 			 * HOWEVER, this will be a future enhancement: for now, the function simply deletes and recreates all
 			 */
-			private void addAlignments(final MovePair center, MNKCellState player, int lines_dirs_index) {
+			private void addAlignments(final MovePair center, final MNKCellState player, int lines_dirs_index) {
 				MNKCellState opponent = Auxiliary.opponent(player);
 				MovePair dir = DIRECTIONS[lines_dirs[lines_dirs_index]];
 				int dir_index = lineIndex(dir, center);							//if horizontal: row index, otherwise (all other cases) col index
@@ -420,6 +425,11 @@ public class DbBoard {
 									System.out.println("\t\t\t\t\tal = " + al);
 									//if (inner alignment conditions)
 									if(line <= K - al.line && in == al.in) {
+										//assuming that win is K marks aligned, without free cells, checks wether the game ended
+										if(tier == 0) {
+											gameState = Auxiliary.cellState2winState(player);
+											return;
+										}
 										//check outer alignment conditions
 										before = countMarks( c1.getSum(dir.getNegative()), dir.getNegative(), al.out - al.mnout, MNKCellState.FREE);
 										if(before >= al.mnout)
@@ -535,6 +545,11 @@ public class DbBoard {
 									System.out.println("\t\t\t\t\tal = " + al);
 									//if (inner alignment conditions)
 									if(line <= K - al.line && in == al.in) {
+										//assuming that win is K marks aligned, without free cells, checks wether the game ended
+										if(tier == 0) {
+											gameState = Auxiliary.cellState2winState(player);
+											return;
+										}
 										//check outer alignment conditions
 										before = countMarks( c1.getSum(dir.getNegative()), dir.getNegative(), al.out - al.mnout, MNKCellState.FREE);
 										if(before >= al.mnout)
@@ -645,6 +660,11 @@ public class DbBoard {
 									System.out.println("\t\t\t\t\tal = " + al);
 									//if (inner alignment conditions)
 									if(line <= K - al.line && in == al.in) {
+										//assuming that win is K marks aligned, without free cells, checks wether the game ended
+										if(tier == 0) {
+											gameState = Auxiliary.cellState2winState(player);
+											return;
+										}
 										//check outer alignment conditions
 										before = countMarks( c1.getSum(dir.getNegative()), dir.getNegative(), al.out - al.mnout, MNKCellState.FREE);
 										if(before >= al.mnout)
@@ -775,7 +795,6 @@ public class DbBoard {
 			lines_dright = new AlignmentsList(M + N - 1);
 			lines_dleft = new AlignmentsList(M + N - 1);
 			lines_per_dir = new AlignmentsList[]{lines_rows, lines_cols, lines_dright, lines_dleft};
-			lines_dirs = new int[]{2, 4, 3, 5};
 			cells_lines = new BiList_NodeOpPos[M][N];
 			for(int i = 0; i < M; i++) {
 				for(int j = 0; j < N; j++)
@@ -808,6 +827,39 @@ public class DbBoard {
 			// copies an MNKCell
 			private MNKCell copyCell(MNKCell c) {
 				return new MNKCell(c.i, c.j, c.state);
+			}
+			private void copyLinesStructures(DbBoard DB) {
+				lines_rows = new AlignmentsList(DB.lines_rows);
+				lines_cols = new AlignmentsList(DB.lines_cols);
+				lines_dright = new AlignmentsList(DB.lines_dright);
+				lines_dleft = new AlignmentsList(DB.lines_dleft);
+				lines_per_dir = new AlignmentsList[]{lines_rows, lines_cols, lines_dright, lines_dleft};
+				cells_lines = new BiList_NodeOpPos[M][N];
+				for(int i = 0; i < M; i++) {
+					for(int j = 0; j < N; j++)
+						cells_lines[i][j] = new BiList_NodeOpPos();
+				}
+				for(int d = 0; d < lines_per_dir.length; d++) {
+					AlignmentsList line = lines_per_dir[d];
+					MovePair dir = DIRECTIONS[lines_dirs[d]];
+					for(int i = 0; i < line.size(); i++) {
+						if(line.get(i) != null) {
+							copyLineInCells(line.getFirst(MNKCellState.P1, i), MNKCellState.P1, dir);
+							copyLineInCells(line.getFirst(MNKCellState.P2, i), MNKCellState.P2, dir);
+						}
+					}
+				}
+			}
+			private void copyLineInCells(BiNode<OperatorPosition> line_node, MNKCellState player, MovePair dir) {
+				if(line_node != null) {
+					copyLineInCells(line_node.next, player, dir);
+					MovePair it = new MovePair(line_node.item.start), end = line_node.item.end;
+					while(true) {
+						cells_lines[it.i()][it.j()].add(player, line_node);
+						if(!it.equals(end)) it.sum(dir);
+						else break;
+					}
+				}
 			}
 		//#endregion COPY
 	//#endregion INIT

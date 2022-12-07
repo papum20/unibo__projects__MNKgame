@@ -1,6 +1,8 @@
 package player.dbsearch2;
 
+import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
+import mnkgame.MNKGameState;
 
 public class Auxiliary {
 
@@ -25,6 +27,13 @@ public class Auxiliary {
 
 	public static MNKCellState opponent(MNKCellState player) {
 		return (player == MNKCellState.P1) ? MNKCellState.P2 : MNKCellState.P1;
+	}
+	public static boolean equalMNKCells(MNKCell a, MNKCell b) {
+		return a.i == b.i && a.j == b.j;
+	}
+	//makes sense only assuming it's a win, and the cell is not empty
+	public static MNKGameState cellState2winState(MNKCellState cell_state) {
+		return (cell_state == MNKCellState.P1) ? MNKGameState.WINP1 : MNKGameState.WINP2;
 	}
 	
 }

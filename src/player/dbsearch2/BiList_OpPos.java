@@ -3,6 +3,8 @@ package player.dbsearch2;
 import mnkgame.MNKCellState;
 import player.dbsearch2.BiList.BiNode;
 
+
+
 public class BiList_OpPos {
 	
 
@@ -16,6 +18,21 @@ public class BiList_OpPos {
 		p1 = new BiList<OperatorPosition>();
 		p2 = new BiList<OperatorPosition>();
 	}
+	// WARNING: doesn't create new instances of each OperatorPosition, just uses the same
+	public BiList_OpPos(BiList_OpPos copy) {
+		p1 = new BiList<OperatorPosition>();
+		p2 = new BiList<OperatorPosition>();
+		copy(p1, copy.p1.getFirst());
+		copy(p2, copy.p2.getFirst());
+	}
+
+	private void copy(BiList<OperatorPosition> dest, BiNode<OperatorPosition> from_node) {
+		if(from_node != null) {
+			copy(dest, from_node.next);
+			dest.addFirst(from_node.item);
+		}
+	}
+
 
 	public BiNode<OperatorPosition> add(MNKCellState player, OperatorPosition f) {
 		BiList<OperatorPosition> list = (player == MNKCellState.P1) ? p1 : p2;

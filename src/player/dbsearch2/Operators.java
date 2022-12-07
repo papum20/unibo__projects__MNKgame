@@ -179,8 +179,13 @@ public class Operators {
 	public static byte threatTier(byte threat) {
 		return (byte)((threat & THREAT_MASK) >> (byte)4);
 	}
-	public static MNKCell[][] apply(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
+	public static MNKCell[][] applied(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
 		return OPERATORS[threatTier(op.type)].get((int)(op.type)).add(board, op, attacker, defender);
+	}
+	public static MNKCell threat(MNKCell[] operator, MNKCellState attacker) {
+		for(MNKCell cell : operator)
+			if(cell.state == attacker) return cell;
+		return null;
 	}
 
 

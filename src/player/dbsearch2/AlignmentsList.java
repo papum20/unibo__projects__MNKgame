@@ -16,6 +16,14 @@ public class AlignmentsList extends ArrayList<BiList_OpPos> {
 		for(int i = 0; i < size; i++)
 			add(null);
 	}
+	public AlignmentsList(AlignmentsList copy) {
+		super(copy.size());
+		int size = copy.size();
+		for(int i = 0; i < size; i++) {
+			if(copy.get(i) == null) add(null);
+			else add(new BiList_OpPos(copy.get(i)));
+		}
+	}
 
 	public BiNode<OperatorPosition> add(MNKCellState player, int index, OperatorPosition f) {
 		BiList_OpPos list = get(index);
