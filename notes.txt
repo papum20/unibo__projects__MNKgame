@@ -41,6 +41,17 @@ DBSEARCH:
 DBSEARCH2:
 	-	board: remove alignments improved for line / more cells at a time
 
+	TODO:
+		-	goal squares: inserisci come parametro; fai che se una viene occupata, ritorna win
+		-	per trovare le goal square, quelle occupate in una threat sequence, basta fare la "differenza" tra le board
+		-	quindi in caso di win devo ritornare il nodo finale, con la board vincente
+		-	parametro nel find alignments per max category
+		-	global defense
+		-	heuristic: (non per global defense) se opponent ha threat category j, devo cercare solo threat category i
+		-	heuristic: conta win; fai max 10 (per attacker)
+		-	dividi operator attacker/defender
+	DONE:
+
 
 
 PROPRIETÀ:

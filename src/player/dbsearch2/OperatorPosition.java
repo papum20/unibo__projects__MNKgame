@@ -5,8 +5,8 @@ import player.pnsearch.structures.INodes.MovePair;
 
 
 public class OperatorPosition {
-	public MovePair start;
-	public MovePair end;
+	public final MovePair start;
+	public final MovePair end;
 	public byte type;
 
 	public OperatorPosition() {
@@ -23,11 +23,11 @@ public class OperatorPosition {
 	public int length() {
 		return Math.max(Math.abs(start.i() -end.i()) , Math.abs(start.j() - end.j()));
 	}
-	public void set(MovePair start, MovePair end, byte type) {
+	/*public void set(MovePair start, MovePair end, byte type) {
 		this.start = new MovePair(start);
 		this.end = new MovePair(end);
 		this.type = type;
-	}
+	}*/
 	//returns the position at offset index from start towards end
 	public MovePair at(int index) {
 		int diff_i = end.i() - start.i(), diff_j = end.j() - start.j();

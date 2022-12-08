@@ -172,15 +172,20 @@ public class DbBoard {
 				removeAlignments(t, MNKCellState.P2);
 			}
 			// add alignments for player
-			MovePair t0 = new MovePair(c[0]);
-			MovePair dir = t0.getDirection(new MovePair(c[1]));
-			int dir_index = dirsIndexes(dir);
-			for(int d = 0; d < lines_dirs.length; d++) {
-				if(d != dir_index) {
-					for(i = 0; i < c.length; i++) addAlignments(new MovePair(c[i]), c[i].state, d);
-				} else {
-					addAlignments_from(t0, MIN, c[0].state, d);
-					for(i = 1; i < c.length; i++) addAlignments_from(new MovePair(c[i]), new MovePair(c[i-1]), c[i].state, d);
+			if(c.length == 1) {
+				for(int d = 0; d < lines_dirs.length; d++)
+					addAlignments(new MovePair(c[0]), c[0].state, d);
+			} else {
+				MovePair t0 = new MovePair(c[0]);
+				MovePair dir = t0.getDirection(new MovePair(c[1]));
+				int dir_index = dirsIndexes(dir);
+				for(int d = 0; d < lines_dirs.length; d++) {
+					if(d != dir_index) {
+						for(i = 0; i < c.length; i++) addAlignments(new MovePair(c[i]), c[i].state, d);
+					} else {
+						addAlignments_from(t0, MIN, c[0].state, d);
+						for(i = 1; i < c.length; i++) addAlignments_from(new MovePair(c[i]), new MovePair(c[i-1]), c[i].state, d);
+					}
 				}
 			}
 			//update gameState
@@ -621,7 +626,7 @@ public class DbBoard {
 					if(cellState(c_tmp) == player) c1.reset(c_tmp);
 					c_tmp.sum(negdir);
 					dist++;
-				} while(combined.board[c_tmp.i()][c_tmp.j()] != combined.n && dist < MAX_LINE - 1 && c_tmp.inBounds(MIN, MAX) && cellState(c_tmp) != opponent);
+				} while(dist < MAX_LINE - 1 && c_tmp.inBounds(MIN, MAX) && combined.board[c_tmp.i()][c_tmp.j()] != combined.n && cellState(c_tmp) != opponent);
 				c2 = new MovePair(c1);
 
 				System.out.println("\t\t\tdir: " + dir);
@@ -726,6 +731,7 @@ public class DbBoard {
 			}
 
 			private void removeAlignmentsInvolvingCell(MovePair from, MovePair involved, MNKCellState player) {
+				MovePair involved_direction = from.getDirection(involved);
 				BiNode<BiNode<OperatorPosition>> node, tmp;
 				BiList_NodeOpPos list = cells_lines[from.i()][from.j()];
 				node = list.getFirst(player);
@@ -733,7 +739,6 @@ public class DbBoard {
 					//check if involved
 					MovePair start = node.item.item.start, end = node.item.item.end;
 					MovePair line_direction = start.getDirection(end);
-					MovePair involved_direction = from.getDirection(involved);
 					//remove
 					tmp = node;
 					node = node.next;

@@ -10,6 +10,8 @@ import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
 import player.dbsearch2.BiList.BiNode;
+import player.dbsearch2.Operators.RankedThreats;
+import player.dbsearch2.Operators.Threat;
 import player.pnsearch.structures.INodes.MovePair;
 
 
@@ -22,14 +24,8 @@ public class DbSearch implements MNKPlayer {
  * UP TO THE POINT IN COMMON (MAYBE SAVED AS LEVEL, POINTER OR OTHER)
  */
 
-	/* used for combining nodes: at each combination, first COMBINED_N is increased, then the cells added from 
-	 * a node's to another's board are marked in COMBINED as COMBINED_N;
-	 * then the combination node, which must combine the two boards, starting from one, adds the other one's
-	 * cells, only considering, for the implementation of markCells(), the cells in COMBINED marked as COMBINED_N
-	 */
-	private Combined COMBINED;
- 
-	public static final short SHORT_INFINITE = 32767;
+
+public static final short SHORT_INFINITE = 32767;
 	
 	protected int M;
 	protected int N;
@@ -42,7 +38,7 @@ public class DbSearch implements MNKPlayer {
 	protected MNKGameState MY_WIN;
 	protected MNKGameState YOUR_WIN;
 	protected int MY_PLAYER;
-	protected final short MAX_TIER = (short)(Operators.ALIGNMENTS_CODES.length - 2);	//tiers -1 -1
+	private final int MAX_THREAT_SEQUENCES = 10;
 	//protected final short PROOF_N_ZERO = INodes.PROOF_N_ZERO;
 	//protected final short PROOF_N_INFINITE = INodes.PROOF_N_INFINITE;
 
@@ -56,8 +52,21 @@ public class DbSearch implements MNKPlayer {
 	//protected Operator[][] threats;				//threats (as operators), partitioned in arrays by category
 	//protected final short MAX_CHILDREN = 10;
 
+	//VARIABLES FOR A DB-SEARCH EXECUTION
 	protected LinkedList<NodeBoard> lastCombination;
 	protected LinkedList<NodeBoard> lastDependency;
+	int possible_winning_sequences;
+	/* used for combining nodes: at each combination, first COMBINED_N is increased, then the cells added from 
+	 * a node's to another's board are marked in COMBINED as COMBINED_N;
+	 * then the combination node, which must combine the two boards, starting from one, adds the other one's
+	 * cells, only considering, for the implementation of markCells(), the cells in COMBINED marked as COMBINED_N
+	 */
+	private Combined COMBINED;
+	private boolean[][] GOAL_SQUARES;
+
+	
+	protected NodeBoard win_node;
+
 
 	FileWriter file = null;
 	//protected Debug debug;
@@ -135,10 +144,11 @@ public class DbSearch implements MNKPlayer {
 			//new root
 			NodeBoard root = createRoot();
 			boolean won = false;
+			possible_winning_sequences = 0;
 
 			//recursive call for each possible move
 			try{
-				won = visit(root, true, getGoalSquares(board, SHORT_INFINITE, MY_MNK_PLAYER), true, MAX_TIER);
+				won = visit(root, MY_MNK_PLAYER, true, Operators.MAX_TIER);
 			} catch (NullPointerException e) {
 				System.out.println("VISIT: NULL EXCEPTION");
 				throw e;
@@ -193,11 +203,10 @@ public class DbSearch implements MNKPlayer {
 		 * @param max_tier : only threats <= this category can be applied
 		 * @return true if there's a winning sequence
 		 */
-		protected boolean visit(NodeBoard root, boolean my_attacker, MovePair[] goal_squares, boolean attacking, short max_tier) {
+		protected boolean visit(NodeBoard root, MNKCellState attacker, boolean attacking, int max_tier) {
 			short level = 1;
-			MNKCellState attacker = my_attacker? MY_MNK_PLAYER : YOUR_MNK_PLAYER;
 			boolean won = false;
-			while(!isTimeEnded() && isTreeChanged() && !won) {
+			while(!isTimeEnded() && isTreeChanged() && !won && possible_winning_sequences < MAX_THREAT_SEQUENCES) {
 				try {
 					String filename_current = "debug/db2/db" + board.MC_n + "-" + level + ".txt";
 					new File(filename_current);
@@ -215,7 +224,7 @@ public class DbSearch implements MNKPlayer {
 				try {
 					file.write("--------\tCOMBINATION\t--------\n");
 				} catch(Exception e) {}
-				if(!won) won = addCombinationStage(root);		//uses lasdtDependency, fills lastCombination
+				if(!won) won = addCombinationStage(root, attacker);		//uses lasdtDependency, fills lastCombination
 				level++;
 
 				try {
@@ -234,16 +243,17 @@ public class DbSearch implements MNKPlayer {
 			ListIterator<NodeBoard> it = lastCombination.listIterator();
 			while(it.hasNext() && !won) {
 				NodeBoard node = it.next();
+				int lev = 0;
 				try {
 					file.write("parent: \n");
 					DbTest.printBoard(node.board, file);
 					file.write("children: \n");
 				} catch (Exception e) {}
-				won = addDependentChildren(node, attacker);
+				won = addDependentChildren(node, attacker, 0);
 			}
 			return won;
 		}
-		protected boolean addCombinationStage(NodeBoard root) {
+		protected boolean addCombinationStage(NodeBoard root, MNKCellState attacker) {
 			boolean won = false;
 			ListIterator<NodeBoard> it = lastDependency.listIterator();
 			while(it.hasNext() && !won) {
@@ -253,31 +263,34 @@ public class DbSearch implements MNKPlayer {
 					DbTest.printBoard(node.board, file);
 					file.write("children: \n");
 				} catch (Exception e) {}
-				won = findAllCombinationNodes(node, root);
+				won = findAllCombinationNodes(node, root, attacker);
 			}
 			return won;
 		}
 
-		protected boolean addDependentChildren(NodeBoard node, MNKCellState attacker) {
+		protected boolean addDependentChildren(NodeBoard node, MNKCellState attacker, int lev) {
 			if(node.board.gameState() == MY_WIN) {
-				//setBestMove
+				win_node = node;
 				return true;
 			}
 			else if(node.board.gameState() == YOUR_WIN) return false;
 			else {
 				boolean won = false;
 				//LinkedList<MNKCell[]> applicableOperators = getApplicableOperators(node, MAX_CHILDREN, my_attacker);
-				LinkedList<MNKCell[]> applicableOperators = getApplicableOperators(node.board, attacker);
-				for(MNKCell[] f : applicableOperators) {
-					NodeBoard newChild = addDependentChild(node, f);
-					DbTest.printBoard(newChild.board, file);
-					try {
-						file.write("---\n");
-					} catch (Exception e) {}
-					won = addDependentChildren(newChild, attacker);
-					if(won) {
-						//save best node
-						break;
+				RankedThreats applicableOperators = getApplicableOperators(node.board, attacker);
+				for(LinkedList<Threat> tier : applicableOperators) {
+					for(Threat f : tier) {
+						NodeBoard newChild = addDependentChild(node, f);
+						try {
+							file.write("-" + lev + "\t---\n");
+							DbTest.printBoard(newChild.board, file, lev);
+							file.write("---\n");
+						} catch (Exception e) {}
+						won = addDependentChildren(newChild, attacker, lev+1);
+						if(won) {
+							//save best node
+							break;
+						}
 					}
 				}
 				return won;
@@ -287,22 +300,23 @@ public class DbSearch implements MNKPlayer {
 		 * @param partner : fixed node for combination
 		 * @param node : iterating node for combination
 		 */
-		protected boolean findAllCombinationNodes(NodeBoard partner, NodeBoard node) {
+		protected boolean findAllCombinationNodes(NodeBoard partner, NodeBoard node, MNKCellState attacker) {
 			if(node == null) return false;
 			else if(node.board.gameState() == MY_WIN) {
+				win_node = node;
 				return true;
 			} else {
 				boolean won = false;
-				if(!partner.inConflict(node)) {
-					if(isDependencyNode(node)) won = addCombination(partner, node);
+				if(isDependencyNode(node) && partner.validCombinationWith(node, attacker)) {
+					won = addCombination(partner, node);
 					//iterate through children and siblings
 				}
 				if(won) {
-					//set best move
+					win_node = node;
 					return true;
 				}
-				else if(findAllCombinationNodes(partner, node.getSibling())) return true;
-				else return findAllCombinationNodes(partner, node.getFirstChild());
+				else if(findAllCombinationNodes(partner, node.getSibling(), attacker)) return true;
+				else return findAllCombinationNodes(partner, node.getFirstChild(), attacker);
 			}
 		}
 		
@@ -349,7 +363,7 @@ public class DbSearch implements MNKPlayer {
 				return root;
 			}
 			protected NodeBoard addChild(NodeBoard parent, MNKCell[] f, boolean is_combination) {
-				NodeBoard newChild = new NodeBoard(board, f, is_combination);
+				NodeBoard newChild = new NodeBoard(parent.board, f, is_combination);
 				parent.addChild(newChild);
 				return newChild;
 			}
@@ -363,10 +377,19 @@ public class DbSearch implements MNKPlayer {
 			protected boolean addCombination(NodeBoard A, NodeBoard B) {
 				//create combination with A's board (copied)
 				NodeBoard combination = new NodeBoard(A.board, true);
+				A.addChild(combination);
+				B.addChild(combination);
 				combination.combine(B, COMBINED);				//add to it's board marks on B board
 				lastCombination.add(combination);
-				DbTest.printBoard(combination.board, file);
 				try {
+					file.write("first parent: \n");
+					DbTest.printBoard(A.board, file);
+					file.write(".\n");
+					file.write("second parent: \n");
+					DbTest.printBoard(B.board, file);
+					file.write(".\n");
+					DbTest.printBoard(combination.board, file);
+					file.write("---\n");
 					file.write("---\n");
 				} catch (Exception e) {}
 				return combination.board.gameState() == MY_WIN;
@@ -374,32 +397,19 @@ public class DbSearch implements MNKPlayer {
 		//#endregion CREATE
 
 		//#region GET
-			protected LinkedList<MNKCell[]> getApplicableOperators(DbBoard board, MNKCellState attacker) {
+			protected RankedThreats getApplicableOperators(DbBoard board, MNKCellState attacker) {
 				MNKCellState defender = Auxiliary.opponent(attacker);
-				LinkedList<MNKCell[]> res = new LinkedList<MNKCell[]>();
+				RankedThreats res = new RankedThreats();
 				for(AlignmentsList dir_lines : board.lines_per_dir) {
-					int line_n = 0;
-					try {
-						file.write("in lines\n");
-					} catch (Exception e) {}
-
 					for(BiList_OpPos line : dir_lines) {
-						try {
-							file.write("in line\n");
-						} catch (Exception e) {}
 						if(line != null) {
-							try {
-								file.write("line num: " + line_n + "\n");
-							} catch (Exception e) {}
 							BiNode<OperatorPosition> node = line.getFirst(attacker);
 							while(node != null) {
-								MNKCell[][] cell_operators = Operators.applied(board, node.item, attacker, defender);
-								if(cell_operators != null)
-									for(MNKCell[] operator : cell_operators) res.add(operator);
+								Threat cell_threat_operators = Operators.applied(board, node.item, attacker, defender);
+								if(cell_threat_operators != null) res.add(cell_threat_operators, Operators.threatTier(node.item.type));
 								node = node.next;
 							}
 						}
-						line_n++;
 					}
 				}
 				return res;
@@ -427,7 +437,7 @@ public class DbSearch implements MNKPlayer {
 				return res;
 			}*/
 			protected MovePair[] getGoalSquares(DbBoard board, short max, MNKCellState attacker) {
-				LinkedList<MNKCell[]> threats = getApplicableOperators(board, attacker);
+				RankedThreats threats = getApplicableOperators(board, attacker);
 				int min = (threats.size() < max) ? threats.size() : max;
 				MovePair[] res = new MovePair[min];
 				ListIterator<MNKCell[]> it = threats.listIterator();
@@ -440,13 +450,11 @@ public class DbSearch implements MNKPlayer {
 		//#endregion GET
 		//#region SET
 			protected MNKCell getBestMove() {
-				int i = 0;
-				if(board.MC_n > 0) {
-					MNKCell last_move = board.getMarkedCell(board.MC_n - 1);
-					while(!equalMNKMoves(last_move, board.getMarkedCell(i)) ) i++;
-				}
-				while(board.getMarkedCell(i).state != MY_MNK_PLAYER) i++;
-				return board.getMarkedCell(i);
+				int i = board.MC_n;
+				//return first player's move after initial state
+				while(win_node.board.getMarkedCell(i).state != MY_MNK_PLAYER)
+					i++;
+				return win_node.board.getMarkedCell(i);
 			}
 		//#endregion SET
 		
@@ -495,6 +503,9 @@ public class DbSearch implements MNKPlayer {
 			lastDependency = new LinkedList<NodeBoard>();
 
 			COMBINED = new Combined(M, N);
+			GOAL_SQUARES = new boolean[M][N];
+			for(int i = 0; i < M; i++)
+				for(int j = 0; j < N; j++) GOAL_SQUARES[i][j] = false;
 
 			nodes_created_tot = 0;
 			nodes_alive_tot = 0;
