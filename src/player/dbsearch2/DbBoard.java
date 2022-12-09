@@ -8,6 +8,8 @@ import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import player.dbsearch2.BiList.BiNode;
 import player.dbsearch2.DbSearch.Combined;
+import player.dbsearch2.Operators.Threat;
+import player.dbsearch2.Operators.USE;
 import player.pnsearch.structures.INodes.MovePair;
 
 
@@ -28,14 +30,15 @@ public class DbBoard {
 	public final int M;		// rows
 	public final int N;		// columns
 	public final int K;		// Number of symbols to be aligned (horizontally, vertically, diagonally) for a win
-	protected final MovePair MIN;
+	protected static final MovePair MIN = new MovePair(0, 0);
 	protected final MovePair MAX;
 
-	protected final MNKCellState[][] B;	// board
+	protected MNKCellState[][] B;	// board
 	protected MNKCell[] MC; 			// Marked Cells
 	protected MNKCell[] FC; 			// Free Cells
 	protected int MC_n;					// marked cells number
 	protected int FC_n;					// free cells number
+	protected LinkedList<Threat> markedThreats;
 	protected int[][] FC_indexes;		// cell y,x=index to element y,x in FC
 
 	//AUXILIARY STRUCTURES (BOARD AND ARRAYS) FOR COUNTING ALIGNMENTS
@@ -67,13 +70,8 @@ public class DbBoard {
 		this.N  = N;
 		this.K  = K;
 	 	this.gameState = MNKGameState.OPEN;
-		MIN = new MovePair(0, 0);
 		MAX = new MovePair(M, N);
-		
-		B  = new MNKCellState[M][N];
-		FC = new MNKCell[M*N]; 
-		MC = new MNKCell[M*N];
-	  	FC_indexes = new int[M][N];
+		initStructures();
 
 		initLinesStructures();
 		reset();
@@ -83,19 +81,26 @@ public class DbBoard {
 		this.N  = board.N;
 		this.K  = board.K;
 		this.gameState = board.gameState;
-		MIN = new MovePair(0, 0);
 		MAX = new MovePair(M, N);
+		initStructures();
 		
-		B  = new MNKCellState[M][N];
-		FC = new MNKCell[M*N]; 
-		MC = new MNKCell[M*N];
-		FC_indexes = new int[M][N];
+		initLinesStructures();
+		currentPlayer = board.currentPlayer;
+		copyArrays(board);
+	}
+	//CONSTRUCTOR WHICH COPIES ALL STRUCTURES; PARAMETER copy_all IS USELESS, IT'S JUST USED TO DISTINGUISH CONSTRUCTORS
+	public DbBoard(DbBoard board, boolean copy_all) {
+		this.M  = board.M;
+		this.N  = board.N;
+		this.K  = board.K;
+		this.gameState = board.gameState;
+		MAX = new MovePair(M, N);
+		initStructures();
 		
 		copyLinesStructures(board);
 		currentPlayer = board.currentPlayer;
 		copyArrays(board);
 	}
-
 
 
 	//public boolean isOperatorInCell(int i, int j, short dir, Operator f, MNKCellState player);
@@ -112,6 +117,7 @@ public class DbBoard {
 		* @return State of the game after the move
 		* @PRECONDITION: GameState==OPEN
 		*/
+		/*
 		public void markCell(int y, int x) {
 			MovePair c = new MovePair(y, x);
 			removeFC(y, x);
@@ -127,6 +133,7 @@ public class DbBoard {
 			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
 			currentPlayer = (currentPlayer + 1) % 2;
 		}
+		*/
 		// marks cells in order, all for current player; doesn't change current player
 		// PRECONDITIONS: needed at least two moves; all must be in line
 		/*public void markCells(MovePair[] c) {
@@ -159,11 +166,7 @@ public class DbBoard {
 		}*/
 		public void markCells(MNKCell[] c) {
 			int i;
-			for(i = 0; i < c.length; i++) {
-				removeFC(c[i].i, c[i].j);
-				addMC(c[i].i, c[i].j, c[i].state);
-				B[c[i].i][c[i].j] = c[i].state;
-			}
+			for(i = 0; i < c.length; i++) addCell(c[i].i, c[i].j, c[i].state);
 			// UPDATE ALIGNMENTS
 			// remove alignments for both players involving this cell
 			for(i = 0; i < c.length; i++) {
@@ -193,12 +196,7 @@ public class DbBoard {
 		}
 		public void markCells(LinkedList<MNKCell> c, Combined combined) {
 			ListIterator<MNKCell> it = c.listIterator();
-			while(it.hasNext()) {
-				MNKCell t = it.next();
-				removeFC(t.i, t.j);
-				addMC(t);
-				B[t.i][t.j] = t.state;
-			}
+			while(it.hasNext()) addCell(it.next());
 			// UPDATE ALIGNMENTS
 			// remove alignments for both players involving this cell
 			it = c.listIterator();
@@ -217,11 +215,28 @@ public class DbBoard {
 			//update gameState
 			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
 		}
+		private void addCell(int i, int j, MNKCellState state) {
+			removeFC(i, j);
+			addMC(i, j, state);
+			B[i][j] = state;
+		}
+		private void addCell(MNKCell cell) {
+			removeFC(cell.i, cell.j);
+			addMC(cell);
+			B[cell.i][cell.j] = cell.state;
+		}
+		public void addCells(MovePair[] threat, int atk) {
+			int i;
+			for(i = 0; i < threat.length; i++) {
+				MNKCellState state = Player[(i == atk) ? 0 : 1];
+				addCell(threat[i].i(), threat[i].j(), state);
+			}
+		}
 		/**
 		 * Undoes last move
 		 @PRECONDITION: MC.length > 0
 		 */
-		public void unmarkCell() {
+		/*public void unmarkCell() {
 			MNKCell oldc = MC[MC_n - 1];
 			MovePair c = new MovePair(oldc);
 			MNKCellState player = cellState(oldc);
@@ -240,7 +255,7 @@ public class DbBoard {
 		}
 		public void unmarkCells(int n) {
 			for(int i = 0; i < n; i++) unmarkCell();
-		}
+		}*/
 		public MNKCellState cellState(int y, int x) {return B[y][x];}
 		public MNKCellState cellState(MNKCell c) {return B[c.i][c.j];}
 		public MNKCellState cellState(MovePair c) {return B[c.i()][c.j()];}
@@ -250,16 +265,63 @@ public class DbBoard {
 
 		public MNKCell getMarkedCell(int i) {return MC[i];}
 		//public MNKCell getFreeCell(int i) {return FC[i];}
+		public LinkedList<Threat> getMarkedThreats() {return markedThreats;}
 		//public int MarkedCells_length() {return MC_n;}
 		//public int FreeCells_length() {reurn FC_n;}
-		
+
+		private void checkAlignments(MovePair cell) {
+			for(int d = 0; d < lines_dirs.length; d++) addAlignments(cell, cellState(cell), d);
+			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
+		}
+		private void checkAlignments(MovePair[] cells) {
+			if(cells.length == 1) {
+				checkAlignments(cells[0]);
+			} else {
+				MovePair dir = cells[0].getDirection(new MovePair(cells[1]));
+				int dir_index = dirsIndexes(dir);
+				for(int d = 0; d < lines_dirs.length; d++) {
+					if(d != dir_index) {
+						for(MovePair c : cells) addAlignments(c, cellState(c), d);
+					} else {
+						addAlignments_from(cells[0], MIN, cellState(cells[0]), d);
+						for(int i = 1; i < cells.length; i++) addAlignments_from(cells[i], cells[i-1], cellState(cells[i]), d);
+					}
+				}
+				//update gameState
+				if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
+			}
+		}
+
 	//#endregion BOARD
-
-
-
-
+		
+		
+		
+	
 	//#region DB_SEARCH
 
+		/**
+		 * 
+		 * @param threat : as defined in Operators
+		 * @param atk : attacker's move index in threat
+		 * @param use : as def in Operators
+		 * @param threats : wether to update alignments and threats for this board
+		 * @return :	a new board resulting after developing this with such threat (dependency stage);
+		 * 				the new board only has alignment involving the newly marked cells
+		 */
+		public DbBoard getDependant(Threat threat, int atk, USE use, boolean threats) {
+			DbBoard res = new DbBoard(this);
+			switch(use) {
+				case ATK:
+					MovePair cell = threat.related[threat.nextAtk(atk)];
+					addCell(cell.i(), cell.j(), Player[currentPlayer]);
+					if(threats) checkAlignments(cell);
+				case DEF: break;
+				case BTH:
+					addCells(threat.related, atk);
+					if(threats) checkAlignments(threat.related);
+			}
+			return res;
+		}
 		//public boolean isOperatorInCell(int i, int j, short dir, Operator f, MNKCellState player);
 		////marks all involved cells (-delete +add) for current player, without changing current player
 		//public void applyOperator(int i, int j, short dir, Operator f, MNKCellState attacker);
@@ -276,13 +338,13 @@ public class DbBoard {
 				MNKCell last = FC[FC_indexes[y][x]];				//last, in position where was this
 				FC_indexes[last.i][last.j] = FC_indexes[y][x];		//FC_indexes[last] = this position
 			}
-			private void addFC(int y, int x) {
+			/*private void addFC(int y, int x) {
 				Auxiliary.swap(FC, FC_indexes[y][x], FC_n);
 				MNKCell last = FC[FC_n];
 				FC_indexes[last.i][last.j] = FC_n;
 				FC_n++;
 			}
-			private void removeMC() {MC_n--;}
+			private void removeMC() {MC_n--;}*/
 			private void addMC(MNKCell cell) {MC[MC_n++] = cell;}
 			private void addMC(int y, int x, MNKCellState player) {MC[MC_n++] = new MNKCell(y, x, player);}
 		//#endregion FC_MC_ARRAYS
@@ -770,11 +832,18 @@ public class DbBoard {
 	//#endregion AUXILIARY
 
 	//#region INIT
+		private void initStructures() {
+			B  = new MNKCellState[M][N];
+			FC = new MNKCell[M*N]; 
+			MC = new MNKCell[M*N];
+			FC_indexes = new int[M][N];
+		}
 		public void reset() {
 			currentPlayer = 0;
 			initBoard();
 			initFreeCells();
 			initMarkedCells();
+			markedThreats = new LinkedList<Threat>();
 		}
 		// Sets to free all board cells
 		private void initBoard() {
@@ -812,6 +881,7 @@ public class DbBoard {
 				copyFreeCells(AB);
 				copyMarkedCells(AB);
 				copyFCindexes(AB);
+				markedThreats = new LinkedList<Threat>(AB.markedThreats);
 			}
 			private void copyBoard(DbBoard AB) {
 				for(int i = 0; i < M; i++)

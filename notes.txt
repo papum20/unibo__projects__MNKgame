@@ -50,6 +50,9 @@ DBSEARCH2:
 		-	heuristic: (non per global defense) se opponent ha threat category j, devo cercare solo threat category i
 		-	heuristic: conta win; fai max 10 (per attacker)
 		-	dividi operator attacker/defender
+		-	only find sequences for current attacker
+		-	lines in combination stage
+		-	correggi combination con la versione che parte da root
 	DONE:
 
 

@@ -244,13 +244,15 @@ public class Operators {
 						put((int)(keys[i]), values[i]);
 				}
 			}
+			public static enum USE {ATK, DEF, BTH}
 			public static class Threat {
-				private MovePair[] related;
+				public MovePair[] related;
 				private USE[] uses;			//0=attacker, 1=defender, 2=both
-				private static enum USE {ATK, DEF, BTH}
-				private Threat(int related) {
+				public final byte type;
+				private Threat(int related, byte type) {
 					this.related = new MovePair[related];
 					uses = new USE[related];
+					this.type = type;
 				}
 				private void set(MovePair cell, int index, USE use) {
 					related[index] = cell;
@@ -289,38 +291,38 @@ public class Operators {
 			}
 			private static class Applier1first implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(1);
-					if(board.cellState(op.start) == MNKCellState.FREE)	res.set(op.start, 0, Threat.USE.ATK);
-					else												res.set(op.end, 0, Threat.USE.ATK);
+					Threat res = new Threat(1, op.type);
+					if(board.cellState(op.start) == MNKCellState.FREE)	res.set(op.start, 0, USE.ATK);
+					else												res.set(op.end, 0, USE.ATK);
 					return res;
 				}
 			}
 			private static class Applier1in implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(1);
+					Threat res = new Threat(1, op.type);
 					MovePair dir = op.start.getDirection(op.end);
 					MovePair it = op.start.getSum(dir);
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(board.cellState(it) != MNKCellState.FREE) it.sum(dir);
 					//if(it.equals(op.end))	return null;
-					res.set(it, 0, Threat.USE.ATK);
+					res.set(it, 0, USE.ATK);
 					return res;
 				}
 			}
 			private static class Applier1second implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(1);
+					Threat res = new Threat(1, op.type);
 					MovePair dir = op.start.getDirection(op.end);
 					MovePair cell = op.start.getSum(dir);
 					if(board.cellState(cell) != MNKCellState.FREE) cell = op.end.getDiff(dir);
-					res.set(cell, 0, Threat.USE.ATK);
+					res.set(cell, 0, USE.ATK);
 					return res;
 				}
 			}
 			//like 1kc, but starts from the free border
 			private static class Applier1_1first_or_in implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(2);
+					Threat res = new Threat(2, op.type);
 					MovePair dir;
 					MovePair it;
 					if (board.cellState(op.start) == MNKCellState.FREE) {
@@ -333,7 +335,7 @@ public class Operators {
 					int len = 0;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(len < 2) {
-						if(board.cellState(it) == MNKCellState.FREE) res.set(it, len++, Threat.USE.BTH);
+						if(board.cellState(it) == MNKCellState.FREE) res.set(it, len++, USE.BTH);
 						//if(it.equals(op.end)) len = 2;	//exit while
 						it.sum(dir);
 					}
@@ -342,13 +344,13 @@ public class Operators {
 			}
 			private static class Applier1_1in_or_in implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(2);
+					Threat res = new Threat(2, op.type);
 					MovePair dir = op.start.getDirection(op.end);
 					MovePair it = new MovePair(op.start);
 					int len = 0;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(len < 2) {
-						if(board.cellState(it) == MNKCellState.FREE) res.set(it, len++, Threat.USE.BTH);
+						if(board.cellState(it) == MNKCellState.FREE) res.set(it, len++, USE.BTH);
 						//if(it.equals(op.end)) len = 2;	//exit while
 						it.sum(dir);
 					}
@@ -357,15 +359,15 @@ public class Operators {
 			}
 			private static class Applier1_3second_or_in implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(4);
+					Threat res = new Threat(4, op.type);
 					MovePair dir = op.start.getDirection(op.end);
 					MovePair it = op.start.getSum(dir);
 					if (board.cellState(it) != MNKCellState.FREE) {
 						it.reset(op.end.i() - dir.i(), op.end.j() - dir.j());
 						dir.negate();
 					}
-					res.set(op.start, 0, Threat.USE.DEF); 
-					res.set(it, 1, Threat.USE.BTH); 
+					res.set(op.start, 0, USE.DEF); 
+					res.set(it, 1, USE.BTH); 
 					int ind = 1;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(ind < 3) {
@@ -373,48 +375,48 @@ public class Operators {
 						//if(it.equals(op.end)) len = 2;	//exit while
 						if(ind < 3) it.sum(dir);
 					}
-					res.set(it, 2, Threat.USE.BTH); 
-					res.set(op.end, 3, Threat.USE.DEF); 
+					res.set(it, 2, USE.BTH); 
+					res.set(op.end, 3, USE.DEF); 
 					return res;
 				}
 			}
 			private static class Applier1_3in_or_in implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(4);
+					Threat res = new Threat(4, op.type);
 					MovePair dir = op.start.getDirection(op.end);
 					MovePair it = new MovePair(op.start);
-					res.set(op.start, 0, Threat.USE.DEF);
+					res.set(op.start, 0, USE.DEF);
 					int ind = 1;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(ind < 3) {
-						if(board.cellState(it) == MNKCellState.FREE) res.set(it, ind++, Threat.USE.BTH);
+						if(board.cellState(it) == MNKCellState.FREE) res.set(it, ind++, USE.BTH);
 						//if(it.equals(op.end)) len = 2;	//exit while
 						it.sum(dir);
 					}
-					res.set(op.end, 3, Threat.USE.DEF);
+					res.set(op.end, 3, USE.DEF);
 					return res;
 				}
 			}
 			private static class Applier1_2third implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(3);
+					Threat res = new Threat(3, op.type);
 					MovePair dir = op.start.getDirection(op.end);
-					res.set(op.start.getSum(dir), 0, Threat.USE.DEF);
+					res.set(op.start.getSum(dir), 0, USE.DEF);
 					if (board.cellState(op.start.i() + 2*dir.i(), op.start.j() + 2*dir.j()) == MNKCellState.FREE) {
-						res.set(new MovePair(op.start.i() + 2*dir.i(), op.start.j() + 2*dir.j()), 1, Threat.USE.ATK);
+						res.set(new MovePair(op.start.i() + 2*dir.i(), op.start.j() + 2*dir.j()), 1, USE.ATK);
 					} else {
-						res.set(new MovePair(op.end.i() - 2*dir.i(), op.end.j() - 2*dir.j()), 1, Threat.USE.ATK);
+						res.set(new MovePair(op.end.i() - 2*dir.i(), op.end.j() - 2*dir.j()), 1, USE.ATK);
 					}
-					res.set(op.end.getDiff(dir), 2, Threat.USE.DEF);
+					res.set(op.end.getDiff(dir), 2, USE.DEF);
 					return res;
 				}
 			}
 			private static class Applier1_2in implements Applier {
 				public Threat add(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-					Threat res = new Threat(3);
+					Threat res = new Threat(3, op.type);
 					MovePair dir = op.start.getDirection(op.end);
 					MovePair it = op.start.getSum(dir);
-					res.set(it, 0, Threat.USE.DEF);
+					res.set(it, 0, USE.DEF);
 					int ind = 0;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(ind < 2) {
@@ -422,8 +424,8 @@ public class Operators {
 						//if(it.equals(op.end)) len = 2;	//exit while
 						if(ind < 2) it.sum(dir);
 					}
-					res.set(it, 1, Threat.USE.ATK);
-					res.set(op.end.getDiff(dir), 2, Threat.USE.DEF);
+					res.set(it, 1, USE.ATK);
+					res.set(op.end.getDiff(dir), 2, USE.DEF);
 					return res;
 				}
 			}
