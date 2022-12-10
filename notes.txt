@@ -46,14 +46,19 @@ DBSEARCH2:
 		-	per trovare le goal square, quelle occupate in una threat sequence, basta fare la "differenza" tra le board
 		-	quindi in caso di win devo ritornare il nodo finale, con la board vincente
 		-	parametro nel find alignments per max category
-		-	global defense
 		-	heuristic: (non per global defense) se opponent ha threat category j, devo cercare solo threat category i
-		-	heuristic: conta win; fai max 10 (per attacker)
-		-	dividi operator attacker/defender
-		-	only find sequences for current attacker
 		-	lines in combination stage
-		-	correggi combination con la versione che parte da root
-	DONE:
+		-	converti dbboard che usa le applied threat
+		-	check won
+		-	check isLastDependency in find all comb nodes?? which nodes are dependency/comb/root??
+		
+		-	correggi combination con la versione che parte da root?
+		-	combination tra piu nodi?
+	DONE(?):
+		-	global defense
+		-	dividi operator attacker/defender
+		-	heuristic: conta win; fai max 10 (per attacker)
+		-	only find sequences for current attacker
 
 
 

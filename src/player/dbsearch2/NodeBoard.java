@@ -12,24 +12,31 @@ public class NodeBoard {
 	
 	public final DbBoard board;
 	public final boolean is_combination;	//true if combination, else false
+	public final byte max_threat;
 
 	protected NodeBoard first_child;
 	protected NodeBoard sibling;
 
 	
 	
-	public NodeBoard(int M, int N, int K, boolean is_combination) {
+	public NodeBoard(int M, int N, int K, boolean is_combination, byte max_threat) {
 		this.board = new DbBoard(M, N, K);
 		this.is_combination = is_combination;
+		this.max_threat = (byte)(max_threat);
 	}
-	public NodeBoard(DbBoard board, boolean is_combination) {
-		this.board = new DbBoard(board);
+	public NodeBoard(DbBoard board, boolean is_combination, byte max_threat, boolean copy_threats) {
+		this.board = board;
 		this.is_combination = is_combination;
+		this.max_threat = (byte)(max_threat);
 	}
-	public NodeBoard(DbBoard board, MNKCell[] operator, boolean is_combination) {
-		this.board = new DbBoard(board);
+	/*public NodeBoard(DbBoard board, MNKCell[] operator, boolean is_combination, int max_threat) {
+		this.board = new DbBoard(board, true);
 		this.is_combination = is_combination;
 		this.board.markCells(operator);
+		this.max_threat = (byte)(max_threat);
+	}*/
+	public static NodeBoard copy(DbBoard board, boolean is_combination, byte max_threat, boolean copy_threats) {
+		return new NodeBoard(new DbBoard(board, copy_threats), is_combination, max_threat, copy_threats);
 	}
 
 	//#region INodeDB
@@ -38,7 +45,7 @@ public class NodeBoard {
 		// with this board
 		public void combine(NodeBoard node, Combined combined) {
 			LinkedList<MNKCell> cells_to_add = node.getCombinedCells(this, combined);
-			board.markCells(cells_to_add, combined);
+			board.markCells(cells_to_add, combined, max_threat);
 		}
 
 		/*public boolean equals(NodeBoard node) {
