@@ -17,6 +17,14 @@ public class NodeBoard {
 	protected NodeBoard first_child;
 	protected NodeBoard sibling;
 
+
+	//#region CLASSES
+		public static enum BoardsRelation {
+			CONFLICT, USELESS, USEFUL
+		}
+
+	//#endregion CLASSES
+
 	
 	
 	public NodeBoard(int M, int N, int K, boolean is_combination, byte max_threat) {
@@ -24,7 +32,7 @@ public class NodeBoard {
 		this.is_combination = is_combination;
 		this.max_threat = (byte)(max_threat);
 	}
-	public NodeBoard(DbBoard board, boolean is_combination, byte max_threat, boolean copy_threats) {
+	public NodeBoard(DbBoard board, boolean is_combination, byte max_threat) {
 		this.board = board;
 		this.is_combination = is_combination;
 		this.max_threat = (byte)(max_threat);
@@ -36,17 +44,10 @@ public class NodeBoard {
 		this.max_threat = (byte)(max_threat);
 	}*/
 	public static NodeBoard copy(DbBoard board, boolean is_combination, byte max_threat, boolean copy_threats) {
-		return new NodeBoard(new DbBoard(board, copy_threats), is_combination, max_threat, copy_threats);
+		return new NodeBoard(new DbBoard(board, copy_threats), is_combination, max_threat);
 	}
 
 	//#region INodeDB
-
-		// copies all non-empty cells, assuming that they're not conflicting
-		// with this board
-		public void combine(NodeBoard node, Combined combined) {
-			LinkedList<MNKCell> cells_to_add = node.getCombinedCells(this, combined);
-			board.markCells(cells_to_add, combined, max_threat);
-		}
 
 		/*public boolean equals(NodeBoard node) {
 			return board.equals(node.board);
@@ -62,7 +63,7 @@ public class NodeBoard {
 		}
 		//like inConflict(), but also
 		//calculates wether a combination is useful, i.e., returns true if no attacker's mark would be added with respect to both parent nodes
-		public boolean validCombinationWith(NodeBoard node, MNKCellState attacker) {
+		public BoardsRelation validCombinationWith(NodeBoard node, MNKCellState attacker) {
 			boolean added_own = false, added_other = false;	//wether at least an attacker mark was added from own board, and from other (parameter) board
 			//check if own boards adds something
 			int i;
@@ -70,21 +71,22 @@ public class NodeBoard {
 			for(i = 0; i < board.MC_n; i++) {
 				cell = board.getMarkedCell(i);
 				if(cell.state != node.board.cellState(cell.i, cell.j)) {
-					if(node.board.cellState(cell.i, cell.j) != MNKCellState.FREE) return false;		//conflict: two different marks on same cell
+					if(node.board.cellState(cell.i, cell.j) != MNKCellState.FREE) return BoardsRelation.CONFLICT;		//conflict: two different marks on same cell
 					else if(cell.state == attacker) added_own = true;
 				}
 			}
-			if(!added_own) return false;
+			if(!added_own) return BoardsRelation.USELESS;
 			else {
 				//check if other board adds something
 				for(i = 0; i < node.board.MC_n; i++) {
 					cell = node.board.getMarkedCell(i);
 					if(cell.state != board.cellState(cell.i, cell.j)) {
-						if(board.cellState(cell.i, cell.j) != MNKCellState.FREE) return false;		//conflict: two different marks on same cell
+						if(board.cellState(cell.i, cell.j) != MNKCellState.FREE) return BoardsRelation.CONFLICT;		//conflict: two different marks on same cell
 						else if(cell.state == attacker) added_other = true;
 					}
 				}
-				return added_other;
+				if(added_other) return BoardsRelation.USEFUL;
+				else return BoardsRelation.USELESS;
 			}
 		}
 		

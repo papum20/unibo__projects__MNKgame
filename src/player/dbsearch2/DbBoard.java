@@ -199,7 +199,8 @@ public class DbBoard {
 			//update gameState
 			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
 		}
-		public void markCells(LinkedList<MNKCell> c, Combined combined, int max_tier) {
+		public void markCells(LinkedList<MNKCell> c, Combined combined, int max_tier, boolean check_win, boolean aligned) {
+			!
 			ListIterator<MNKCell> it = c.listIterator();
 			while(it.hasNext()) markCell(it.next());
 			// UPDATE ALIGNMENTS
@@ -310,6 +311,10 @@ public class DbBoard {
 					if(threats) checkAlignments(threat.related, max_tier);
 			}
 			return res;
+		}
+		//only checks for alignments not included in the union of A's and B's alignments, i.e. those which involve at least one cell only present in A and one only in B
+		public DbBoard getCombined(DbBoard board, MNKCellState attacker, int max_tier) {
+			
 		}
 		//public boolean isOperatorInCell(int i, int j, short dir, Operator f, MNKCellState player);
 		////marks all involved cells (-delete +add) for current player, without changing current player

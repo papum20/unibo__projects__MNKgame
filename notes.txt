@@ -40,25 +40,29 @@ DBSEARCH:
 	-	enhancement addcombination: crea solo nodi dove applicabile almeno un operatore
 DBSEARCH2:
 	-	board: remove alignments improved for line / more cells at a time
+	-	NOTE: findAllCombinationNodes : doesn't check isDependencyNode(): also needs combination between combination nodes (paper says, combinations of up to k nodes, so in this way i ensure those combinations are created)
 
 	TODO:
-		-	goal squares: inserisci come parametro; fai che se una viene occupata, ritorna win
-		-	per trovare le goal square, quelle occupate in una threat sequence, basta fare la "differenza" tra le board
 		-	quindi in caso di win devo ritornare il nodo finale, con la board vincente
 		-	parametro nel find alignments per max category
 		-	heuristic: (non per global defense) se opponent ha threat category j, devo cercare solo threat category i
 		-	lines in combination stage
 		-	converti dbboard che usa le applied threat
 		-	check won
-		-	check isLastDependency in find all comb nodes?? which nodes are dependency/comb/root??
 		
 		-	correggi combination con la versione che parte da root?
 		-	combination tra piu nodi?
 	DONE(?):
-		-	global defense
 		-	dividi operator attacker/defender
-		-	heuristic: conta win; fai max 10 (per attacker)
+		
+		-	check isLastDependency in find all comb nodes?? which nodes are dependency/comb/root??
+
+		-	goal squares: inserisci come parametro; fai che se una viene occupata, ritorna win
+		-	per trovare le goal square, quelle occupate in una threat sequence, basta fare la "differenza" tra le board
+		-	global defense
 		-	only find sequences for current attacker
+
+		-	heuristic: conta win; fai max 10 (per attacker)
 
 
 
