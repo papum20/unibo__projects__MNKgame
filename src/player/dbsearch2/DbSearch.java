@@ -419,25 +419,24 @@ public static final short SHORT_INFINITE = 32767;
 			}
 			private NodeBoard createDefensiveRoot(NodeBoard root, LinkedList<AppliedThreat> threats) {
 				ListIterator<AppliedThreat> it = threats.listIterator();
-				AppliedThreat threat = it.next();
+				AppliedThreat threat;
 				//create defenisve root copying current root, using opponent as player and marking only the move made by the current attacker in the first threat
 				NodeBoard def_root = NodeBoard.copy(root.board, true, (byte)(Operators.threatTier(threat.type) - 1), true);
 				//all alignments are copied from root
-				def_root.board.setPlayer(YOUR_MNK_PLAYER);
+				//def_root.board.setPlayer(YOUR_MNK_PLAYER);
 				//add a node for each threat, each node child/dependant from the previous one
 				NodeBoard prev, node = def_root;
 				while(it.hasNext()) {
+					threat = it.next();
 					prev = node;
 					prev.board.markCell(threat.atk);
-					//update related alignments
-					!
 					node = NodeBoard.copy(prev.board, true, prev.max_threat, false);
 					prev.addChild(node);
-					node.board.markCells(threat.def);
-					//update related alignments
-					!
-					threat = it.next();
+					node.board.markCells(threat.def, YOUR_MNK_PLAYER);
+					node.board.addThreat(threat);
+					//the new node doesn't check alignments
 				}
+				return def_root;
 			}
 			private void initLastCombination(NodeBoard node, LinkedList<NodeBoard> lastCombination) {
 				if(node != null) {
@@ -447,7 +446,7 @@ public static final short SHORT_INFINITE = 32767;
 				}
 			}
 			protected NodeBoard addDependentChild(NodeBoard node, Threat threat, int atk, LinkedList<NodeBoard> lastDependency) {
-				DbBoard new_board = node.board.getDependant(threat, atk, USE.BTH, true, node.max_threat);
+				DbBoard new_board = node.board.getDependant(threat, atk, USE.BTH, node.max_threat, true);
 				NodeBoard newChild = new NodeBoard(new_board, false, node.max_threat);
 				node.addChild(newChild);
 				lastDependency.add(newChild);

@@ -162,6 +162,9 @@ public class DbBoard {
 		public void markCell(MovePair cell) {markCell(cell.i(), cell.j(), Player[currentPlayer]);}
 		public void markCell(MNKCell cell) {markCell(cell.i, cell.j, cell.state);}
 		public void markCell(MovePair cell, MNKCellState player) {markCell(cell.i(), cell.j(), player);}
+		public void markCells(MovePair[] cells, MNKCellState player) {
+			for(MovePair c : cells) markCell(c.i(), c.j(), player);
+		}
 		public void markCells(MovePair[] threat, int atk) {
 			int i;
 			for(i = 0; i < threat.length; i++) {
@@ -169,7 +172,7 @@ public class DbBoard {
 				markCell(threat[i].i(), threat[i].j(), state);
 			}
 		}
-		public void markCells(MNKCell[] c, int max_tier) {
+		/*public void markCells(MNKCell[] c, int max_tier) {
 			int i;
 			for(i = 0; i < c.length; i++) markCell(c[i].i, c[i].j, c[i].state);
 			// UPDATE ALIGNMENTS
@@ -220,7 +223,7 @@ public class DbBoard {
 			}
 			//update gameState
 			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
-		}
+		}*/
 		/**
 		 * Undoes last move
 		 @PRECONDITION: MC.length > 0
@@ -260,26 +263,71 @@ public class DbBoard {
 		//public int FreeCells_length() {reurn FC_n;}
 
 		private void checkAlignments(MovePair cell, int max_tier) {
-			for(int d = 0; d < lines_dirs.length; d++) addAlignments(cell, cellState(cell), d, max_tier);
-			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
-		}
-		private void checkAlignments(MovePair[] cells, int max_tier) {
-			if(cells.length == 1) {
-				checkAlignments(cells[0], max_tier);
-			} else {
-				MovePair dir = cells[0].getDirection(new MovePair(cells[1]));
-				int dir_index = dirsIndexes(dir);
-				for(int d = 0; d < lines_dirs.length; d++) {
-					if(d != dir_index) {
-						for(MovePair c : cells) addAlignments(c, cellState(c), d, max_tier);
-					} else {
-						addAlignments_from(cells[0], MIN, cellState(cells[0]), d, max_tier);
-						for(int i = 1; i < cells.length; i++) addAlignments_from(cells[i], cells[i-1], cellState(cells[i]), d, max_tier);
-					}
-				}
-				//update gameState
+			if(isWinningCell(cell.i(), cell.j())) gameState = Auxiliary.cellState2winState(B[cell.i()][cell.j()]);
+			else {
+				for(int d = 0; d < lines_dirs.length; d++) addAlignments(cell, cellState(cell), d, max_tier);
 				if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
 			}
+		}
+		private void checkAlignments(MovePair[] cells, int max_tier) {
+			int i = 0;
+			while(i < cells.length && gameState == MNKGameState.OPEN) {
+				if(isWinningCell(cells[i].i(), cells[i].j())) gameState = Auxiliary.cellState2winState(B[cells[i].i()][cells[i].j()]);
+				else i++;
+			}
+			if(gameState == MNKGameState.OPEN) {
+				if(cells.length == 1) {
+					checkAlignments(cells[0], max_tier);
+				} else {
+					MovePair dir = cells[0].getDirection(new MovePair(cells[1]));
+					int dir_index = dirsIndexes(dir);
+					for(int d = 0; d < lines_dirs.length; d++) {
+						if(d != dir_index) {
+							for(MovePair c : cells) addAlignments(c, cellState(c), d, max_tier);
+						} else {
+							addAlignments_from(cells[0], MIN, cellState(cells[0]), d, max_tier);
+							for(i = 1; i < cells.length; i++) addAlignments_from(cells[i], cells[i-1], cellState(cells[i]), d, max_tier);
+						}
+					}
+					//update gameState
+					if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
+				}
+			}
+		}
+		private void checkAllCombinedAlignments(int max_tier) {
+			if(isWinningCell(cell.i(), cell.j())) gameState = Auxiliary.cellState2winState(B[cell.i()][cell.j()]);
+			else {
+				for(int d = 0; d < lines_dirs.length; d++) addAlignments(cell, cellState(cell), d, max_tier);
+				if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
+			}
+		}
+
+		private boolean isWinningCell(int y, int x) {
+			MNKCellState s = B[y][x];
+			int n;
+			
+			// Horizontal check
+			n = 1;
+			for(int k = 1; x-k >= 0 && B[y][x-k] == s; k++) n++; // backward check
+			for(int k = 1; x+k <  N && B[y][x+k] == s; k++) n++; // forward check   
+			if(n >= K) return true;
+			// Vertical check
+			n = 1;
+			for(int k = 1; y-k >= 0 && B[y-k][x] == s; k++) n++; // backward check
+			for(int k = 1; y+k <  M && B[y+k][x] == s; k++) n++; // forward check
+			if(n >= K) return true;
+			// Diagonal check
+			n = 1;
+			for(int k = 1; y-k >= 0 && x-k >= 0 && B[y-k][x-k] == s; k++) n++; // backward check
+			for(int k = 1; y+k <  M && x+k <  N && B[y+k][x+k] == s; k++) n++; // forward check
+			if(n >= K) return true;
+			// Anti-diagonal check
+			n = 1;
+			for(int k = 1; y-k >= 0 && x+k < N  && B[y-k][x+k] == s; k++) n++; // backward check
+			for(int k = 1; y+k <  M && x-k >= 0 && B[y+k][x-k] == s; k++) n++; // backward check
+			if(n >= K) return true;
+		
+			return false;
 		}
 
 	//#endregion BOARD
@@ -298,23 +346,28 @@ public class DbBoard {
 		 * @return :	a new board resulting after developing this with such threat (dependency stage);
 		 * 				the new board only has alignment involving the newly marked cells
 		 */
-		public DbBoard getDependant(Threat threat, int atk, USE use, boolean threats, int max_tier) {
+		public DbBoard getDependant(Threat threat, int atk, USE use, int max_tier, boolean check_threats) {
 			DbBoard res = new DbBoard(this, false);
 			switch(use) {
 				case ATK:
 					MovePair cell = threat.related[threat.nextAtk(atk)];
 					markCell(cell.i(), cell.j(), Player[currentPlayer]);
-					if(threats) checkAlignments(cell, max_tier);
+					if(check_threats) checkAlignments(cell, max_tier);
 				case DEF: break;
 				case BTH:
 					markCells(threat.related, atk);
-					if(threats) checkAlignments(threat.related, max_tier);
+					addThreat(threat, atk, Player[currentPlayer]);
+					if(check_threats) checkAlignments(threat.related, max_tier);
 			}
 			return res;
 		}
 		//only checks for alignments not included in the union of A's and B's alignments, i.e. those which involve at least one cell only present in A and one only in B
 		public DbBoard getCombined(DbBoard board, MNKCellState attacker, int max_tier) {
-			
+			DbBoard res = new DbBoard(this, false);
+			//mark other board's cells on this
+			for(MNKCell cell : board.MC)
+				if(B[cell.i][cell.j] == MNKCellState.FREE) markCell(cell);
+			}
 		}
 		//public boolean isOperatorInCell(int i, int j, short dir, Operator f, MNKCellState player);
 		////marks all involved cells (-delete +add) for current player, without changing current player
@@ -341,6 +394,16 @@ public class DbBoard {
 			private void removeMC() {MC_n--;}*/
 			private void addMC(MNKCell cell) {MC[MC_n++] = cell;}
 			private void addMC(int y, int x, MNKCellState player) {MC[MC_n++] = new MNKCell(y, x, player);}
+			public void addThreat(Threat threat, int atk, MNKCellState attacker) {
+				MovePair[] def = new MovePair[threat.related.length - 1];
+				for(int i = 0; i < atk; i++) def[i] = threat.related[i];
+				for(int i = atk + 1; i < threat.related.length; i++) def[i - 1] = threat.related[i];
+				AppliedThreat at = new AppliedThreat(threat.related[atk], def, attacker, threat.type);
+				markedThreats.addLast(at);
+			}
+			public void addThreat(AppliedThreat a_threat) {
+				markedThreats.addLast(a_threat);
+			}
 		//#endregion FC_MC_ARRAYS
 
 		//#region ALIGNMENTS
@@ -846,7 +909,7 @@ public class DbBoard {
 			initBoard();
 			initFreeCells();
 			initMarkedCells();
-			markedThreats = new LinkedList<Threat>();
+			markedThreats = new LinkedList<AppliedThreat>();
 		}
 		// Sets to free all board cells
 		private void initBoard() {
@@ -884,7 +947,7 @@ public class DbBoard {
 				copyFreeCells(AB);
 				copyMarkedCells(AB);
 				copyFCindexes(AB);
-				markedThreats = new LinkedList<Threat>(AB.markedThreats);
+				markedThreats = new LinkedList<AppliedThreat>(AB.markedThreats);	//copy marked threats
 			}
 			private void copyBoard(DbBoard AB) {
 				for(int i = 0; i < M; i++)

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
-import player.dbsearch2.DbSearch.Combined;;
+import player.dbsearch2.DbSearch.Combined;
 
 
 
@@ -91,7 +91,7 @@ public class NodeBoard {
 		}
 		
 		//assumes the boards are compatible, thus not in conflict
-		private LinkedList<MNKCell> getCombinedCells(NodeBoard node, Combined combined) {
+		/*private LinkedList<MNKCell> getCombinedCells(NodeBoard node, Combined combined) {
 			LinkedList<MNKCell> res = new LinkedList<MNKCell>();
 			for(int i = 0; i < board.MC_n; i++) {
 				MNKCell cell = board.getMarkedCell(i);
@@ -101,7 +101,7 @@ public class NodeBoard {
 				}
 			}
 			return res;
-		}
+		}*/
 
 	//#endregion INodeDb
 
