@@ -56,7 +56,7 @@ public class NodeBoard {
 		public boolean inConflict(NodeBoard node) {
 			for(int i = 0; i < board.MC_n; i++) {
 				MNKCell cell = board.getMarkedCell(i);
-				if(cell.state != node.board.cellState(cell.i, cell.j) && node.board.cellState(cell.i, cell.j) != MNKCellState.FREE )
+				if(cell.state != node.board.cellState(cell.i, cell.j) && node.board.cellState(cell.i, cell.j) != MNKCellState.FREE)
 					return true;
 			}
 			return false;

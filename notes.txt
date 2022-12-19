@@ -47,7 +47,7 @@ DBSEARCH2:
 		-	heuristic: (non per global defense) se opponent ha threat category j, devo cercare solo threat category i
 		-	lines in combination stage
 
-		-	(doing) : dbBoard.getCombined / checkCombinedThreats
+		-	(done) : dbBoard.getCombined / checkCombinedThreats -> (to test)
 		
 	DONE(?):
 		-	dividi operator attacker/defender

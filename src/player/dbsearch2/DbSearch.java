@@ -150,7 +150,7 @@ public static final short SHORT_INFINITE = 32767;
 
 			//recursive call for each possible move
 			try{
-				won = visit(root, MY_MNK_PLAYER, true, Operators.MAX_TIER, null);
+				won = visit(root, MY_MNK_PLAYER, true, Operators.MAX_TIER);
 			} catch (NullPointerException e) {
 				System.out.println("VISIT: NULL EXCEPTION");
 				throw e;
@@ -421,7 +421,7 @@ public static final short SHORT_INFINITE = 32767;
 				ListIterator<AppliedThreat> it = threats.listIterator();
 				AppliedThreat threat;
 				//create defenisve root copying current root, using opponent as player and marking only the move made by the current attacker in the first threat
-				NodeBoard def_root = NodeBoard.copy(root.board, true, (byte)(Operators.threatTier(threat.type) - 1), true);
+				NodeBoard def_root = NodeBoard.copy(root.board, true, (byte)(Operators.threatTier(threats.getFirst().type) - 1), true);
 				//all alignments are copied from root
 				//def_root.board.setPlayer(YOUR_MNK_PLAYER);
 				//add a node for each threat, each node child/dependant from the previous one
