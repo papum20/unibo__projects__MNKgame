@@ -131,8 +131,9 @@ public class Operators {
 	 * 	mnout:	min free cells per sided (min )
 	 */
 	
-	public static final int THREAT_TIERS = ALIGNMENTS_CODES.length - 1;
-	public static final byte MAX_TIER = (byte)(THREAT_TIERS - 1);
+	public static final int ALIGNMENT_TIERS = ALIGNMENTS_CODES.length;	//number of tiers for alignments (K to K-3)
+	public static final int THREAT_TIERS = ALIGNMENT_TIERS - 1;			//number of tiers for threats (excludes the K, which is won)
+	public static final byte MAX_TIER = (byte)(ALIGNMENT_TIERS - 1);
 	
 	public static final OperatorsMap[] OPERATORS = {
 		//TIER 0
@@ -165,7 +166,7 @@ public class Operators {
 		),
 		//TIER 3
 		new OperatorsMap(
-				ALIGNMENTS_CODES[3],
+			ALIGNMENTS_CODES[3],
 			new Applier[]{
 				applier1_3second_or_in,		//_x_x__ ->OxXxOO/OxOxXO
 				applier1_3in_or_in,			//_x__x_ ->OxXOxO/OxOXxO
@@ -184,8 +185,11 @@ public class Operators {
 	public static byte threatTier(byte threat) {
 		return (byte) (((threat & THREAT_MASK) >> (byte)4) - 1);
 	}
+	public static byte alignmentTier(byte alignment) {
+		return (byte) (((alignment & THREAT_MASK) >> (byte)4));
+	}
 	public static Threat applied(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-		return OPERATORS[threatTier(op.type)].get((int)(op.type)).add(board, op, attacker, defender);
+		return OPERATORS[alignmentTier(op.type)].get((int)(op.type)).add(board, op, attacker, defender);
 	}
 	public static MNKCell threat(MNKCell[] operator, MNKCellState attacker) {
 		for(MNKCell cell : operator)
@@ -215,11 +219,11 @@ public class Operators {
 					this.mnout = mnout;
 				}
 				private Alignment(int line, int mark, int in, int out, int mnout) {
-					this.line = (byte)line;
-					this.mark = (byte) mark;
-					this.in = (byte)in;
-					this.out = (byte)out;
-					this.mnout = (byte)mnout;
+					this.line = (short)line;
+					this.mark = (short) mark;
+					this.in = (short)in;
+					this.out = (short)out;
+					this.mnout = (short)mnout;
 				}
 				@Override public String toString() {
 					return line + "," + mark + "," + in + "," + out + "," + mnout;
@@ -247,7 +251,7 @@ public class Operators {
 			public static enum USE {ATK, DEF, BTH}
 			public static class Threat {
 				public MovePair[] related;
-				private USE[] uses;			//0=attacker, 1=defender, 2=both
+				protected USE[] uses;			//0=attacker, 1=defender, 2=both
 				public final byte type;
 				private Threat(int related, byte type) {
 					this.related = new MovePair[related];
@@ -275,10 +279,11 @@ public class Operators {
 			}
 			public static class RankedThreats extends ArrayList<LinkedList<Threat>> {
 				public RankedThreats() {
-					super(THREAT_TIERS);
-					for(int i = 0; i < THREAT_TIERS; i++) set(i, null);
+					super(ALIGNMENT_TIERS);
+					for(int i = 0; i < ALIGNMENT_TIERS; i++) add(i, null);
 				}
 				public void add(Threat threat, int tier) {
+					if(get(tier) == null) set(tier, new LinkedList<Threat>());
 					get(tier).add(threat);
 				}
 			}
@@ -335,7 +340,7 @@ public class Operators {
 					int len = 0;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(len < 2) {
-						if(board.cellState(it) == MNKCellState.FREE) res.set(it, len++, USE.BTH);
+						if(board.cellState(it) == MNKCellState.FREE) res.set(new MovePair(it), len++, USE.BTH);
 						//if(it.equals(op.end)) len = 2;	//exit while
 						it.sum(dir);
 					}
@@ -350,7 +355,7 @@ public class Operators {
 					int len = 0;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(len < 2) {
-						if(board.cellState(it) == MNKCellState.FREE) res.set(it, len++, USE.BTH);
+						if(board.cellState(it) == MNKCellState.FREE) res.set(new MovePair(it), len++, USE.BTH);
 						//if(it.equals(op.end)) len = 2;	//exit while
 						it.sum(dir);
 					}
@@ -366,8 +371,9 @@ public class Operators {
 						it.reset(op.end.i() - dir.i(), op.end.j() - dir.j());
 						dir.negate();
 					}
+			// DOESN'T PUT res IN ORDER WHEN START AND END ARE INVERTER
 					res.set(op.start, 0, USE.DEF); 
-					res.set(it, 1, USE.BTH); 
+					res.set(new MovePair(it), 1, USE.BTH); 
 					int ind = 1;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(ind < 3) {
@@ -389,7 +395,7 @@ public class Operators {
 					int ind = 1;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(ind < 3) {
-						if(board.cellState(it) == MNKCellState.FREE) res.set(it, ind++, USE.BTH);
+						if(board.cellState(it) == MNKCellState.FREE) res.set(new MovePair(it), ind++, USE.BTH);
 						//if(it.equals(op.end)) len = 2;	//exit while
 						it.sum(dir);
 					}
@@ -416,7 +422,7 @@ public class Operators {
 					Threat res = new Threat(3, op.type);
 					MovePair dir = op.start.getDirection(op.end);
 					MovePair it = op.start.getSum(dir);
-					res.set(it, 0, USE.DEF);
+					res.set(new MovePair(it), 0, USE.DEF);
 					int ind = 0;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(ind < 2) {

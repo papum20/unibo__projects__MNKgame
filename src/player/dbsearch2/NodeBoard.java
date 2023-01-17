@@ -31,11 +31,15 @@ public class NodeBoard {
 		this.board = new DbBoard(M, N, K);
 		this.is_combination = is_combination;
 		this.max_threat = (byte)(max_threat);
+		this.first_child = null;
+		this.sibling = null;
 	}
 	public NodeBoard(DbBoard board, boolean is_combination, byte max_threat) {
 		this.board = board;
 		this.is_combination = is_combination;
 		this.max_threat = (byte)(max_threat);
+		this.first_child = null;
+		this.sibling = null;
 	}
 	/*public NodeBoard(DbBoard board, MNKCell[] operator, boolean is_combination, int max_threat) {
 		this.board = new DbBoard(board, true);
@@ -119,7 +123,8 @@ public class NodeBoard {
 			else first_child.addSibling(child);
 		}
 		public void addSibling(NodeBoard sibling) {
-			if(this.sibling == null) this.sibling = sibling;
+			if(sibling == this) return;
+			else if(this.sibling == null) this.sibling = sibling;
 			else this.sibling.addSibling(sibling);
 		}
 		//public void setBestChild(NodeBoard best) {first_child = best; }

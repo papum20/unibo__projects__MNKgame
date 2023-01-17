@@ -56,18 +56,28 @@ public class DbTest {
 	}
 
 	public static void debugBoard(DbBoard board, boolean print_mc, boolean print_fc, boolean print_cells) {
+		System.out.println("\ndebugBoard() START:");
+		
+		// PRINT BOARD
 		String sep_line  = "";
 		for(int i = 0; i < 20; i++) sep_line += "-";
 		System.out.println(sep_line);
 		System.out.println("Turn " + board.MC_n);
 		printBoard(board);
 
+		// PRINT MC, FC
 		System.out.println("\n");
 		String mc_string = "", fc_string = "";
-		if(print_mc) for(int i = 0; i < board.MC_n; i++) mc_string += board.MC[i];
-		if(print_fc) for(int i = 0; i < board.FC_n; i++) fc_string += board.FC[i];
-		//System.out.println("MC: " + mc_string);
-		//System.out.println("FC: " + fc_string);
+		if(print_mc) for(int i = 0; i < board.MC_n; i++) {
+			mc_string += board.MC[i];
+			System.out.println("MC: " + mc_string);
+		}
+		if(print_fc) for(int i = 0; i < board.FC_n; i++) {
+			fc_string += board.FC[i];
+			System.out.println("FC: " + fc_string);
+		}
+
+		// PRINT ALIGNMENTS
 		if(print_cells) {
 			System.out.println("Alignments per cell - P1:");
 			for(int i = 0; i < board.M; i++) {
@@ -95,8 +105,8 @@ public class DbTest {
 			}
 		}
 		System.out.println("Alignments per line - P1:");
-		for(int d = 0; d < board.lines_dirs.length; d++) {
-			System.out.println("\tDIRECTION: " + DbBoard.DIRECTIONS[board.lines_dirs[d]]);
+		for(int d = 0; d < DbBoard.lines_dirs.length; d++) {
+			System.out.println("\tDIRECTION: " + DbBoard.DIRECTIONS[DbBoard.lines_dirs[d]]);
 			for(int k = 0; k < board.lines_per_dir[d].size(); k++) {
 				BiNode<OperatorPosition> p;
 				try {
@@ -113,8 +123,8 @@ public class DbTest {
 			}
 		}
 		System.out.println("Alignments per line - P2:");
-		for(int d = 0; d < board.lines_dirs.length; d++) {
-			System.out.println("\tDIRECTION: " + DbBoard.DIRECTIONS[board.lines_dirs[d]]);
+		for(int d = 0; d < DbBoard.lines_dirs.length; d++) {
+			System.out.println("\tDIRECTION: " + DbBoard.DIRECTIONS[DbBoard.lines_dirs[d]]);
 			for(int k = 0; k < board.lines_per_dir[d].size(); k++) {
 				BiNode<OperatorPosition> p;
 				try {
@@ -132,7 +142,8 @@ public class DbTest {
 		}
 
 		System.out.println("\n\n");
-
+		
+		System.out.println("END debugBoard();\n");
 	}
 
 	public static void debugBoard(DbBoard board, FileWriter file, boolean print_mc, boolean print_fc, boolean print_cells) {
@@ -143,12 +154,19 @@ public class DbTest {
 			file.write("Turn " + board.MC_n + "\n");
 			printBoard(board, file, 0);
 
+			// PRINT MC, FC
 			file.write("\n");
 			String mc_string = "", fc_string = "";
-			if(print_mc) for(int i = 0; i < board.MC_n; i++) mc_string += board.MC[i];
-			if(print_fc) for(int i = 0; i < board.FC_n; i++) fc_string += board.FC[i];
-			//file.write("MC: " + mc_string);
-			//file.write("FC: " + fc_string);
+			if(print_mc) for(int i = 0; i < board.MC_n; i++){
+				mc_string += board.MC[i];
+				file.write("MC: " + mc_string);
+			}
+			if(print_fc) for(int i = 0; i < board.FC_n; i++) {
+				fc_string += board.FC[i];
+				file.write("FC: " + fc_string);
+			}
+			
+			// PRINT ALIGNMENTS
 			if(print_cells) {
 				file.write("Alignments per cell - P1:\n");
 				for(int i = 0; i < board.M; i++) {
@@ -176,8 +194,8 @@ public class DbTest {
 				}
 			}
 			file.write("Alignments per line - P1:\n");
-			for(int d = 0; d < board.lines_dirs.length; d++) {
-				file.write("\tDIRECTION: " + DbBoard.DIRECTIONS[board.lines_dirs[d]] + "\n");
+			for(int d = 0; d < DbBoard.lines_dirs.length; d++) {
+				file.write("\tDIRECTION: " + DbBoard.DIRECTIONS[DbBoard.lines_dirs[d]] + "\n");
 				for(int k = 0; k < board.lines_per_dir[d].size(); k++) {
 					BiNode<OperatorPosition> p;
 					try {
@@ -194,8 +212,8 @@ public class DbTest {
 				}
 			}
 			file.write("Alignments per line - P2:\n");
-			for(int d = 0; d < board.lines_dirs.length; d++) {
-				file.write("\tDIRECTION: " + DbBoard.DIRECTIONS[board.lines_dirs[d]] + "\n");
+			for(int d = 0; d < DbBoard.lines_dirs.length; d++) {
+				file.write("\tDIRECTION: " + DbBoard.DIRECTIONS[DbBoard.lines_dirs[d]] + "\n");
 				for(int k = 0; k < board.lines_per_dir[d].size(); k++) {
 					BiNode<OperatorPosition> p;
 					try {
@@ -224,27 +242,33 @@ public class DbTest {
 		DbSearch db = new DbSearch();
 		db.initPlayer(M, N, K, true, 10);
 		DbBoard board = new DbBoard(M, N, K);
+		MNKCellState player = MNKCellState.P1;
 
 
-		for(AlignmentsMap al : Operators.ALIGNMENTS) System.out.println(al.size());
+		System.out.println("Alignments sizes:");
+		for(AlignmentsMap al : Operators.ALIGNMENTS) System.out.println("\t" + al.size());
 
 		debugBoard(board, false, false, false);
 		
 		Scanner scanner = new Scanner(System.in);
 		while(true) {
+			debugBoard(board, false, false, false);
 			int i, j;
 			System.out.println("i,j: ");
 			i = Integer.parseInt(scanner.next());
 			j = Integer.parseInt(scanner.next());
-			board.markCell(i, j);
+			MovePair move = new MovePair(i, j);
+			board.markCell(move, player);
+			board.updateAlignments(move, player);
+
+			debugBoard(board, false, false, false);
 
 			MNKCell[] FC = resizeArray(board.FC, board.FC_n), MC = resizeArray(board.MC, board.MC_n);
 			MNKCell cell = db.selectCell(FC, MC);
 			System.out.println(cell);
-			
-			debugBoard(board, false, false, false);
 
 			if(board.gameState != MNKGameState.OPEN) break;
+			else player = Auxiliary.opponent(player);
 		}
 
 		scanner.close();

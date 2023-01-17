@@ -1,3 +1,11 @@
+NUOVO!! (FEBBRAIO)
+- controlla se usate e init bene goal_squares
+- uso threat/line tier (sopr. defensive visit)
+	- eventualmente crea nuovo ranking (rispettando tesi)
+- (IMPORTANTE - ERRORE - DOVE ERO ARRIVATO) serve hash table per non creare infinite combinazioni (problema delle combinazioni che hanno 2 padri)
+
+-------------------
+
 ERRORI:
 	- pnsearchADeleteD :
 		- errore out of tempo con 3g mem (su macchine lab)
@@ -45,7 +53,6 @@ DBSEARCH2:
 	TODO:
 		-	quindi in caso di win devo ritornare il nodo finale, con la board vincente
 		-	heuristic: (non per global defense) se opponent ha threat category j, devo cercare solo threat category i
-		-	lines in combination stage
 
 		-	(done) : dbBoard.getCombined / checkCombinedThreats -> (to test)
 		
@@ -55,6 +62,7 @@ DBSEARCH2:
 		-	parametro nel find alignments per max category
 		-	check won
 		-	converti dbboard che usa le applied threat
+		-	lines in combination stage
 		
 		-	check isLastDependency in find all comb nodes?? which nodes are dependency/comb/root??
 		-	correggi combination con la versione che parte da root?
