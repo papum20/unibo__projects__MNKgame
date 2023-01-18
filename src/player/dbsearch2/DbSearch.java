@@ -2,10 +2,9 @@ package player.dbsearch2;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.lang.Runtime;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
-import javax.sound.midi.MidiChannel;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
@@ -47,6 +46,7 @@ public static final short SHORT_INFINITE = 32767;
 	//protected final short PROOF_N_INFINITE = INodes.PROOF_N_INFINITE;
 
 	protected DbBoard board;
+	protected TranspositionTable TT;
 	
 	protected long timer_start;					//turn start (milliseconds)
 	protected long timer_end;					//time (millisecs) at which to stop timer
@@ -361,15 +361,17 @@ public static final short SHORT_INFINITE = 32767;
 								if(GOAL_SQUARES[atk_cell.i()][atk_cell.j()]) return true;
 								else {
 									NodeBoard newChild = addDependentChild(node, threat, atk_index, lastDependency);
-									// DEBUG
-									try {
-										file.write("-" + lev + "\t---\n");
-										DbTest.printBoard(newChild.board, file, lev);
-										file.write("---\n");
-									} catch (Exception e) {}
+									if(newChild != null) {
+										// DEBUG
+										try {
+											file.write("-" + lev + "\t---\n");
+											DbTest.printBoard(newChild.board, file, lev);
+											file.write("---\n");
+										} catch (Exception e) {}
 
-									won = addDependentChildren(newChild, attacker, attacking, lev+1, lastDependency);
-									if(found_win_sequences >= MAX_THREAT_SEQUENCES) break;
+										won = addDependentChildren(newChild, attacker, attacking, lev+1, lastDependency);
+										if(found_win_sequences >= MAX_THREAT_SEQUENCES) break;
+									}
 									atk_index++;
 								}
 							}
@@ -509,47 +511,64 @@ public static final short SHORT_INFINITE = 32767;
 					initLastCombination(node.getFirstChild(), lastCombination);
 				}
 			}
+			/**
+			 * @return null if the same board already has an entry in TT
+			 */
 			protected NodeBoard addDependentChild(NodeBoard node, Threat threat, int atk, LinkedList<NodeBoard> lastDependency) {
 				DbBoard new_board = node.board.getDependant(threat, atk, USE.BTH, node.max_threat, true);
-				NodeBoard newChild = new NodeBoard(new_board, false, node.max_threat);
-				node.addChild(newChild);
-				lastDependency.add(newChild);
-				return newChild;
+				if(TT.exists(new_board.hash)) return null;
+				else {
+					TT.insert(new_board.hash);
+					NodeBoard newChild = new NodeBoard(new_board, false, node.max_threat);
+					node.addChild(newChild);
+					lastDependency.add(newChild);
+					return newChild;
+				}
 			}
+			/**
+			 * (I hope) adding the child to both parents is useless, for now
+			 */
 			protected NodeBoard addCombinationChild(NodeBoard A, NodeBoard B, MNKCellState attacker, LinkedList<NodeBoard> lastCombination) {
 				int max_threat = Math.min(A.max_threat, B.max_threat);
 				DbBoard new_board = A.board.getCombined(B.board, attacker, max_threat);
-				NodeBoard newChild = new NodeBoard(new_board, true, (byte)max_threat);
-				A.addChild(newChild);
-				B.addChild(newChild);
-				lastCombination.add(newChild);
-				return newChild;
+				if(TT.exists(new_board.hash)) return null;
+				else {
+					TT.insert(new_board.hash);
+					NodeBoard newChild = new NodeBoard(new_board, true, (byte)max_threat);
+					A.addChild(newChild);
+					//B.addChild(newChild);
+					lastCombination.add(newChild);
+					return newChild;
+				}
 			}
 			// ENHANCEMENT: ONLY ADD COMBINATIONS WITH AT LEAST ONE OPERATOR APPLICABLE, SO YOU
 			// DON'T ADD USELESS NODES
 			protected boolean addCombination(NodeBoard A, NodeBoard B, LinkedList<NodeBoard> lastCombination, MNKCellState attacker, boolean attacking) {
 				//create combination with A's board (copied)
 				NodeBoard new_combination = addCombinationChild(A, B, attacker, lastCombination);
-				try {
-					file.write("first parent: \n");
-					DbTest.printBoard(A.board, file);
-					file.write(".\n");
-					file.write("second parent: \n");
-					DbTest.printBoard(B.board, file);
-					file.write(".\n");
-					DbTest.printBoard(new_combination.board, file);
-					file.write("---\n");
-					file.write("---\n");
-				} catch (Exception e) {}
-				MNKGameState state = new_combination.board.gameState();
-				if(state == MNKGameState.OPEN) return false;
-				if(state == MNKGameState.DRAW) return !attacking;
-				else if(state == Auxiliary.cellState2winState(attacker)) {
-					if(attacking) {
-						found_win_sequences++;
-						possible_winning_sequences.add(new_combination);
+				if(new_combination != null) {
+					try {
+						file.write("first parent: \n");
+						DbTest.printBoard(A.board, file);
+						file.write(".\n");
+						file.write("second parent: \n");
+						DbTest.printBoard(B.board, file);
+						file.write(".\n");
+						DbTest.printBoard(new_combination.board, file);
+						file.write("---\n");
+						file.write("---\n");
+					} catch (Exception e) {}
+					MNKGameState state = new_combination.board.gameState();
+					if(state == MNKGameState.OPEN) return false;
+					if(state == MNKGameState.DRAW) return !attacking;
+					else if(state == Auxiliary.cellState2winState(attacker)) {
+						if(attacking) {
+							found_win_sequences++;
+							possible_winning_sequences.add(new_combination);
+						}
+						return true;
 					}
-					return true;
+					else return false;
 				}
 				else return false;
 			}
@@ -666,6 +685,8 @@ public static final short SHORT_INFINITE = 32767;
 		//inits own attributes (for this class)
 		protected void initAttributes() {
 			board = new DbBoard(M, N, K);
+			TT = new TranspositionTable(M, N);
+			DbBoard.TT = TT;
 			timer_end = timeout_in_millisecs - 1000;
 			runtime = Runtime.getRuntime();
 			//current_root = newNode();

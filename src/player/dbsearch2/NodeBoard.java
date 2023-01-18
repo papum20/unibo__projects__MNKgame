@@ -33,6 +33,7 @@ public class NodeBoard {
 		this.max_threat = (byte)(max_threat);
 		this.first_child = null;
 		this.sibling = null;
+		//this.flag = false;
 	}
 	public NodeBoard(DbBoard board, boolean is_combination, byte max_threat) {
 		this.board = board;
@@ -40,6 +41,7 @@ public class NodeBoard {
 		this.max_threat = (byte)(max_threat);
 		this.first_child = null;
 		this.sibling = null;
+		//this.flag = false;
 	}
 	/*public NodeBoard(DbBoard board, MNKCell[] operator, boolean is_combination, int max_threat) {
 		this.board = new DbBoard(board, true);
@@ -113,6 +115,7 @@ public class NodeBoard {
 
 		public NodeBoard getFirstChild() {return first_child; }
 		public NodeBoard getSibling() {return sibling; }
+		//public Boolean flagged() {return flag; }
 	
 	//#endregion GET
 
@@ -128,6 +131,17 @@ public class NodeBoard {
 			else this.sibling.addSibling(sibling);
 		}
 		//public void setBestChild(NodeBoard best) {first_child = best; }
+		/*
+		public void flag() {flag = true; }
+		// UN-FLAG RECURSIVELY, ASSUMING THAT THIS WAS FLAGGED IF AND ONLY IF ITS PARENT WAS
+		public void unflag_r() {
+			if(flag) {
+				flag = false;
+				if(first_child != null) first_child.unflag_r();
+				if(sibling != null) sibling.unflag_r();
+			}
+		}
+		*/
 	
 	//#endregion SET
 	

@@ -2,7 +2,9 @@ NUOVO!! (FEBBRAIO)
 - controlla se usate e init bene goal_squares
 - uso threat/line tier (sopr. defensive visit)
 	- eventualmente crea nuovo ranking (rispettando tesi)
-- (IMPORTANTE - ERRORE - DOVE ERO ARRIVATO) serve hash table per non creare infinite combinazioni (problema delle combinazioni che hanno 2 padri)
+- ( (fatto!) IMPORTANTE - ERRORE ) serve hash table per non creare infinite combinazioni (problema delle combinazioni che hanno 2 padri)
+-	(DOVE ERO ARRIVATO) fatto transposition table (eventualmente da testare); pare che non si blocchi niente;
+	problema: non riconosce minacce (neanche con 5)
 
 -------------------
 
@@ -25,6 +27,10 @@ https://en.wikipedia.org/wiki/M,n,k-game
 http://fragrieu.free.fr/SearchingForSolutions.pdf (Victor Allis) (tesi 200 pagine pnsearch, dbsearch)
 Transpositions
 http://ggp.stanford.edu/readings/symmetry.pdf
+letti:
+https://www.chessprogramming.org/Transposition_Table
+https://www.chessprogramming.org/Zobrist_Hashing
+https://www.chessprogramming.org/Enhanced_Transposition_Cutoff
 
 MINIMAX:
 	- cambiare Board con nostra struttura (perché modifica le sue MC e FC con markCell() in modo non efficiente; in particolare non sono efficienti FC.toArray(lineare), e FC.remove (logaritmico))

@@ -24,29 +24,27 @@ public class DbTest {
 		}
 	}
 	public static void printBoard(DbBoard board, FileWriter file) {
-		for(int i = 0; i < board.M; i++) {
-			String row = "";
-			for(int j = 0; j < board.N; j++) 
-				row += mnk2char(board.cellState(i, j));
-			try {
-				file.write(row + "\n");
-			} catch (Exception e) {
-				
+		try {
+			for(int i = 0; i < board.M; i++) {
+				String row = "";
+				for(int j = 0; j < board.N; j++) 
+					row += mnk2char(board.cellState(i, j));
+					file.write(row + "\n");
 			}
-		}
+			file.write((int)(board.hash) + " " + (int)(board.hash >> 16) + "\n");
+		} catch (Exception e) { }
 	}
 	public static void printBoard(DbBoard board, FileWriter file, int level) {
-		for(int i = 0; i < board.M; i++) {
-			String row = "";
-			for(int j = 0; j < level; j++) row += "\t";
-			for(int j = 0; j < board.N; j++) 
-				row += mnk2char(board.cellState(i, j));
-			try {
+		try {
+			for(int i = 0; i < board.M; i++) {
+				String row = "";
+				for(int j = 0; j < level; j++) row += "\t";
+				for(int j = 0; j < board.N; j++) 
+					row += mnk2char(board.cellState(i, j));
 				file.write(row + "\n");
-			} catch (Exception e) {
-				
 			}
-		}
+			file.write((int)(board.hash) + " " + (int)(board.hash >> 16) + "\n");
+		} catch (Exception e) { }
 	}
 	
 	public static char mnk2char(MNKCellState c) {

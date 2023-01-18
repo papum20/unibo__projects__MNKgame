@@ -1,12 +1,10 @@
 package player.dbsearch2;
 
 import java.util.LinkedList;
-import java.util.ListIterator;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import mnkgame.MNKPlayerTester;
 import player.dbsearch2.BiList.BiNode;
 import player.dbsearch2.DbSearch.Combined;
 import player.dbsearch2.Operators.Threat;
@@ -42,6 +40,9 @@ public class DbBoard {
 	protected LinkedList<AppliedThreat> markedThreats;
 	protected int[][] FC_indexes;		// cell y,x=index to element y,x in FC
 
+	protected static TranspositionTable TT;
+	protected long hash;
+
 	//AUXILIARY STRUCTURES (BOARD AND ARRAYS) FOR COUNTING ALIGNMENTS
 	protected AlignmentsList lines_rows;
 	protected AlignmentsList lines_cols;
@@ -72,6 +73,7 @@ public class DbBoard {
 		this.K  = K;
 	 	this.gameState = MNKGameState.OPEN;
 		MAX = new MovePair(M, N);
+		hash = 0;
 		initStructures();
 
 		initLinesStructures();
@@ -84,6 +86,7 @@ public class DbBoard {
 		this.gameState = board.gameState;
 		MAX = new MovePair(M, N);
 		currentPlayer = board.currentPlayer;
+		hash = board.hash;
 		initStructures();
 		
 		if(copy_threats) copyLinesStructures(board);
@@ -156,6 +159,7 @@ public class DbBoard {
 			removeFC(i, j);
 			addMC(i, j, state);
 			B[i][j] = state;
+			hash = TT.getHash(hash, i, j, cellState2int(state));
 		}
 		public void markCell(MovePair cell) {markCell(cell.i(), cell.j(), Player[currentPlayer]);}
 		public void markCell(MNKCell cell) {markCell(cell.i, cell.j, cell.state);}
@@ -401,6 +405,10 @@ public class DbBoard {
 				Auxiliary.swap(FC, FC_indexes[y][x], --FC_n);		//swap this and last
 				MNKCell last = FC[FC_indexes[y][x]];				//last, in position where was this
 				FC_indexes[last.i][last.j] = FC_indexes[y][x];		//FC_indexes[last] = this position
+			}
+			// ASSUMES IT'S EITHER P1 OR P2, NOT FREE
+			private int cellState2int(MNKCellState state) {
+				return (state == Player[0]) ? 0 : 1;
 			}
 			/*private void addFC(int y, int x) {
 				Auxiliary.swap(FC, FC_indexes[y][x], FC_n);
