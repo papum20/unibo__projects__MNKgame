@@ -8,6 +8,7 @@ import java.util.ListIterator;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
+import mnkgame.MNKGame;
 import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
 import player.dbsearch2.BiList.BiNode;
@@ -223,10 +224,12 @@ public static final short SHORT_INFINITE = 32767;
 			LinkedList<NodeBoard> lastDependency = new LinkedList<NodeBoard>(), lastCombination = new LinkedList<NodeBoard>();
 			initLastCombination(root, lastCombination);
 			short level = 1;
+			// DEBUG
+			if(!attacking) level = 8;
 			boolean won = false, found_sequences = false;
 			//DEBUG
 			int defense = 0;
-			while(!isTimeEnded() && isTreeChanged(lastCombination) && !won && found_win_sequences < MAX_THREAT_SEQUENCES) {
+			while(!isTimeEnded() && isTreeChanged(lastCombination) && !won && (!attacking || found_win_sequences < MAX_THREAT_SEQUENCES)) {
 				// DEBUG FILE-NAME
 				if(attacking) {
 					try {
@@ -241,7 +244,7 @@ public static final short SHORT_INFINITE = 32767;
 				lastDependency.clear();
 				// DEBUG
 				try {
-					if(attacking) file.write("\t");
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 					file.write("--------\tDEPENDENCY\t--------\n");
 				} catch(Exception e) {}
 				//
@@ -249,8 +252,7 @@ public static final short SHORT_INFINITE = 32767;
 				
 				// IF FOUND THREAT SEQUENCE, ANALYZE DEFENSES
 				try {
-					if(attacking) file.write("\t");
-					file.write("--------\tDEFENSES\t--------\n");
+					if(attacking) file.write("\t\t\t\t--------\tDEFENSES\t--------\n");
 				} catch(Exception e) {}
 				//check for global defenses
 				if(attacking && found_sequences) {
@@ -264,7 +266,7 @@ public static final short SHORT_INFINITE = 32767;
 					lastCombination.clear();
 					// DEBUG
 					try {
-						if(attacking) file.write("\t");
+						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 						file.write("--------\tCOMBINATION\t--------\n");
 					} catch(Exception e) {}
 					//
@@ -293,8 +295,14 @@ public static final short SHORT_INFINITE = 32767;
 			while(!won && it.hasNext()) {
 				//add each combination of attacker's made threats to each dependency node
 				won_state = it.next();
+				//DEBUG
+				try {
+					file.write("\t\t\t\tWIN:\n");
+					DbTest.printBoard(won_state.board, file, 4);
+					file.write("\t\t\t\t-----\n");
+				} catch(Exception e) {}
 				NodeBoard new_root = createDefensiveRoot(root, won_state.board.markedThreats);
-				int first_threat_tier = won_state.board.getMarkedThreats().getFirst().type;
+				int first_threat_tier = Operators.alignmentTier(won_state.board.getMarkedThreats().getFirst().type) - 1;
 				//visit for defender
 				markGoalSquares(won_state.board.getMarkedThreats(), true);
 // visit Or !visit?
@@ -316,8 +324,10 @@ public static final short SHORT_INFINITE = 32767;
 			while(it.hasNext() && !won) {
 				NodeBoard node = it.next();
 				try {
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 					file.write("parent: \n");
-					DbTest.printBoard(node.board, file);
+					DbTest.printBoard(node.board, file, attacking?0:8);
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 					file.write("children: \n");
 				} catch (Exception e) {}
 				won = addDependentChildren(node, attacker, attacking, 1, lastDependency);
@@ -330,8 +340,10 @@ public static final short SHORT_INFINITE = 32767;
 			while(it.hasNext() && !won) {
 				NodeBoard node = it.next();
 				try {
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 					file.write("parent: \n");
-					DbTest.printBoard(node.board, file);
+					DbTest.printBoard(node.board, file,attacking?0:8);
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 					file.write("children: \n");
 				} catch (Exception e) {}
 				won = findAllCombinationNodes(node, root, attacker, attacking, lastCombination);
@@ -352,6 +364,7 @@ public static final short SHORT_INFINITE = 32767;
 							while((atk_index = threat.nextAtk(atk_index)) != -1) {
 								// DEBUG
 								try {
+									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 									file.write("\t\t\t" + threat.type + "\t" + atk_index + "\t");
 									for(int i = 0; i < threat.related.length; i++) file.write(threat.related[i] + " " + threat.uses[i] + "\t");
 									file.write("\n");
@@ -361,17 +374,18 @@ public static final short SHORT_INFINITE = 32767;
 								if(GOAL_SQUARES[atk_cell.i()][atk_cell.j()]) return true;
 								else {
 									NodeBoard newChild = addDependentChild(node, threat, atk_index, lastDependency);
-									if(newChild != null) {
-										// DEBUG
-										try {
-											file.write("-" + lev + "\t---\n");
-											DbTest.printBoard(newChild.board, file, lev);
-											file.write("---\n");
-										} catch (Exception e) {}
+									// DEBUG
+									try {
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("-" + lev + "\t---\n");
+										DbTest.printBoard(newChild.board, file, lev + (attacking?0:8));
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("---\n");
+									} catch (Exception e) {}
 
-										won = addDependentChildren(newChild, attacker, attacking, lev+1, lastDependency);
-										if(found_win_sequences >= MAX_THREAT_SEQUENCES) break;
-									}
+									if(addDependentChildren(newChild, attacker, attacking, lev+1, lastDependency))
+										won = true;
+									if(found_win_sequences >= MAX_THREAT_SEQUENCES) break;
 									atk_index++;
 								}
 							}
@@ -380,15 +394,18 @@ public static final short SHORT_INFINITE = 32767;
 				}
 				return won;
 			}
-			else if(state == MNKGameState.DRAW) return !attacking;
-			else if(state == Auxiliary.cellState2winState(attacker)) {
-				if(attacking) {
-					found_win_sequences++;
-					possible_winning_sequences.add(node);
+			else {
+				TT.setState(node.board.hash, state);
+				if(state == MNKGameState.DRAW) return !attacking;
+				else if(state == Auxiliary.cellState2winState(attacker)) {
+					if(attacking) {
+						found_win_sequences++;
+						possible_winning_sequences.add(node);
+					}
+					return true;
 				}
-				return true;
+				else return false;	//in case of loss or draw
 			}
-			else return false;	//in case of loss or draw
 		}
 		/**
 		 * @param partner : fixed node for combination
@@ -411,7 +428,10 @@ public static final short SHORT_INFINITE = 32767;
 						//	file.write("\t\t\t\t\t\t\t\t\t\t" + relation + "\n");
 						//} catch(Exception e) {}
 						if(relation != BoardsRelation.CONFLICT) {
-							if(relation == BoardsRelation.USEFUL) won = addCombination(partner, node, lastCombination, attacker, attacking);
+							if(relation == BoardsRelation.USEFUL) {
+								if (addCombination(partner, node, lastCombination, attacker, attacking))
+									won = true;
+							}
 							if(findAllCombinationNodes(partner, node.getFirstChild(), attacker, attacking, lastCombination)) won = true;
 						}
 						if(findAllCombinationNodes(partner, node.getSibling(), attacker, attacking, lastCombination)) won = true;
@@ -485,23 +505,34 @@ public static final short SHORT_INFINITE = 32767;
 			}
 			private NodeBoard createDefensiveRoot(NodeBoard root, LinkedList<AppliedThreat> threats) {
 				ListIterator<AppliedThreat> it = threats.listIterator();
-				AppliedThreat threat;
+				AppliedThreat threat = null;
 				//create defenisve root copying current root, using opponent as player and marking only the move made by the current attacker in the first threat
 				NodeBoard def_root = NodeBoard.copy(root.board, true, (byte)(Operators.threatTier(threats.getFirst().type) - 1), true);
 				//all alignments are copied from root
-				//def_root.board.setPlayer(YOUR_MNK_PLAYER);
+				def_root.board.setPlayer(YOUR_MNK_PLAYER);
 				//add a node for each threat, each node child/dependant from the previous one
 				NodeBoard prev, node = def_root;
 				while(it.hasNext()) {
 					threat = it.next();
 					prev = node;
-					prev.board.markCell(threat.atk);
-					node = NodeBoard.copy(prev.board, true, prev.max_threat, false);
-					prev.addChild(node);
-					node.board.markCells(threat.def, YOUR_MNK_PLAYER);
-					node.board.addThreat(threat);
+					prev.board.markCell(threat.atk, MY_MNK_PLAYER);
+					if(it.hasNext() || threat.def.length > 0) {
+						node = NodeBoard.copy(prev.board, true, prev.max_threat, false);
+						prev.addChild(node);
+						node.board.markCells(threat.def, YOUR_MNK_PLAYER);
+						node.board.addThreat(threat);
+					}
 					//the new node doesn't check alignments
+					//DEBUG
+					try {
+						file.write("\t\t\t\t" + threat.atk + "\n");
+						DbTest.printBoard(prev.board, file, 4);
+						for(MovePair m : threat.def) file.write("\t\t\t\t" + m + " ");
+						file.write("\n");
+					} catch(Exception e) {}
 				}
+				//DEBUG
+				if(threat.def.length > 0) DbTest.printBoard(node.board, file, 4);
 				return def_root;
 			}
 			private void initLastCombination(NodeBoard node, LinkedList<NodeBoard> lastCombination) {
@@ -512,18 +543,26 @@ public static final short SHORT_INFINITE = 32767;
 				}
 			}
 			/**
-			 * @return null if the same board already has an entry in TT
+			 * sets child's game_state if entry exists in TT
 			 */
 			protected NodeBoard addDependentChild(NodeBoard node, Threat threat, int atk, LinkedList<NodeBoard> lastDependency) {
 				DbBoard new_board = node.board.getDependant(threat, atk, USE.BTH, node.max_threat, true);
-				if(TT.exists(new_board.hash)) return null;
+				NodeBoard newChild = new NodeBoard(new_board, false, node.max_threat);
+				MNKGameState game_state = TT.getState(new_board.hash);
+				if(game_state != null) {
+					//DEBUG
+					try {
+						file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
+					} catch(Exception e) {}
+					new_board.setGameState(game_state);
+				}
 				else {
 					TT.insert(new_board.hash);
-					NodeBoard newChild = new NodeBoard(new_board, false, node.max_threat);
+					//only adds child to tree and list if doesn't already exist
 					node.addChild(newChild);
 					lastDependency.add(newChild);
-					return newChild;
 				}
+				return newChild;
 			}
 			/**
 			 * (I hope) adding the child to both parents is useless, for now
@@ -531,44 +570,53 @@ public static final short SHORT_INFINITE = 32767;
 			protected NodeBoard addCombinationChild(NodeBoard A, NodeBoard B, MNKCellState attacker, LinkedList<NodeBoard> lastCombination) {
 				int max_threat = Math.min(A.max_threat, B.max_threat);
 				DbBoard new_board = A.board.getCombined(B.board, attacker, max_threat);
-				if(TT.exists(new_board.hash)) return null;
+				NodeBoard newChild = new NodeBoard(new_board, true, (byte)max_threat);
+				MNKGameState game_state = TT.getState(new_board.hash);
+				if(TT.exists(new_board.hash)) {
+					//DEBUG	
+					try {
+						file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
+					} catch(Exception e) {}
+					new_board.setGameState(game_state);
+				}
 				else {
 					TT.insert(new_board.hash);
-					NodeBoard newChild = new NodeBoard(new_board, true, (byte)max_threat);
+					//only adds child to tree and list if doesn't already exist
 					A.addChild(newChild);
 					//B.addChild(newChild);
 					lastCombination.add(newChild);
-					return newChild;
 				}
+				return newChild;
 			}
 			// ENHANCEMENT: ONLY ADD COMBINATIONS WITH AT LEAST ONE OPERATOR APPLICABLE, SO YOU
 			// DON'T ADD USELESS NODES
 			protected boolean addCombination(NodeBoard A, NodeBoard B, LinkedList<NodeBoard> lastCombination, MNKCellState attacker, boolean attacking) {
 				//create combination with A's board (copied)
 				NodeBoard new_combination = addCombinationChild(A, B, attacker, lastCombination);
-				if(new_combination != null) {
-					try {
-						file.write("first parent: \n");
-						DbTest.printBoard(A.board, file);
-						file.write(".\n");
-						file.write("second parent: \n");
-						DbTest.printBoard(B.board, file);
-						file.write(".\n");
-						DbTest.printBoard(new_combination.board, file);
-						file.write("---\n");
-						file.write("---\n");
-					} catch (Exception e) {}
-					MNKGameState state = new_combination.board.gameState();
-					if(state == MNKGameState.OPEN) return false;
-					if(state == MNKGameState.DRAW) return !attacking;
-					else if(state == Auxiliary.cellState2winState(attacker)) {
-						if(attacking) {
-							found_win_sequences++;
-							possible_winning_sequences.add(new_combination);
-						}
-						return true;
+				try {
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+					file.write("\t\tfirst parent: \n");
+					DbTest.printBoard(A.board, file,attacking?2:10);
+					file.write(".\n");
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+					file.write("\t\tsecond parent: \n");
+					DbTest.printBoard(B.board, file,attacking?2:10);
+					file.write(".\n");
+					DbTest.printBoard(new_combination.board, file,attacking?2:10);
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+					file.write("---\n");
+					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+					file.write("---\n");
+				} catch (Exception e) {}
+				MNKGameState state = new_combination.board.gameState();
+				if(state == MNKGameState.OPEN) return false;
+				else if(state == MNKGameState.DRAW) return !attacking;
+				else if(state == Auxiliary.cellState2winState(attacker)) {
+					if(attacking) {
+						found_win_sequences++;
+						possible_winning_sequences.add(new_combination);
 					}
-					else return false;
+					return true;
 				}
 				else return false;
 			}

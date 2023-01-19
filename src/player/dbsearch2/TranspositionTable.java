@@ -2,6 +2,11 @@ package player.dbsearch2;
 
 import java.util.Random;
 
+import org.w3c.dom.ElementTraversal;
+
+import mnkgame.MNKGame;
+import mnkgame.MNKGameState;
+
 
 
 public class TranspositionTable {
@@ -48,8 +53,31 @@ public class TranspositionTable {
 		if(table[index] == null) return false;
 		else {
 			Element compare = new Element(key);
-			return table[index].equalsNext(compare);
+			return (table[index].getNext(compare) != null);
 		}
+	}
+	public MNKGameState getState(long key) {
+		int index = Element.index(key);
+		if(table[index] == null) return null;
+		else {
+			Element compare = new Element(key);
+			Element e = table[index].getNext(compare);
+			if(e == null) return null;
+			else return e.getState();
+		}
+	}
+	public void setState(long key, MNKGameState state) {
+		int index = Element.index(key);
+		if(table[index] != null) {
+			Element compare = new Element(key);
+			Element e = table[index].getNext(compare);
+			e.setState(state);
+		}
+	}
+
+	public void clear(long key) {
+		int index = Element.index(key);
+		table[index] = null;
 	}
 
 
@@ -59,6 +87,7 @@ public class TranspositionTable {
 
 		private short key1;
 		private int key2;
+		private byte state;
 		protected Element next;
 
 		private static final int TABLE_SIZE = 16;
@@ -68,16 +97,39 @@ public class TranspositionTable {
 		protected Element(long key) {
 			key2 = (int)(key >> TABLE_SIZE);
 			key1 = (short)(key >> MASK2_BITS);
+			state = 0;	//OPEN
 		}
 		protected void addNext(Element e) {
 			if(next == null) next = e;
 			else next.addNext(e);
 		}
-		//returns true if cmp==this or a next element in the list (assuming the index is the same)
-		protected Boolean equalsNext(Element cmp) {
-			if ((cmp.key1 == key1) && (cmp.key2 == key2)) return true;
-			else if(next == null) return false;
-			else return next.equalsNext(cmp);
+		protected void setState(MNKGameState mnk_state) {
+			switch(mnk_state) {
+				case DRAW:
+					state = 0;
+					break;
+				case OPEN:
+					state = 1;
+					break;
+				case WINP1:
+					state = 2;
+					break;
+				case WINP2:
+					state = 3;
+					break;
+			}
+		}
+		protected MNKGameState getState() {
+			if(state == 0) return MNKGameState.DRAW;
+			else if(state == 1) return MNKGameState.OPEN;
+			else if(state == 2) return MNKGameState.WINP1;
+			else return MNKGameState.WINP2;
+		}
+		//returns the element if cmp==this or a next element in the list (assuming the index is the same)
+		protected Element getNext(Element cmp) {
+			if ((cmp.key1 == key1) && (cmp.key2 == key2)) return this;
+			else if(next == null) return null;
+			else return next.getNext(cmp);
 		}
 		protected static int tableSize() {
 			return TABLE_SIZE;

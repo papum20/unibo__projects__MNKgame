@@ -13,6 +13,7 @@ public class BiList<T> {
 
 	public BiNode<T> addFirst(T item) {
 		BiNode<T>  node = new BiNode<T>(item, null, head);
+		if(head != null) head.prev = node;
 		head = node;
 		return node;
 	}

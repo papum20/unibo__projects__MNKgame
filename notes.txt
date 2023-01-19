@@ -2,9 +2,6 @@ NUOVO!! (FEBBRAIO)
 - controlla se usate e init bene goal_squares
 - uso threat/line tier (sopr. defensive visit)
 	- eventualmente crea nuovo ranking (rispettando tesi)
-- ( (fatto!) IMPORTANTE - ERRORE ) serve hash table per non creare infinite combinazioni (problema delle combinazioni che hanno 2 padri)
--	(DOVE ERO ARRIVATO) fatto transposition table (eventualmente da testare); pare che non si blocchi niente;
-	problema: non riconosce minacce (neanche con 5)
 
 -------------------
 

@@ -170,7 +170,7 @@ public class DbBoard {
 		public void markCells(MovePair[] threat, int atk) {
 			int i;
 			for(i = 0; i < threat.length; i++) {
-				MNKCellState state = Player[(i == atk) ? 0 : 1];
+				MNKCellState state = Player[(i == atk) ? currentPlayer : (1 - currentPlayer)];
 				markCell(threat[i].i(), threat[i].j(), state);
 			}
 		}
@@ -264,6 +264,7 @@ public class DbBoard {
 		public MNKCellState cellState(MNKCell c) {return B[c.i][c.j];}
 		public MNKCellState cellState(MovePair c) {return B[c.i()][c.j()];}
 		public MNKGameState gameState() {return gameState;}
+		public void setGameState(MNKGameState state) {gameState = state; }
 		public int currentPlayer() {return currentPlayer;}
 		public void setPlayer(MNKCellState player) {currentPlayer = (player == this.Player[0]) ? 0 : 1;}
 
@@ -440,14 +441,17 @@ public class DbBoard {
 				BiNode<BiNode<OperatorPosition>> node = cells_lines[center.i()][center.j()].getFirst(player);
 				if(node != null) {
 					do {
-						System.out.println("\t\trm: " + node.item.item);
+						
 						MovePair start = node.item.item.start, end = node.item.item.end;
 						MovePair dir = start.getDirection(end);
-						//delete for line
+						// DEBUG
+						System.out.println("\t\trm: " + node.item.item);
 						System.out.println("\t\t" + lineIndex(dir, center));
+						//delete for line
 						lines_per_dir[dirsIndexes(dir)].remove(player, lineIndex(dir, center), node.item);
 						//delete for this cell
 						BiNode<BiNode<OperatorPosition>> tmp = node;
+						
 						node = node.next;
 						cells_lines[center.i()][center.j()].remove(player, tmp);
 					} while(node != null);

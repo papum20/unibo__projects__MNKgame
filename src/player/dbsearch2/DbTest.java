@@ -43,7 +43,9 @@ public class DbTest {
 					row += mnk2char(board.cellState(i, j));
 				file.write(row + "\n");
 			}
-			file.write((int)(board.hash) + " " + (int)(board.hash >> 16) + "\n");
+			int dec = (int)(Math.pow(10, 8));
+			file.write("hash:" + board.hash + "\n");
+			file.write("key, rest of key: " + (int)(board.hash) + " " + (int)(board.hash >> 16) + "\n");
 		} catch (Exception e) { }
 	}
 	
