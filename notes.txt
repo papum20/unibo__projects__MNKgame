@@ -3,6 +3,20 @@ NUOVO!! (FEBBRAIO)
 - uso threat/line tier (sopr. defensive visit)
 	- eventualmente crea nuovo ranking (rispettando tesi)
 
+ENHANCEMENTS (TESI):
+	gomoku - db:
+	-	category reduction (attacker cerca solo tier < massima difesa trovata)
+	-	restricted threes (solo 2-reply 3 e ignora 3-reply 3 (solo attacker))
+	gomoku - pn:
+	-	move ordering
+		-	threat recognition (score)
+		-	move ordering in pn
+	-	relatede squares
+		-	related squares recognition
+		-	iterated related squares (espansione related squares in nodi adiacenti in pn)
+	-	implicit-threat heuristic (prima che si trovin sempre minacce)
+	-	heuristic (dis)proof number initialization
+
 -------------------
 
 ERRORI:

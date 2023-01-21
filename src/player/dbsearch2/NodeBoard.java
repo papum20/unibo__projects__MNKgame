@@ -12,7 +12,7 @@ public class NodeBoard {
 	
 	public final DbBoard board;
 	public final boolean is_combination;	//true if combination, else false
-	public final byte max_threat;
+	public final byte max_tier;				//max tier to find
 
 	protected NodeBoard first_child;
 	protected NodeBoard sibling;
@@ -27,30 +27,30 @@ public class NodeBoard {
 
 	
 	
-	public NodeBoard(int M, int N, int K, boolean is_combination, byte max_threat) {
+	public NodeBoard(int M, int N, int K, boolean is_combination, byte max_tier) {
 		this.board = new DbBoard(M, N, K);
 		this.is_combination = is_combination;
-		this.max_threat = (byte)(max_threat);
+		this.max_tier = (byte)(max_tier);
 		this.first_child = null;
 		this.sibling = null;
 		//this.flag = false;
 	}
-	public NodeBoard(DbBoard board, boolean is_combination, byte max_threat) {
+	public NodeBoard(DbBoard board, boolean is_combination, byte max_tier) {
 		this.board = board;
 		this.is_combination = is_combination;
-		this.max_threat = (byte)(max_threat);
+		this.max_tier = (byte)(max_tier);
 		this.first_child = null;
 		this.sibling = null;
 		//this.flag = false;
 	}
-	/*public NodeBoard(DbBoard board, MNKCell[] operator, boolean is_combination, int max_threat) {
+	/*public NodeBoard(DbBoard board, MNKCell[] operator, boolean is_combination, int max_tier) {
 		this.board = new DbBoard(board, true);
 		this.is_combination = is_combination;
 		this.board.markCells(operator);
-		this.max_threat = (byte)(max_threat);
+		this.max_tier = (byte)(max_tier);
 	}*/
-	public static NodeBoard copy(DbBoard board, boolean is_combination, byte max_threat, boolean copy_threats) {
-		return new NodeBoard(new DbBoard(board, copy_threats), is_combination, max_threat);
+	public static NodeBoard copy(DbBoard board, boolean is_combination, byte max_tier, boolean copy_threats) {
+		return new NodeBoard(new DbBoard(board, copy_threats), is_combination, max_tier);
 	}
 
 	//#region INodeDB

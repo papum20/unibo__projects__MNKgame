@@ -19,7 +19,7 @@ import player.pnsearch.structures.INodes.MovePair;
 
 public class Operators {
 
-	//byte CODES FOR THREATS
+	//byte CODES FOR THREATS (ALIGNMENTS)
 	public static final byte LINE_0		= 0;	//xxxxx				k
 	public static final byte LINE_1F	= 16;	//_xxxx_			straight k-1
 	public static final byte LINE_1a	= 17;	//_xxxx				k-1
@@ -73,24 +73,25 @@ public class Operators {
 	
 
 	
-	
-	public static final byte[][] ALIGNMENTS_CODES = {
+	// ARRAY OF ALIGNMENTS (REPRESENTED AS CODES), GROUPED BY TIER
+	public static final byte[][] ALIGNMENT_CODES = {
 		new byte[]{LINE_0},
 		new byte[]{LINE_1F, LINE_1a, LINE_1b},
 		new byte[]{LINE_2B, LINE_2, LINE_2T, LINE_21a, LINE_21b, LINE_21c},
 		new byte[]{LINE_3B, LINE_3B2, LINE_3, LINE_32, LINE_3T, LINE_3Bb}
 	};
+	// ARRAY OF ALIGNMENTS (REPRESENTED AS class Alignment), GROUPED BY TIER
 	public static final AlignmentsMap[] ALIGNMENTS = {
 		//TIER 0
 		new AlignmentsMap(
-			ALIGNMENTS_CODES[0],
+			ALIGNMENT_CODES[0],
 			new Alignment[]{
 				new Alignment(0, 0, 0, 0, 0)	//xxxxx
 			}
 		),
 		//TIER 1
 		new AlignmentsMap(
-			ALIGNMENTS_CODES[1],
+			ALIGNMENT_CODES[1],
 			new Alignment[]{
 				new Alignment(-1, -1, 0, 2, 1),			//_xxxx_
 				new Alignment(-1, -1, 0, 1, 0),			//xxxx_
@@ -99,7 +100,7 @@ public class Operators {
 		),
 		//TIER 2
 		new AlignmentsMap(
-			ALIGNMENTS_CODES[2],
+			ALIGNMENT_CODES[2],
 			new Alignment[]{
 				new Alignment(-1, -2, 1, 2, 1),		//_xx_x_
 				new Alignment(-2, -2, 0, 3, 1),		//_xxx__
@@ -111,7 +112,7 @@ public class Operators {
 		),
 		//TIER 3
 		new AlignmentsMap(
-				ALIGNMENTS_CODES[3],
+				ALIGNMENT_CODES[3],
 			new Alignment[]{
 				new Alignment(-2, -3, 1, 3, 1),	//_x_x__
 				new Alignment(-1, -3, 2, 2, 1),	//_x__x_
@@ -131,21 +132,23 @@ public class Operators {
 	 * 	mnout:	min free cells per sided (min )
 	 */
 	
-	public static final int ALIGNMENT_TIERS = ALIGNMENTS_CODES.length;	//number of tiers for alignments (K to K-3)
-	public static final int THREAT_TIERS = ALIGNMENT_TIERS - 1;			//number of tiers for threats (excludes the K, which is won)
-	public static final byte MAX_TIER = (byte)(ALIGNMENT_TIERS - 1);
+	public static final int TIER_N = ALIGNMENT_CODES.length - 1;	//number of tiers for alignments (K-1 to K-3, excluding K which is won)
+	public static final byte TIER_MAX = (byte)TIER_N;
 	
+	// ARRAY OF OPERATORS, GROUPED BY TIER, i.e. APPLICATIONS OF CONVERSIONS FROM ALIGNMENTS TO THREATS
 	public static final OperatorsMap[] OPERATORS = {
 		//TIER 0
+		/*
 		new OperatorsMap(
-			ALIGNMENTS_CODES[0],
+			ALIGNMENT_CODES[0],
 			new Applier[]{
 				applierNull				//xxxxx->do nothigh
 			}
 		),
+		*/
 		//TIER 1
 		new OperatorsMap(
-			ALIGNMENTS_CODES[1],
+			ALIGNMENT_CODES[1],
 			new Applier[]{
 				applierNull,			//_xxxx_->do nothing (implicit in [1])
 				applier1first,			//xxxx_ ->xxxxX
@@ -154,7 +157,7 @@ public class Operators {
 		),
 		//TIER 2
 		new OperatorsMap(
-			ALIGNMENTS_CODES[2],
+			ALIGNMENT_CODES[2],
 			new Applier[]{
 				applier1in,				//_xx_x_->_xxXx_
 				applier1second,			//_xxx__->_xxxX_
@@ -166,7 +169,7 @@ public class Operators {
 		),
 		//TIER 3
 		new OperatorsMap(
-			ALIGNMENTS_CODES[3],
+			ALIGNMENT_CODES[3],
 			new Applier[]{
 				applier1_3second_or_in,		//_x_x__ ->OxXxOO/OxOxXO
 				applier1_3in_or_in,			//_x__x_ ->OxXOxO/OxOXxO
@@ -178,18 +181,50 @@ public class Operators {
 		)
 	};
 
+	// ARRAY OF ALIGNMENTS, GROUPED BY TIER, REPRESENTED AS SCORES (USED AS HEURISTIC FOR MOVE ORDERING)
+	// 0 = not considered
+	public static final int[][] ALIGNMENT_SCORES = {
+		//TIER 0
+		/*
+		{
+			0
+		},
+		*/
+		//TIER 1
+		{
+			0,
+			0,
+			0
+		},
+		//TIER 2
+		{
+			2,		//_xx_x_->_xxXx_
+			3,		//_xxx__->_xxxX_
+			4,		//__xxx__
+			0,
+			0,
+			0
+		},
+		//TIER 3
+		{
+			0,
+			0,
+			2,		//__xx__
+			0,
+			0,
+			1		//__x_x__
+		}
+	};
 	
 	
 	
 	// 0...7 (also -8...-1)
-	public static byte threatTier(byte threat) {
+	public static byte tier(byte threat) {
 		return (byte) (((threat & THREAT_MASK) >> (byte)4) - 1);
 	}
-	public static byte alignmentTier(byte alignment) {
-		return (byte) (((alignment & THREAT_MASK) >> (byte)4));
-	}
+
 	public static Threat applied(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
-		return OPERATORS[alignmentTier(op.type)].get((int)(op.type)).add(board, op, attacker, defender);
+		return OPERATORS[tier(op.type)].get((int)(op.type)).add(board, op, attacker, defender);
 	}
 	public static MNKCell threat(MNKCell[] operator, MNKCellState attacker) {
 		for(MNKCell cell : operator)
@@ -276,13 +311,21 @@ public class Operators {
 					}
 					return -1;
 				}
+				public MovePair[] getDefensive(int atk) {
+					if(related.length <= 1) return null;
+					MovePair[] defensive = new MovePair[related.length - 1];
+					for(int i = 0; i < atk; i++) defensive[i] = related[i];
+					for(int i = atk + 1; i < related.length; i++) defensive[i - 1] = related[i];
+					return defensive;
+				}
 			}
 			public static class RankedThreats extends ArrayList<LinkedList<Threat>> {
 				public RankedThreats() {
-					super(ALIGNMENT_TIERS);
-					for(int i = 0; i < ALIGNMENT_TIERS; i++) add(i, null);
+					super(TIER_N);
+					for(int i = 0; i < TIER_N; i++) add(i, null);
 				}
-				public void add(Threat threat, int tier) {
+				public void add(Threat threat) {
+					int tier = tier(threat.type);
 					if(get(tier) == null) set(tier, new LinkedList<Threat>());
 					get(tier).add(threat);
 				}

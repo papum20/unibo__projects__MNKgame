@@ -179,7 +179,7 @@ public class DbBoard {
 			removeAlignments(cell, Auxiliary.opponent(player));
 			removeAlignments(cell, player);
 			// add alignments for player
-			for(int d = 0; d < lines_dirs.length; d++) addAlignments(cell, player, d, Operators.MAX_TIER);
+			for(int d = 0; d < lines_dirs.length; d++) addAlignments(cell, player, d, Operators.TIER_MAX);
 			//update gameState
 			if(FC_n == 0 && gameState == MNKGameState.OPEN) gameState = MNKGameState.DRAW;
 			//currentPlayer = (currentPlayer + 1) % 2;
@@ -362,11 +362,21 @@ public class DbBoard {
 		public DbBoard getDependant(Threat threat, int atk, USE use, int max_tier, boolean check_threats) {
 			DbBoard res = new DbBoard(this, false);
 			switch(use) {
+				//used for...
 				case ATK:
 					MovePair cell = threat.related[threat.nextAtk(atk)];
 					res.markCell(cell.i(), cell.j(), Player[currentPlayer]);
 					if(check_threats) res.checkAlignments(cell, max_tier);
-				case DEF: break;
+					break;
+				//used for init defensive visit (marks defensive cells as own)
+				case DEF:
+					res.markCells(threat.related, Player[currentPlayer]);
+					res.addThreat(threat, atk, Auxiliary.opponent(Player[currentPlayer]));
+					//if there exist any defensive moves
+					if(check_threats && threat.related.length > 1) 
+						res.checkAlignments(threat.getDefensive(atk), max_tier);
+					break;
+				//used for dependency stage
 				case BTH:
 					res.markCells(threat.related, atk);
 					res.addThreat(threat, atk, Player[currentPlayer]);
@@ -380,8 +390,10 @@ public class DbBoard {
 			for(AppliedThreat threat : board.markedThreats) {
 				if(this.isUsefulThreat(threat)) {
 					//mark other board's threat on this
-					res.markCell(threat.atk, threat.attacker);
-					res.markCells(threat.def, Auxiliary.opponent(threat.attacker));
+					for(int i = 0; i < threat.threat.related.length; i++) {
+						if(i == threat.atk) res.markCell(threat.threat.related[i], threat.attacker);
+						else res.markCells(threat.threat.related, Auxiliary.opponent(threat.attacker));
+					}
 					//add threats
 					res.addThreat(threat);
 				}
@@ -390,6 +402,10 @@ public class DbBoard {
 			for(int d = 0; d < lines_per_dir.length; d++)
 				res.addAllCombinedAlignments(this, board, attacker, d, max_tier);
 			return res;
+		}
+		public void addAllAlignments(MNKCellState player, int max_threat) {
+			for(int i = 0; i < lines_dirs.length; i++)
+				addAllAlignments_t(player, i, max_threat);
 		}
 		//public boolean isOperatorInCell(int i, int j, short dir, Operator f, MNKCellState player);
 		////marks all involved cells (-delete +add) for current player, without changing current player
@@ -421,10 +437,11 @@ public class DbBoard {
 			private void addMC(MNKCell cell) {MC[MC_n++] = cell;}
 			private void addMC(int y, int x, MNKCellState player) {MC[MC_n++] = new MNKCell(y, x, player);}
 			public void addThreat(Threat threat, int atk, MNKCellState attacker) {
-				MovePair[] def = new MovePair[threat.related.length - 1];
-				for(int i = 0; i < atk; i++) def[i] = threat.related[i];
-				for(int i = atk + 1; i < threat.related.length; i++) def[i - 1] = threat.related[i];
-				AppliedThreat at = new AppliedThreat(threat.related[atk], def, attacker, threat.type);
+				// from when appliedThreat was different:
+				//MovePair[] def = new MovePair[threat.related.length - 1];
+				//for(int i = 0; i < atk; i++) def[i] = threat.related[i];
+				//for(int i = atk + 1; i < threat.related.length; i++) def[i - 1] = threat.related[i];
+				AppliedThreat at = new AppliedThreat(threat, atk, attacker);
 				markedThreats.addLast(at);
 			}
 			public void addThreat(AppliedThreat a_threat) {
@@ -581,7 +598,7 @@ public class DbBoard {
 								if(tier <= max_tier)
 								{
 									//foreach alignment of mark marks
-									for(byte code : Operators.ALIGNMENTS_CODES[tier]) {
+									for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 										Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
 										System.out.println("\t\t\t\t\tal = " + al);
 										//if (inner alignment conditions)
@@ -706,7 +723,7 @@ public class DbBoard {
 								if(tier <= max_tier)
 								{
 									//foreach alignment of mark marks
-									for(byte code : Operators.ALIGNMENTS_CODES[tier]) {
+									for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 										Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
 										System.out.println("\t\t\t\t\tal = " + al);
 										//if (inner alignment conditions)
@@ -824,7 +841,7 @@ public class DbBoard {
 								if(tier <= max_tier)
 								{
 									//foreach alignment of mark marks
-									for(byte code : Operators.ALIGNMENTS_CODES[tier]) {
+									for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 										Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
 										System.out.println("\t\t\t\t\tal = " + al);
 										//if (inner alignment conditions)
@@ -941,7 +958,7 @@ public class DbBoard {
 									if(tier <= max_tier)
 									{
 										//foreach alignment of mark marks
-										for(byte code : Operators.ALIGNMENTS_CODES[tier]) {
+										for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 											Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
 											System.out.println("\t\t\t\t\tal = " + al);
 											//if (inner alignment conditions)
@@ -1004,7 +1021,7 @@ public class DbBoard {
 					}	//end while
 				}
 			}
-			public void addAllAlignments(MNKCellState player, int lines_dirs_index, int max_tier) {
+			public void addAllAlignments_t(MNKCellState player, int lines_dirs_index, int max_tier) {
 				MNKCellState opponent = Auxiliary.opponent(player);
 				MovePair dir = DIRECTIONS[lines_dirs[lines_dirs_index]];
 				MovePair negdir = dir.getNegative();
@@ -1031,7 +1048,7 @@ public class DbBoard {
 						//while (c1 == empty): c1++; c2=c1;
 						if(cellState(c1) == MNKCellState.FREE) {
 							System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
-							while(cellState(c1) != player && c1.inBounds(MIN, MAX))
+							while(c1.inBounds(MIN, MAX) && cellState(c1) != player)
 								c1.sum(dir);
 							if(!c1.inBounds(MIN, MAX)) checked_all = true;
 							else c2.reset(c1);
@@ -1056,7 +1073,7 @@ public class DbBoard {
 									if(tier <= max_tier)
 									{
 										//foreach alignment of mark marks
-										for(byte code : Operators.ALIGNMENTS_CODES[tier]) {
+										for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 											Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
 											System.out.println("\t\t\t\t\tal = " + al);
 											//if (inner alignment conditions)
@@ -1168,19 +1185,18 @@ public class DbBoard {
 				}
 				return start;
 			}
-			private boolean isUsefulThreat(AppliedThreat threat) {
-				MNKCellState defender = Auxiliary.opponent(threat.attacker);
+			private boolean isUsefulThreat(AppliedThreat athreat) {
+				MNKCellState defender = Auxiliary.opponent(athreat.attacker);
 				MNKCellState state;
 				boolean useful = false;
-				for(MovePair cell : threat.def) {
-					state = cellState(cell);
-					if(state == threat.attacker) return false;
-					else if(state == MNKCellState.FREE) useful = true;
+				for(int i = 0; i < athreat.threat.related.length; i++) {
+					state = cellState(athreat.threat.related[i]);
+					if(state == MNKCellState.FREE) useful = true;
+					else if(i == athreat.atk)
+						if(state == defender) return false;
+					else if(state == athreat.attacker) return false;
 				}
-				state = cellState(threat.atk);
-				if(state == defender) return false;
-				else if(useful) return true;
-				else return (state == MNKCellState.FREE);
+				return useful;
 			}
 		//#endregion ALIGNMENTS
 
