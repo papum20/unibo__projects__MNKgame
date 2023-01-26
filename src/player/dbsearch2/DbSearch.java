@@ -248,7 +248,8 @@ public static final short SHORT_INFINITE = 32767;
 				} catch(Exception e) {}
 				// HEURISTIC: only for attacker, only search for threats of tier < max tier found in defenses
 				int max_tier_t = attacking? max_tier : root.max_tier;
-				found_sequences = addDependencyStage(attacker, attacking, lastDependency, lastCombination, max_tier_t);			//uses lastCombination, fills lastDependency
+				won = addDependencyStage(attacker, attacking, lastDependency, lastCombination, max_tier_t);			//uses lastCombination, fills lastDependency
+				if(attacking) found_sequences = won;
 				
 				// IF FOUND THREAT SEQUENCE, ANALYZE DEFENSES
 				try {
@@ -256,7 +257,6 @@ public static final short SHORT_INFINITE = 32767;
 				} catch(Exception e) {}
 				//check for global defenses
 				if(attacking && found_sequences) {
-// visit Or !visit?
 					won = visitGlobalDefenses(root, attacker);
 					found_sequences = false;
 				}
@@ -270,7 +270,8 @@ public static final short SHORT_INFINITE = 32767;
 						file.write("--------\tCOMBINATION\t--------\n");
 					} catch(Exception e) {}
 					//
-					found_sequences = addCombinationStage(root, attacker, attacking, lastDependency, lastCombination);		//uses lasdtDependency, fills lastCombination
+					won = addCombinationStage(root, attacker, attacking, lastDependency, lastCombination);		//uses lasdtDependency, fills lastCombination
+					if(attacking) found_sequences = won;
 					// DEBUG
 					try {
 						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
@@ -280,7 +281,6 @@ public static final short SHORT_INFINITE = 32767;
 				// RE-CHECK AFTER COMBINATION
 // USEFUL?
 				if(attacking && found_sequences) {
-// visit Or !visit?
 					won = visitGlobalDefenses(root, attacker);
 					found_sequences = false;
 				}
@@ -288,11 +288,17 @@ public static final short SHORT_INFINITE = 32767;
 
 				// DEBUG
 				try {
-					file.close();
+					file.write("VISIT WON: " + won + "\n");
+					if(attacking) file.close();
 				} catch (Exception e) {}
 			}
 			return won;
 		}
+		/**
+		 * @param root
+		 * @param attacker
+		 * @return true if didn'tt find a defense (i.e. attacker won)
+		 */
 		private boolean visitGlobalDefenses(NodeBoard root, MNKCellState attacker) {
 			ListIterator<NodeBoard> it = possible_winning_sequences.listIterator();
 			NodeBoard won_state = null;
@@ -310,8 +316,7 @@ public static final short SHORT_INFINITE = 32767;
 				int first_threat_tier = new_root.max_tier;
 				//visit for defender
 				markGoalSquares(won_state.board.getMarkedThreats(), true);
-// visit Or !visit?
-//won for attacker (=draw or win for defender)
+				//won for defender (=draw or win for defender)
 				won = !visit(new_root, Auxiliary.opponent(attacker), false, first_threat_tier);
 				markGoalSquares(won_state.board.getMarkedThreats(), false);
 			}
@@ -370,7 +375,8 @@ public static final short SHORT_INFINITE = 32767;
 					if(tier != null) {
 						for(Threat threat : tier) {
 							int atk_index = 0;
-							while((atk_index = threat.nextAtk(atk_index)) != -1) {
+							//stops either after checking all threats, or if currentPlayer is defender and he found a win (i.e. a defense)
+							while((attacker == MY_MNK_PLAYER || !won) && (atk_index = threat.nextAtk(atk_index)) != -1) {
 								// DEBUG
 								try {
 									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
@@ -405,6 +411,9 @@ public static final short SHORT_INFINITE = 32767;
 			}
 			else {
 				TT.setState(node.board.hash, state);
+				try {
+					file.write("STATE (dependency): " + state + "\n");
+				} catch(Exception e) {}
 				if(state == MNKGameState.DRAW) return !attacking;
 				else if(state == Auxiliary.cellState2winState(attacker)) {
 					if(attacking) {
@@ -516,12 +525,13 @@ public static final short SHORT_INFINITE = 32767;
 				ListIterator<AppliedThreat> it = athreats.listIterator();
 				AppliedThreat athreat = null;
 				//create defenisve root copying current root, using opponent as player and marking only the move made by the current attacker in the first threat
-				NodeBoard def_root = NodeBoard.copy(root.board, true, (byte)(Operators.tier(athreats.getFirst().threat.type)), false);
+				byte max_tier = (byte)(Operators.tier(athreats.getFirst().threat.type) - 1);		// only look for threats better than mine
+				NodeBoard def_root = NodeBoard.copy(root.board, true, max_tier, false);
 				def_root.board.setPlayer(YOUR_MNK_PLAYER);
-				def_root.board.addAllAlignments(YOUR_MNK_PLAYER, def_root.max_tier);
+				def_root.board.addAllAlignments(YOUR_MNK_PLAYER, max_tier);
 				// DEBUG
 				try {
-					file.write("MAX THREAT: " + def_root.max_tier + "\n");
+					file.write("MAX THREAT: " + max_tier + "\n");
 				} catch(Exception e) {}
 				//add a node for each threat, each node child/dependant from the previous one
 				NodeBoard prev, node = def_root;

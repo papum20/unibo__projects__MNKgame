@@ -283,15 +283,15 @@ public class DbBoard {
 			}
 		}
 		private void checkAlignments(MovePair[] cells, int max_tier) {
-			int i = 0;
-			while(i < cells.length && gameState == MNKGameState.OPEN) {
-				if(isWinningCell(cells[i].i(), cells[i].j())) gameState = Auxiliary.cellState2winState(B[cells[i].i()][cells[i].j()]);
-				else i++;
-			}
-			if(gameState == MNKGameState.OPEN) {
-				if(cells.length == 1) {
-					checkAlignments(cells[0], max_tier);
-				} else {
+			if(cells.length == 1) {
+				checkAlignments(cells[0], max_tier);
+			} else {
+				int i = 0;
+				while(i < cells.length && gameState == MNKGameState.OPEN) {
+					if(isWinningCell(cells[i].i(), cells[i].j())) gameState = Auxiliary.cellState2winState(B[cells[i].i()][cells[i].j()]);
+					else i++;
+				}
+				if(gameState == MNKGameState.OPEN) {
 					MovePair dir = cells[0].getDirection(new MovePair(cells[1]));
 					int dir_index = dirsIndexes(dir);
 					for(int d = 0; d < lines_dirs.length; d++) {
@@ -370,11 +370,12 @@ public class DbBoard {
 					break;
 				//used for init defensive visit (marks defensive cells as own)
 				case DEF:
-					res.markCells(threat.related, Player[currentPlayer]);
 					res.addThreat(threat, atk, Auxiliary.opponent(Player[currentPlayer]));
 					//if there exist any defensive moves
-					if(check_threats && threat.related.length > 1) 
-						res.checkAlignments(threat.getDefensive(atk), max_tier);
+					if(threat.related.length > 1) {
+						res.markCells(threat.getDefensive(atk), Player[currentPlayer]);
+						if(check_threats) res.checkAlignments(threat.getDefensive(atk), max_tier);
+					}
 					break;
 				//used for dependency stage
 				case BTH:

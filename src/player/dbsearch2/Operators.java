@@ -132,20 +132,18 @@ public class Operators {
 	 * 	mnout:	min free cells per sided (min )
 	 */
 	
-	public static final int TIER_N = ALIGNMENT_CODES.length - 1;	//number of tiers for alignments (K-1 to K-3, excluding K which is won)
+	public static final int TIER_N = ALIGNMENT_CODES.length;	//number of tiers for alignments (K-1 to K-3, not excluding K even if it is won)
 	public static final byte TIER_MAX = (byte)TIER_N;
 	
 	// ARRAY OF OPERATORS, GROUPED BY TIER, i.e. APPLICATIONS OF CONVERSIONS FROM ALIGNMENTS TO THREATS
 	public static final OperatorsMap[] OPERATORS = {
 		//TIER 0
-		/*
 		new OperatorsMap(
 			ALIGNMENT_CODES[0],
 			new Applier[]{
 				applierNull				//xxxxx->do nothigh
 			}
 		),
-		*/
 		//TIER 1
 		new OperatorsMap(
 			ALIGNMENT_CODES[1],
@@ -220,7 +218,7 @@ public class Operators {
 	
 	// 0...7 (also -8...-1)
 	public static byte tier(byte threat) {
-		return (byte) (((threat & THREAT_MASK) >> (byte)4) - 1);
+		return (byte) ((threat & THREAT_MASK) >> (byte)4);
 	}
 
 	public static Threat applied(DbBoard board, OperatorPosition op, MNKCellState attacker, MNKCellState defender) {
