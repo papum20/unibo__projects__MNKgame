@@ -5,6 +5,12 @@ NUOVO!! (FEBBRAIO)
 LAST:
 -	fai il check defensive appena trovi una threat, cosi se è vincente non devi continuare a cercare
 -	controlla se controlla draw (check alignments lo fa)
+-	mi è venuto un dubbio: non è che qualche funzione aggiunge celle a MarkedCells con markCell, anche quando queste
+	sono già marcate? ho appena corretto getCombined che lo faceva..
+	(il problema potrebbe essere che poi pensa che sia patta)
+	
+	
+-	(risolto?) fai che le combinazioni "useful" sono solo se aggiungono celle dell'attaccante
 
 ENHANCEMENTS (TESI):
 	gomoku - db:

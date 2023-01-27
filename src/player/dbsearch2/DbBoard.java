@@ -1,6 +1,9 @@
 package player.dbsearch2;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.LinkedList;
+import java.util.Random;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
@@ -388,15 +391,18 @@ public class DbBoard {
 		//only checks for alignments not included in the union of A's and B's alignments, i.e. those which involve at  least one cell only present in A and one only in B
 		public DbBoard getCombined(DbBoard board, MNKCellState attacker, int max_tier) {
 			DbBoard res = new DbBoard(this, false);
-			for(AppliedThreat threat : board.markedThreats) {
-				if(this.isUsefulThreat(threat)) {
-					//mark other board's threat on this
-					for(int i = 0; i < threat.threat.related.length; i++) {
-						if(i == threat.atk) res.markCell(threat.threat.related[i], threat.attacker);
-						else res.markCells(threat.threat.related, Auxiliary.opponent(threat.attacker));
+			for(AppliedThreat athreat : board.markedThreats) {
+				if(this.isUsefulThreat(athreat, attacker)) {
+					//mark other board's threat on res
+					for(int i = 0; i < athreat.threat.related.length; i++) {
+						MovePair c = athreat.threat.related[i];
+						if(B[c.i()][c.j()] == MNKCellState.FREE) {
+							if(i == athreat.atk) res.markCell(c, athreat.attacker);
+							else res.markCell(c, Auxiliary.opponent(athreat.attacker));
+						}
 					}
 					//add threats
-					res.addThreat(threat);
+					res.addThreat(athreat);
 				}
 			}
 			//re-calculate alignments
@@ -542,7 +548,8 @@ public class DbBoard {
 			 * HOWEVER, this will be a future enhancement: for now, the function simply deletes and recreates all
 			 */
 			private void addAlignments(final MovePair center, final MNKCellState player, int lines_dirs_index, int max_tier) {
-				System.out.println("\naddAlignments START:");
+				boolean debug = false;
+				if(debug) System.out.println("\naddAlignments START:");
 
 				MNKCellState opponent = Auxiliary.opponent(player);
 				MovePair dir = DIRECTIONS[lines_dirs[lines_dirs_index]];
@@ -566,14 +573,14 @@ public class DbBoard {
 				}
 				c2 = new MovePair(c1);
 
-				System.out.println("\t\t\tdir: " + dir);
+				if(debug) System.out.println("\t\t\tdir: " + dir);
 				boolean checked_all = false;
 				while(!checked_all) {
-					System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+					if(debug) System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 
 					//while (c1 == empty): c1++; c2=c1;
 					if(cellState(c1) == MNKCellState.FREE) {
-						System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+						if(debug) System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 						while(cellState(c1) != player && !c1.equals(end_c1))
 							c1.sum(dir);
 						if(c1.equals(end_c1) && cellState(c1) == MNKCellState.FREE) checked_all = true;
@@ -587,12 +594,12 @@ public class DbBoard {
 							in++;
 							c2.sum(dir);
 						}
-						System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+						if(debug) System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 						//if ( !(line exceeded MAX) && c2 == player): line++, mark++; check alignment;
 						if(line <= MAX_LINE && cellState(c2) == player) {
 							line++;
 							mark++;
-							System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+							if(debug) System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 							//check alignments
 							if(mark >= K-Operators.MARK_DIFF_MIN) {
 								int tier = K - mark;
@@ -601,7 +608,7 @@ public class DbBoard {
 									//foreach alignment of mark marks
 									for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 										Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
-										System.out.println("\t\t\t\t\tal = " + al);
+										if(debug) System.out.println("\t\t\t\t\tal = " + al);
 										//if (inner alignment conditions)
 										if(line <= K - al.line && in == al.in) {
 											//assuming that win is K marks aligned, without free cells, checks wether the game ended
@@ -613,17 +620,17 @@ public class DbBoard {
 											before = countMarks( c1.getSum(dir.getNegative()), dir.getNegative(), al.out - al.mnout, MNKCellState.FREE);
 											if(before >= al.mnout)
 												after = countMarks(c2.getSum(dir), dir, al.out - before, MNKCellState.FREE);
-											System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
+											if(debug) System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
 											//if (outer conditions)
 											MovePair c_start = c1.getSum(dir.getProd(-before));
 											MovePair c_end = c2.getSum(dir.getProd(after));
 											while(before >= al.mnout && after >= al.mnout && before + after >= al.out) {
 												if(center.inBetween_included(c_start, c_end)) {
 													OperatorPosition f = new OperatorPosition(c_start, c_end, code);
-													System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
+													if(debug) System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
 													//add to arrays
 													BiNode<OperatorPosition> node = lines_per_dir[lines_dirs_index].add(player, dir_index, f);				//add to array for alignments in row/col/diag
-													System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
+													if(debug) System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
 													//add reference for all in the middle
 													MovePair c_it = new MovePair(c_start);
 													boolean ended = false;
@@ -632,7 +639,7 @@ public class DbBoard {
 														if(c_it.equals(c_end)) ended = true;
 														else c_it.sum(dir);
 													}
-													System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
+													if(debug) System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
 												}
 												//update before, after
 												c_end.sum(dir);
@@ -661,10 +668,12 @@ public class DbBoard {
 					}	//end if (!checked_all)
 				}	//end while
 
-				System.out.println("addAlignments END;\n");
+				if(debug) System.out.println("addAlignments END;\n");
 			}
 			// used for markCells : adds all alignments involving at least one cell between (y1,x1) and (y2,x2)
 			private void addAlignments_from(final MovePair center, final MovePair from, MNKCellState player, int lines_dirs_index, int max_tier) {
+				boolean debug = false;
+
 				MNKCellState opponent = Auxiliary.opponent(player);
 				MovePair dir = DIRECTIONS[lines_dirs[lines_dirs_index]];
 				int dir_index = lineIndex(dir, center);							//if horizontal: row index, otherwise (all other cases) col index
@@ -691,14 +700,14 @@ public class DbBoard {
 					c1.reset(center);
 				c2 = new MovePair(c1);
 
-				System.out.println("\t\t\tdir: " + dir);
+				if(debug) System.out.println("\t\t\tdir: " + dir);
 				boolean checked_all = false;
 				while(!checked_all) {
-					System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+					if(debug) System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 
 					//while (c1 == empty): c1++; c2=c1;
 					if(cellState(c1) == MNKCellState.FREE) {
-						System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+						if(debug) System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 						while(cellState(c1) != player && !c1.equals(end_c1))
 							c1.sum(dir);
 						if(c1.equals(end_c1) && cellState(c1) == MNKCellState.FREE) checked_all = true;
@@ -712,12 +721,12 @@ public class DbBoard {
 							in++;
 							c2.sum(dir);
 						}
-						System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+						if(debug) System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 						//if ( !(line exceeded MAX) && c2 == player): line++, mark++; check alignment;
 						if(line <= MAX_LINE && cellState(c2) == player) {
 							line++;
 							mark++;
-							System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+							if(debug) System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 							//check alignments
 							if(mark >= K-Operators.MARK_DIFF_MIN) {
 								int tier = K - mark;
@@ -726,7 +735,7 @@ public class DbBoard {
 									//foreach alignment of mark marks
 									for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 										Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
-										System.out.println("\t\t\t\t\tal = " + al);
+										if(debug) System.out.println("\t\t\t\t\tal = " + al);
 										//if (inner alignment conditions)
 										if(line <= K - al.line && in == al.in) {
 											//assuming that win is K marks aligned, without free cells, checks wether the game ended
@@ -738,17 +747,17 @@ public class DbBoard {
 											before = countMarks( c1.getSum(dir.getNegative()), dir.getNegative(), al.out - al.mnout, MNKCellState.FREE);
 											if(before >= al.mnout)
 												after = countMarks(c2.getSum(dir), dir, al.out - before, MNKCellState.FREE);
-											System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
+											if(debug) System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
 											//if (outer conditions)
 											MovePair c_start = c1.getSum(dir.getProd(-before));
 											MovePair c_end = c2.getSum(dir.getProd(after));
 											while(before >= al.mnout && after >= al.mnout && before + after >= al.out) {
 												if(center.inBetween_included(c_start, c_end)) {
 													OperatorPosition f = new OperatorPosition(c_start, c_end, code);
-													System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
+													if(debug) System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
 													//add to arrays
 													BiNode<OperatorPosition> node = lines_per_dir[lines_dirs_index].add(player, dir_index, f);				//add to array for alignments in row/col/diag
-													System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
+													if(debug) System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
 													//add reference for all in the middle
 													MovePair c_it = new MovePair(c_start);
 													boolean ended = false;
@@ -757,7 +766,7 @@ public class DbBoard {
 														if(c_it.equals(c_end)) ended = true;
 														else c_it.sum(dir);
 													}
-													System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
+													if(debug) System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
 												}
 												//update before, after
 												c_end.sum(dir);
@@ -906,6 +915,8 @@ public class DbBoard {
 			}
 			//for combination: adds all alignments which involve at least one cell only present in first and one only in second (and of course this board)
 			private void addAllCombinedAlignments(DbBoard first, DbBoard second, MNKCellState player, int lines_dirs_index, int max_tier) {
+				boolean debug = false;
+				
 				MNKCellState opponent = Auxiliary.opponent(player);
 				MovePair dir = DIRECTIONS[lines_dirs[lines_dirs_index]];
 				MovePair negdir = dir.getNegative();
@@ -923,15 +934,15 @@ public class DbBoard {
 					int dist = 0;
 					c2 = new MovePair(c1);
 
-					System.out.println("\t\t\tdir: " + dir);
+					if(debug) System.out.println("\t\t\tdir: " + dir);
 					MovePair next;
 					boolean checked_all = false, found_first = false, found_second = false;
 					while(!checked_all) {
-						System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+						if(debug) System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 
 						//while (c1 == empty): c1++; c2=c1;
 						if(cellState(c1) == MNKCellState.FREE) {
-							System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+							if(debug) System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 							while(c1.inBounds(MIN, MAX) && cellState(c1) != player && c1.inBounds(MIN, MAX))
 								c1.sum(dir);
 							if(!c1.inBounds(MIN, MAX)) checked_all = true;
@@ -945,14 +956,14 @@ public class DbBoard {
 								in++;
 								c2.reset(next);;
 							}
-							System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+							if(debug) System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 							//if ( !(line exceeded MAX) && c2 == player): line++, mark++; check alignment;
 							if(line <= MAX_LINE && cellState(c2) == player) {
 								line++;
 								mark++;
 								if(first.cellState(c2) != MNKCellState.FREE && second.cellState(c2) == MNKCellState.FREE) found_first = true;
 								else if(first.cellState(c2) == MNKCellState.FREE && second.cellState(c2) != MNKCellState.FREE) found_second = true;
-								System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+								if(debug) System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 								//check alignments
 								if(found_first && found_second && mark >= K-Operators.MARK_DIFF_MIN) {
 									int tier = K - mark;
@@ -961,7 +972,7 @@ public class DbBoard {
 										//foreach alignment of mark marks
 										for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 											Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
-											System.out.println("\t\t\t\t\tal = " + al);
+											if(debug) System.out.println("\t\t\t\t\tal = " + al);
 											//if (inner alignment conditions)
 											if(line <= K - al.line && in == al.in) {
 												//assuming that win is K marks aligned, without free cells, checks wether the game ended
@@ -973,16 +984,16 @@ public class DbBoard {
 												before = countMarks( c1.getSum(dir.getNegative()), dir.getNegative(), al.out - al.mnout, MNKCellState.FREE);
 												if(before >= al.mnout)
 													after = countMarks(c2.getSum(dir), dir, al.out - before, MNKCellState.FREE);
-												System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
+												if(debug) System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
 												//if (outer conditions)
 												MovePair c_start = c1.getSum(dir.getProd(-before));
 												MovePair c_end = c2.getSum(dir.getProd(after));
 												while(before >= al.mnout && after >= al.mnout && before + after >= al.out) {
 													OperatorPosition f = new OperatorPosition(c_start, c_end, code);
-													System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
+													if(debug) System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
 													//add to arrays
 													BiNode<OperatorPosition> node = lines_per_dir[lines_dirs_index].add(player, dir_index, f);				//add to array for alignments in row/col/diag
-													System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
+													if(debug) System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
 													//add reference for all in the middle
 													MovePair c_it = new MovePair(c_start);
 													boolean ended = false;
@@ -991,7 +1002,7 @@ public class DbBoard {
 														if(c_it.equals(c_end)) ended = true;
 														else c_it.sum(dir);
 													}
-													System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
+													if(debug) System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
 													//update before, after
 													c_end.sum(dir);
 													if(!c_end.inBounds(MIN, MAX) || B[c_end.i()][c_end.j()] != MNKCellState.FREE) break;
@@ -1023,9 +1034,10 @@ public class DbBoard {
 				}
 			}
 			public void addAllAlignments_t(MNKCellState player, int lines_dirs_index, int max_tier) {
+				boolean debug = false;
+				
 				MNKCellState opponent = Auxiliary.opponent(player);
 				MovePair dir = DIRECTIONS[lines_dirs[lines_dirs_index]];
-				MovePair negdir = dir.getNegative();
 				int MAX_LINE = K - Operators.MAX_LINE;
 				MovePair start, c1, c2;
 				//c1,c2 = iterators (first and last in line to check)
@@ -1037,18 +1049,17 @@ public class DbBoard {
 					int dir_index = lineIndex(dir, c1);							//if horizontal: row index, otherwise (all other cases) col index
 					int line = 0, mark = 0, in = 0, before = 0, after = 0;
 					//count from center to c1
-					int dist = 0;
 					c2 = new MovePair(c1);
 
-					System.out.println("\t\t\tdir: " + dir);
+					if(debug) System.out.println("\t\t\tdir: " + dir);
 					MovePair next;
 					boolean checked_all = false;
 					while(!checked_all) {
-						System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+						if(debug) System.out.println("\t\t\t" + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 
 						//while (c1 == empty): c1++; c2=c1;
 						if(cellState(c1) == MNKCellState.FREE) {
-							System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+							if(debug) System.out.println("\t\t\t\tc1!=player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 							while(c1.inBounds(MIN, MAX) && cellState(c1) != player)
 								c1.sum(dir);
 							if(!c1.inBounds(MIN, MAX)) checked_all = true;
@@ -1062,12 +1073,12 @@ public class DbBoard {
 								in++;
 								c2.reset(next);;
 							}
-							System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+							if(debug) System.out.println("\t\t\t\tc2 empty: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 							//if ( !(line exceeded MAX) && c2 == player): line++, mark++; check alignment;
 							if(line <= MAX_LINE && cellState(c2) == player) {
 								line++;
 								mark++;
-								System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
+								if(debug) System.out.println("\t\t\t\tc2 player: " + c1 + "->" + c2 + " : " + line + ", " + mark + ", " + in);
 								//check alignments
 								if(mark >= K-Operators.MARK_DIFF_MIN) {
 									int tier = K - mark;
@@ -1076,7 +1087,7 @@ public class DbBoard {
 										//foreach alignment of mark marks
 										for(byte code : Operators.ALIGNMENT_CODES[tier]) {
 											Operators.Alignment al = Operators.ALIGNMENTS[tier].get((int)code);
-											System.out.println("\t\t\t\t\tal = " + al);
+											if(debug) System.out.println("\t\t\t\t\tal = " + al);
 											//if (inner alignment conditions)
 											if(line <= K - al.line && in == al.in) {
 												//assuming that win is K marks aligned, without free cells, checks wether the game ended
@@ -1088,16 +1099,16 @@ public class DbBoard {
 												before = countMarks( c1.getSum(dir.getNegative()), dir.getNegative(), al.out - al.mnout, MNKCellState.FREE);
 												if(before >= al.mnout)
 													after = countMarks(c2.getSum(dir), dir, al.out - before, MNKCellState.FREE);
-												System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
+												if(debug) System.out.println("\t\t\t\t\tbefore, after = " + before + "," + after);
 												//if (outer conditions)
 												MovePair c_start = c1.getSum(dir.getProd(-before));
 												MovePair c_end = c2.getSum(dir.getProd(after));
 												while(before >= al.mnout && after >= al.mnout && before + after >= al.out) {
 													OperatorPosition f = new OperatorPosition(c_start, c_end, code);
-													System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
+													if(debug) System.out.println(c_start + "_( " + c1 + "->" + c2 + ") _" + c_end + " : " + f);
 													//add to arrays
 													BiNode<OperatorPosition> node = lines_per_dir[lines_dirs_index].add(player, dir_index, f);				//add to array for alignments in row/col/diag
-													System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
+													if(debug) System.out.println("line sizes: " + lines_dirs_index + ", " + dir_index + " : " +  lines_per_dir[lines_dirs_index].get(dir_index).isEmpty(player));
 													//add reference for all in the middle
 													MovePair c_it = new MovePair(c_start);
 													boolean ended = false;
@@ -1106,7 +1117,7 @@ public class DbBoard {
 														if(c_it.equals(c_end)) ended = true;
 														else c_it.sum(dir);
 													}
-													System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
+													if(debug) System.out.println("cell empty: " + c_it + " : " + cells_lines[c_it.i()][c_it.j()].isEmpty(player));
 													//update before, after
 													c_end.sum(dir);
 													if(!c_end.inBounds(MIN, MAX) || B[c_end.i()][c_end.j()] != MNKCellState.FREE) break;
@@ -1186,16 +1197,21 @@ public class DbBoard {
 				}
 				return start;
 			}
-			private boolean isUsefulThreat(AppliedThreat athreat) {
-				MNKCellState defender = Auxiliary.opponent(athreat.attacker);
-				MNKCellState state;
+			/**
+			 * 
+			 * @param athreat
+			 * @param attacker
+			 * @return true if the AppliedThreat is compatible with this board, and useful, i.e. adds at least one attacker's mark
+			 */
+			private boolean isUsefulThreat(AppliedThreat athreat, MNKCellState attacker) {
+				MNKCellState state, state_athreat;
 				boolean useful = false;
 				for(int i = 0; i < athreat.threat.related.length; i++) {
 					state = cellState(athreat.threat.related[i]);
-					if(state == MNKCellState.FREE) useful = true;
-					else if(i == athreat.atk)
-						if(state == defender) return false;
-					else if(state == athreat.attacker) return false;
+					state_athreat = (i == athreat.atk) ? athreat.attacker : Auxiliary.opponent(athreat.attacker);
+					if(state == MNKCellState.FREE) {					//compatible
+						if(state_athreat == attacker) useful = true;	//useful
+					} else if(state != state_athreat) return false;		//not compatible
 				}
 				return useful;
 			}

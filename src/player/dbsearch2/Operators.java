@@ -436,9 +436,9 @@ public class Operators {
 					int ind = 1;
 					//doesn't check termination condition ( && !it.equals(op.end)): assumes the operator is appliable
 					while(ind < 3) {
+						it.sum(dir);
 						if(board.cellState(it) == MNKCellState.FREE) res.set(new MovePair(it), ind++, USE.BTH);
 						//if(it.equals(op.end)) len = 2;	//exit while
-						it.sum(dir);
 					}
 					res.set(op.end, 3, USE.DEF);
 					return res;
