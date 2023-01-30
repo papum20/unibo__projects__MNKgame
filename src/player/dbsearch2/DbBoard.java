@@ -919,7 +919,6 @@ public class DbBoard {
 				
 				MNKCellState opponent = Auxiliary.opponent(player);
 				MovePair dir = DIRECTIONS[lines_dirs[lines_dirs_index]];
-				MovePair negdir = dir.getNegative();
 				int MAX_LINE = K - Operators.MAX_LINE;
 				MovePair start, c1, c2;
 				//c1,c2 = iterators (first and last in line to check)
@@ -1196,6 +1195,20 @@ public class DbBoard {
 					}
 				}
 				return start;
+			}
+			/**
+			 * 
+			 * @param player
+			 * @return true if there are valid alignments (calculated before, with proper max_tier)
+			 */
+			public boolean hasAlignments(MNKCellState player) {
+				for(int i = 0; i < lines_per_dir.length; i++) {
+					for(int j = 0; j < lines_per_dir[i].size(); j++) {
+						BiList_OpPos t = lines_per_dir[i].get(j);
+						if(t != null && !t.isEmpty(player)) return true;
+					}
+				}
+				return false;
 			}
 			/**
 			 * 

@@ -231,7 +231,10 @@ public static final short SHORT_INFINITE = 32767;
 			// DEBUG
 			if(!attacking) level = 8;
 			boolean found_sequence = false;
-			while(!isTimeEnded() && isTreeChanged(lastCombination) && !foundWin() && (!attacking || found_win_sequences < MAX_THREAT_SEQUENCES)) {
+			while(	!isTimeEnded() && isTreeChanged(lastCombination) &&
+					( (attacking && !foundWin() && found_win_sequences < MAX_THREAT_SEQUENCES) ||	//if attacker's visit: stop when found win
+					(!attacking && !found_sequence) )												//if defender's visit: stop when found defense (any threat sequence)
+			) {
 				// DEBUG FILE-NAME
 				if(attacking) {
 					try {
@@ -251,18 +254,19 @@ public static final short SHORT_INFINITE = 32767;
 				} catch(Exception e) {}
 				// HEURISTIC: only for attacker, only search for threats of tier < max tier found in defenses
 				int max_tier_t = attacking? max_tier : root.max_tier;
-				found_sequence = addDependencyStage(attacker, attacking, lastDependency, lastCombination, root, max_tier_t);			//uses lastCombination, fills lastDependency
+				if(addDependencyStage(attacker, attacking, lastDependency, lastCombination, root, max_tier_t))			//uses lastCombination, fills lastDependency
+					found_sequence = true;
 				
 				// START COMBINATIO STAGE
-				if(!foundWin()) {
+				if((attacking && !foundWin()) || (!attacking && !found_sequence)) {
 					lastCombination.clear();
 					// DEBUG
 					try {
 						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 						file.write("--------\tCOMBINATION\t--------\n");
 					} catch(Exception e) {}
-					//
-					found_sequence = addCombinationStage(root, attacker, attacking, lastDependency, lastCombination);		//uses lasdtDependency, fills lastCombination
+					if(addCombinationStage(root, attacker, attacking, lastDependency, lastCombination))		//uses lasdtDependency, fills lastCombination
+						found_sequence = true;
 					// DEBUG
 					try {
 						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
@@ -274,6 +278,8 @@ public static final short SHORT_INFINITE = 32767;
 				
 				// DEBUG
 				try {
+					file.write("ATTACKING: " + (attacking? "ATTACKER":"DEFENDER") + "\n");
+					file.write("FOUND SEQUENCE: " + found_sequence + "\n");
 					file.write("VISIT WON: " + foundWin() + "\n");
 					if(attacking) file.close();
 				} catch (Exception e) {}
@@ -316,9 +322,9 @@ public static final short SHORT_INFINITE = 32767;
 		 * 	actually not true for mnk game (if you put 3 lined in a board, other 2 in another one, then merge the boards...)
 		 */
 		protected boolean addDependencyStage(MNKCellState attacker, boolean attacking, LinkedList<NodeBoard> lastDependency, LinkedList<NodeBoard> lastCombination, NodeBoard root, int max_tier) {
-			boolean won = false;
+			boolean found_sequence = false;
 			ListIterator<NodeBoard> it = lastCombination.listIterator();
-			while(it.hasNext() && !won) {
+			while(it.hasNext() && !found_sequence) {
 				NodeBoard node = it.next();
 				//DEBUG
 				try {
@@ -329,14 +335,14 @@ public static final short SHORT_INFINITE = 32767;
 					file.write("children: \n");
 				} catch (Exception e) {}
 
-				won = addDependentChildren(node, attacker, attacking, 1, lastDependency, root, max_tier);
+				found_sequence = addDependentChildren(node, attacker, attacking, 1, lastDependency, root, max_tier);
 			}
-			return won;
+			return found_sequence;
 		}
 		protected boolean addCombinationStage(NodeBoard root, MNKCellState attacker, boolean attacking, LinkedList<NodeBoard> lastDependency, LinkedList<NodeBoard> lastCombination) {
-			boolean won = false;
+			boolean found_sequence = false;
 			ListIterator<NodeBoard> it = lastDependency.listIterator();
-			while(it.hasNext() && !won) {
+			while(it.hasNext() && !found_sequence) {
 				NodeBoard node = it.next();
 				//DEBUG
 				try {
@@ -347,9 +353,9 @@ public static final short SHORT_INFINITE = 32767;
 					file.write("children: \n");
 				} catch (Exception e) {}
 
-				won = findAllCombinationNodes(node, root, attacker, attacking, lastCombination, root);
+				found_sequence = findAllCombinationNodes(node, root, attacker, attacking, lastCombination, root);
 			}
-			return won;
+			return found_sequence;
 		}
 
 		/**
@@ -373,8 +379,10 @@ public static final short SHORT_INFINITE = 32767;
 					if(tier != null) {
 						for(Threat threat : tier) {
 							int atk_index = 0;
-							//stops either after checking all threats, or if currentPlayer is defender and he found a win (i.e. a defense)
-							while((attacker == MY_MNK_PLAYER || !foundWin()) && (atk_index = threat.nextAtk(atk_index)) != -1) {
+							//stops either after checking all threats, or if found a win/defense (for defended it is just any possible winning sequence)
+							while(	((attacking && !foundWin()) || (!attacking && !found_sequence)) &&
+									(atk_index = threat.nextAtk(atk_index)) != -1
+							) {
 								// DEBUG
 								try {
 									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
@@ -384,7 +392,18 @@ public static final short SHORT_INFINITE = 32767;
 								} catch(Exception e) {}
 								//if a goal square is marked, returns true, as goal squares are only used for defensive search, where only score matters
 								MovePair atk_cell = threat.related[atk_index];
-								if(GOAL_SQUARES[atk_cell.i()][atk_cell.j()]) return true;
+								if(GOAL_SQUARES[atk_cell.i()][atk_cell.j()]) {
+									// DEBUG
+									try {
+										NodeBoard newChild = addDependentChild(node, threat, atk_index, lastDependency);
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("-" + lev + "\t---\n");
+										DbTest.printBoard(newChild.board, file, lev + (attacking?0:8));
+										file.write("MARKED GOAL SQUARE " + atk_cell + "\n");
+									} catch(Exception e) {}
+
+									return true;
+								}
 								else {
 									NodeBoard newChild = addDependentChild(node, threat, atk_index, lastDependency);
 									// DEBUG
@@ -432,8 +451,15 @@ public static final short SHORT_INFINITE = 32767;
 				if(node == null || found_win_sequences >= MAX_THREAT_SEQUENCES) return false;
 				else {
 					MNKGameState state = node.board.gameState;
+					//DEBUG
+					if(state != MNKGameState.OPEN) {
+						try {
+							file.write("\t\t\t\tSTATE: " + state);
+						} catch(Exception e) {}
+					}
+
 					if(state == MNKGameState.OPEN) {
-						boolean won = false;
+						boolean found_sequence = false;
 						//doesn't check if isDependencyNode() : also combinations of combination nodes could result in alignments
 						NodeBoard.BoardsRelation relation = partner.validCombinationWith(node, attacker);
 						// DEBUG
@@ -445,8 +471,6 @@ public static final short SHORT_INFINITE = 32767;
 						//} catch(Exception e) {}
 						if(relation != BoardsRelation.CONFLICT) {
 							if(relation == BoardsRelation.USEFUL) {
-								//create combination with A's board (copied)
-								NodeBoard new_combination = addCombinationChild(partner, node, lastCombination, root, attacker, attacking);
 								// DEBUG
 								try {
 									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
@@ -457,7 +481,18 @@ public static final short SHORT_INFINITE = 32767;
 									file.write("\t\tsecond parent: \n");
 									DbTest.printBoard(node.board, file,attacking?2:10);
 									file.write(".\n");
-									DbTest.printBoard(new_combination.board, file,attacking?2:10);
+								} catch (Exception e) {}
+								//create combination with A's board (copied)
+								if(addCombinationChild(partner, node, lastCombination, root, attacker, attacking))
+									found_sequence = true;
+								//DEBUG
+								if(found_sequence) {
+									try {
+										file.write("found sequence");
+									} catch(Exception e) {}
+								}
+								// DEBUG
+								try {
 									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
 									file.write("---\n");
 									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
@@ -468,21 +503,24 @@ public static final short SHORT_INFINITE = 32767;
 							}
 							if(findAllCombinationNodes(partner, node.getFirstChild(), attacker, attacking, lastCombination, root)) {
 								if(foundWin()) return true;
-								else won = true;
+								else found_sequence = true;
 							}
 						}
-						if(findAllCombinationNodes(partner, node.getSibling(), attacker, attacking, lastCombination, root)) won = true;
-						return won;
+						if(findAllCombinationNodes(partner, node.getSibling(), attacker, attacking, lastCombination, root))
+							found_sequence = true;
+						return found_sequence;
 					}
+					// GAME STATE CASES
 					else if(state == MNKGameState.DRAW) return !attacking;
 					else return (state == Auxiliary.cellState2winState(attacker));
 				}
 			}
+			//DEBUG
 			catch(Exception e) {
 				try{
 					file.write("\nERROR\n");
 					if(partner != null)
-					DbTest.printBoard(partner.board, file, 0);
+						DbTest.printBoard(partner.board, file, 0);
 					file.write("\n\n");
 					if(partner != null)
 						DbTest.printBoard(node.board, file, 0);
@@ -587,13 +625,13 @@ public static final short SHORT_INFINITE = 32767;
 			protected NodeBoard addDependentChild(NodeBoard node, Threat threat, int atk, LinkedList<NodeBoard> lastDependency) {
 				DbBoard new_board = node.board.getDependant(threat, atk, USE.BTH, node.max_tier, true);
 				NodeBoard newChild = new NodeBoard(new_board, false, node.max_tier);
-				MNKGameState game_state = TT.getState(new_board.hash);
-				if(game_state != null) {
+				MNKGameState state_TT = TT.getState(new_board.hash);
+				if(state_TT != null) {
 					//DEBUG
 					try {
 						file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
 					} catch(Exception e) {}
-					new_board.setGameState(game_state);
+					new_board.setGameState(state_TT);
 				}
 				else {
 					TT.insert(new_board.hash);
@@ -605,34 +643,54 @@ public static final short SHORT_INFINITE = 32767;
 			}
 			/**
 			 * (I hope) adding the child to both parents is useless, for now
+			 * @return true if found any possible winning sequence
 			 */
-			// ENHANCEMENT: ONLY ADD COMBINATIONS WITH AT LEAST ONE OPERATOR APPLICABLE, SO YOU
-			// DON'T ADD USELESS NODES
-			protected NodeBoard addCombinationChild(NodeBoard A, NodeBoard B, LinkedList<NodeBoard> lastCombination, NodeBoard root, MNKCellState attacker, boolean attacking) {
+			protected boolean addCombinationChild(NodeBoard A, NodeBoard B, LinkedList<NodeBoard> lastCombination, NodeBoard root, MNKCellState attacker, boolean attacking) {
 				int max_threat = Math.min(A.max_tier, B.max_tier);
 				DbBoard new_board = A.board.getCombined(B.board, attacker, max_threat);
-				NodeBoard newChild = new NodeBoard(new_board, true, (byte)max_threat);
-				MNKGameState game_state = TT.getState(new_board.hash);
-				if(TT.exists(new_board.hash)) {
-					//DEBUG	
-					try {
-						file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
-					} catch(Exception e) {}
-					new_board.setGameState(game_state);
-				}
-				else {
-					TT.insert(new_board.hash);
-					//only adds child to tree and list if doesn't already exist
-					A.addChild(newChild);
-					//B.addChild(newChild);
-					lastCombination.add(newChild);
-					//check defenses
-					if(attacking && new_board.gameState() == Auxiliary.cellState2winState(attacker)) {
-						found_win_sequences++;
-						visitGlobalDefense(newChild, root, attacker);
+				NodeBoard new_child = null;
+				// DEBUG
+				try {
+					DbTest.printBoard(new_board, file,attacking?2:10);
+				} catch (Exception e) {}
+
+				MNKGameState state = new_board.gameState(), state_TT = TT.getState(new_board.hash);
+				if(state != MNKGameState.OPEN || (state_TT != null && state_TT != MNKGameState.OPEN) || new_board.hasAlignments(attacker)) {
+					//only create node if winning/drawn (to check it) or if has threats (to continue visit)
+					if(state_TT == null) {
+						new_child = new NodeBoard(new_board, true, (byte)max_threat);
+						// if no TT entry, update it...
+						TT.insert(new_board.hash);
+						TT.setState(new_board.hash, state);
+						// ...then check defenses
+						if(state == Auxiliary.cellState2winState(attacker)) {
+							if(attacking) {
+								found_win_sequences++;
+								visitGlobalDefense(new_child, root, attacker);
+							}
+						} else if(state == MNKGameState.OPEN) {		//state, state_TT = open, means the if's condition was validated by hasAlignments()
+							//only add child to tree and list if doesn't already exist, has threats and is not in ended state
+							A.addChild(new_child);
+							//B.addChild(newChild);
+							lastCombination.add(new_child);
+						}
+						//DEBUG
+						try {
+							file.write("\t\t\t\tGAME STATE: " + state + "\n");
+						} catch(Exception e) {}
+					}
+					else {
+						//if TT has entry, update board's state
+						if(state == MNKGameState.OPEN)
+							new_board.setGameState(state_TT);
+						//DEBUG
+						try {
+							file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
+						} catch(Exception e) {}
 					}
 				}
-				return newChild;
+
+				return (state == Auxiliary.cellState2winState(attacker));
 			}
 		//#endregion CREATE
 

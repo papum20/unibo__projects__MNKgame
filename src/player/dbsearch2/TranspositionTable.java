@@ -47,6 +47,15 @@ public class TranspositionTable {
 		else
 			table[index].addNext(e);
 	}
+	public void insert(long key, MNKGameState state) {
+		Element e = new Element(key);
+		e.setState(state);
+		int index = Element.index(key);
+		if(table[index] == null)
+			table[index] = e;
+		else
+			table[index].addNext(e);
+	}
 
 	public Boolean exists(long key) {
 		int index = Element.index(key);
