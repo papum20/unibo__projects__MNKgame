@@ -4,6 +4,8 @@ import java.util.Random;
 
 import org.w3c.dom.ElementTraversal;
 
+import mnkgame.MNKCell;
+import mnkgame.MNKCellState;
 import mnkgame.MNKGame;
 import mnkgame.MNKGameState;
 
@@ -47,14 +49,22 @@ public class TranspositionTable {
 		else
 			table[index].addNext(e);
 	}
-	public void insert(long key, MNKGameState state) {
+	/**
+	 * 
+	 * @param key
+	 * @param state
+	 * @param idx: 0=attacker, 1=defender, 2=both
+	 */
+	public void insert(long key, MNKGameState state, int idx) {
 		Element e = new Element(key);
-		e.setState(state);
+		if(idx == 0) e.setState(state, null);
+		else if(idx == 1) e.setState(null, state);
+		else if(idx == 2) e.setState(state, state);
 		int index = Element.index(key);
 		if(table[index] == null)
-			table[index] = e;
+		table[index] = e;
 		else
-			table[index].addNext(e);
+		table[index].addNext(e);
 	}
 
 	public Boolean exists(long key) {
@@ -65,7 +75,7 @@ public class TranspositionTable {
 			return (table[index].getNext(compare) != null);
 		}
 	}
-	public MNKGameState getState(long key) {
+	public TranspositionElementEntry getState(long key) {
 		int index = Element.index(key);
 		if(table[index] == null) return null;
 		else {
@@ -75,12 +85,20 @@ public class TranspositionTable {
 			else return e.getState();
 		}
 	}
-	public void setState(long key, MNKGameState state) {
+	/**
+	 * 
+	 * @param key
+	 * @param state
+	 * @param idx: 0=attacker, 1=defender, 2=both
+	 */
+	public void setState(long key, MNKGameState state, int idx) {
 		int index = Element.index(key);
 		if(table[index] != null) {
 			Element compare = new Element(key);
 			Element e = table[index].getNext(compare);
-			e.setState(state);
+			if(idx == 0) e.setState(state, null);
+			else if(idx == 1) e.setState(null, state);
+			else if(idx == 2) e.setState(state, state);
 		}
 	}
 
@@ -112,27 +130,21 @@ public class TranspositionTable {
 			if(next == null) next = e;
 			else next.addNext(e);
 		}
-		protected void setState(MNKGameState mnk_state) {
-			switch(mnk_state) {
-				case DRAW:
-					state = 0;
-					break;
-				case OPEN:
-					state = 1;
-					break;
-				case WINP1:
-					state = 2;
-					break;
-				case WINP2:
-					state = 3;
-					break;
-			}
+		protected void setState(MNKGameState state_a, MNKGameState state_d) {
+			if(state_a == null) state_a = TranspositionElementEntry.ELEMENT_ENTRIES[state].state[0];
+			if(state_d == null) state_d = TranspositionElementEntry.ELEMENT_ENTRIES[state].state[1];
+			state = 0;
+			if(state_a == MNKGameState.OPEN) state += 5;
+			else if(state_a == MNKGameState.DRAW) state += 10;
+			else if(state_a == MNKGameState.WINP1) state += 15;
+			else if(state_a == MNKGameState.WINP2) state += 20;
+			if(state_d == MNKGameState.OPEN) state += 1;
+			else if(state_d == MNKGameState.DRAW) state += 2;
+			else if(state_d == MNKGameState.WINP1) state += 3;
+			else if(state_d == MNKGameState.WINP2) state += 4;
 		}
-		protected MNKGameState getState() {
-			if(state == 0) return MNKGameState.DRAW;
-			else if(state == 1) return MNKGameState.OPEN;
-			else if(state == 2) return MNKGameState.WINP1;
-			else return MNKGameState.WINP2;
+		protected TranspositionElementEntry getState() {
+			return TranspositionElementEntry.ELEMENT_ENTRIES[state];
 		}
 		//returns the element if cmp==this or a next element in the list (assuming the index is the same)
 		protected Element getNext(Element cmp) {

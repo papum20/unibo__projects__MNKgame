@@ -427,7 +427,8 @@ public static final short SHORT_INFINITE = 32767;
 				return found_sequence;
 			}
 			else {
-				TT.setState(node.board.hash, state);
+				int attacker_i = attacking? 0:1;
+				TT.setState(node.board.hash, state, attacker_i);
 				try {
 					file.write("STATE (dependency): " + state + "\n");
 				} catch(Exception e) {}
@@ -624,17 +625,18 @@ public static final short SHORT_INFINITE = 32767;
 			 */
 			protected NodeBoard addDependentChild(NodeBoard node, Threat threat, int atk, LinkedList<NodeBoard> lastDependency) {
 				DbBoard new_board = node.board.getDependant(threat, atk, USE.BTH, node.max_tier, true);
+				int attacker_i = new_board.currentPlayer();
 				NodeBoard newChild = new NodeBoard(new_board, false, node.max_tier);
-				MNKGameState state_TT = TT.getState(new_board.hash);
-				if(state_TT != null) {
+				TranspositionElementEntry entry = TT.getState(new_board.hash);
+				if(entry != null && entry.state[attacker_i] != null) {
 					//DEBUG
 					try {
 						file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
 					} catch(Exception e) {}
-					new_board.setGameState(state_TT);
+					new_board.setGameState(entry.state[attacker_i]);
 				}
 				else {
-					TT.insert(new_board.hash);
+					TT.insert(new_board.hash, MNKGameState.OPEN, attacker_i);
 					//only adds child to tree and list if doesn't already exist
 					node.addChild(newChild);
 					lastDependency.add(newChild);
@@ -646,6 +648,7 @@ public static final short SHORT_INFINITE = 32767;
 			 * @return true if found any possible winning sequence
 			 */
 			protected boolean addCombinationChild(NodeBoard A, NodeBoard B, LinkedList<NodeBoard> lastCombination, NodeBoard root, MNKCellState attacker, boolean attacking) {
+				int attacker_i = attacking? 0:1;
 				int max_threat = Math.min(A.max_tier, B.max_tier);
 				DbBoard new_board = A.board.getCombined(B.board, attacker, max_threat);
 				NodeBoard new_child = null;
@@ -654,25 +657,29 @@ public static final short SHORT_INFINITE = 32767;
 					DbTest.printBoard(new_board, file,attacking?2:10);
 				} catch (Exception e) {}
 
-				MNKGameState state = new_board.gameState(), state_TT = TT.getState(new_board.hash);
-				if(state != MNKGameState.OPEN || (state_TT != null && state_TT != MNKGameState.OPEN) || new_board.hasAlignments(attacker)) {
+				MNKGameState state = new_board.gameState();
+				TranspositionElementEntry entry = TT.getState(new_board.hash);
+				if(state != MNKGameState.OPEN || (entry != null && entry.state[attacker_i] != null && entry.state[attacker_i] != MNKGameState.OPEN) || new_board.hasAlignments(attacker)) {
 					//only create node if winning/drawn (to check it) or if has threats (to continue visit)
-					if(state_TT == null) {
+					//if entry.state==OPEN: means node was already visited
+					if(entry == null || entry.state[attacker_i] == null) {
 						new_child = new NodeBoard(new_board, true, (byte)max_threat);
-						// if no TT entry, update it...
-						TT.insert(new_board.hash);
-						TT.setState(new_board.hash, state);
-						// ...then check defenses
-						if(state == Auxiliary.cellState2winState(attacker)) {
-							if(attacking) {
-								found_win_sequences++;
-								visitGlobalDefense(new_child, root, attacker);
-							}
-						} else if(state == MNKGameState.OPEN) {		//state, state_TT = open, means the if's condition was validated by hasAlignments()
+						// if open: continue visit
+						if(state == MNKGameState.OPEN) {		//state, state_TT = open, means the if's condition was validated by hasAlignments()
+							// if no TT entry, update it...
+							TT.insert(new_board.hash, state, attacker_i);
 							//only add child to tree and list if doesn't already exist, has threats and is not in ended state
 							A.addChild(new_child);
 							//B.addChild(newChild);
 							lastCombination.add(new_child);
+						} else {								// if game ended: update TT
+							TT.insert(new_board.hash, state, attacker_i);
+							if(state == Auxiliary.cellState2winState(attacker)) {	// if won: check defenses
+								if(attacking) {
+									found_win_sequences++;
+									visitGlobalDefense(new_child, root, attacker);
+								}
+							}
 						}
 						//DEBUG
 						try {
@@ -680,9 +687,8 @@ public static final short SHORT_INFINITE = 32767;
 						} catch(Exception e) {}
 					}
 					else {
-						//if TT has entry, update board's state
-						if(state == MNKGameState.OPEN)
-							new_board.setGameState(state_TT);
+						//if TT has entry, update board's state (if OPEN, remains OPEN)
+						new_board.setGameState(entry.state[attacker_i]);
 						//DEBUG
 						try {
 							file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");

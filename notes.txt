@@ -10,7 +10,7 @@ LAST:
 -	in defense, non cercare threat e contro-threat da stati vinti
 -	sfrutta TT, aggiornando entry, tipo parent/children (si tramandano risultato da children a parent)
 -	fai goal squares in defense come tesi, cioe sono solo quelle delle mosse successive (anticipare)
--	problema TT: dovrei sdopppiare le entry per risultato per def e atk
+-	TT si deve resettare a ogni visit (per def, atk gia lo fa)
 
 	
 -	(risolto?) fai che le combinazioni "useful" sono solo se aggiungono celle dell'attaccante
