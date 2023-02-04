@@ -1,6 +1,6 @@
 package player.dbsearch2;
 
-import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.MovePair;
 
 
 

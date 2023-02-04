@@ -13,7 +13,7 @@ import java.util.LinkedList;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
-import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.MovePair;
 
 
 

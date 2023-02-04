@@ -7,7 +7,7 @@ import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
 import player.dbsearch2.BiList.BiNode;
 import player.dbsearch2.Operators.AlignmentsMap;
-import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.MovePair;
 
 
 

@@ -12,7 +12,7 @@ import player.dbsearch2.BiList.BiNode;
 import player.dbsearch2.DbSearch.Combined;
 import player.dbsearch2.Operators.Threat;
 import player.dbsearch2.Operators.USE;
-import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.MovePair;
 
 
 

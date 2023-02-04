@@ -15,7 +15,7 @@ import player.dbsearch2.NodeBoard.BoardsRelation;
 import player.dbsearch2.Operators.RankedThreats;
 import player.dbsearch2.Operators.Threat;
 import player.dbsearch2.Operators.USE;
-import player.pnsearch.structures.INodes.MovePair;
+import player.pnsearch.MovePair;
 
 
 
