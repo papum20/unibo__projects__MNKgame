@@ -69,6 +69,7 @@ public static final short SHORT_INFINITE = 32767;
 
 
 	FileWriter file = null;
+	private final boolean DEBUG_ON = true;
 	//protected Debug debug;
 	protected int nodes_created;
 	protected int nodes_alive;
@@ -134,12 +135,14 @@ public static final short SHORT_INFINITE = 32767;
 
 			System.out.println("MC: ");
 			for(int i = 0; i < MC.length; i++) System.out.println(MC[i]);
-			try {
-				file = new FileWriter("debug/db2/main" + MC.length + ".txt");
-				DbTest.printBoard(board, file);
-				DbTest.debugBoard(board, file, false, false, false);
-				file.close();
-			} catch (Exception e) {}
+			if(DEBUG_ON) {
+				try {
+					file = new FileWriter("debug/db2/main" + MC.length + ".txt");
+					DbTest.printBoard(board, file);
+					DbTest.debugBoard(board, file, false, false, false);
+					file.close();
+				} catch (Exception e) {}
+			}
 					
 			//new root
 			NodeBoard root = createRoot();
@@ -220,15 +223,17 @@ public static final short SHORT_INFINITE = 32767;
 		 */
 		protected boolean visit(NodeBoard root, MNKCellState attacker, boolean attacking, int max_tier) {
 			// DEBUG
-			if(!attacking) {
-				try {
-					file.write("\t\t\t\t--------\tSTART OF DEFENSE\t--------\n");
-				} catch(Exception e) {}
+			if(DEBUG_ON) {
+				if(!attacking) {
+					try {
+						file.write("\t\t\t\t--------\tSTART OF DEFENSE\t--------\n");
+					} catch(Exception e) {}
+				}
 			}
 			LinkedList<NodeBoard> lastDependency = new LinkedList<NodeBoard>(), lastCombination = new LinkedList<NodeBoard>();
 			initLastCombination(root, lastCombination);
 			short level = 1;
-			// DEBUG
+			
 			if(!attacking) level = 8;
 			boolean found_sequence = false;
 			while(	!isTimeEnded() && isTreeChanged(lastCombination) &&
@@ -236,22 +241,26 @@ public static final short SHORT_INFINITE = 32767;
 					(!attacking && !found_sequence) )												//if defender's visit: stop when found defense (any threat sequence)
 			) {
 				// DEBUG FILE-NAME
-				if(attacking) {
-					try {
-						String filename_current = "debug/db2/db" + board.MC_n + "-" + level + ".txt";
-						//if(!attacking) filename_current = "debug/db2/db" + board.MC_n + "-" + level + "def" + defense++ + ".txt";
-						new File(filename_current);
-						file = new FileWriter(filename_current);
-					} catch(Exception e) { }
+				if(DEBUG_ON) {
+					if(attacking) {
+						try {
+							String filename_current = "debug/db2/db" + board.MC_n + "-" + level + ".txt";
+							//if(!attacking) filename_current = "debug/db2/db" + board.MC_n + "-" + level + "def" + defense++ + ".txt";
+							new File(filename_current);
+							file = new FileWriter(filename_current);
+						} catch(Exception e) { }
+					}
 				}
 				
 				// START DEPENDENCY STAGE
 				lastDependency.clear();
 				// DEBUG
-				try {
-					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-					file.write("--------\tDEPENDENCY\t--------\n");
-				} catch(Exception e) {}
+				if(DEBUG_ON) {
+					try {
+						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+						file.write("--------\tDEPENDENCY\t--------\n");
+					} catch(Exception e) {}
+				}
 				// HEURISTIC: only for attacker, only search for threats of tier < max tier found in defenses
 				int max_tier_t = attacking? max_tier : root.max_tier;
 				if(addDependencyStage(attacker, attacking, lastDependency, lastCombination, root, max_tier_t))			//uses lastCombination, fills lastDependency
@@ -261,34 +270,42 @@ public static final short SHORT_INFINITE = 32767;
 				if((attacking && !foundWin()) || (!attacking && !found_sequence)) {
 					lastCombination.clear();
 					// DEBUG
-					try {
-						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-						file.write("--------\tCOMBINATION\t--------\n");
-					} catch(Exception e) {}
+					if(DEBUG_ON) {
+						try {
+							if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+							file.write("--------\tCOMBINATION\t--------\n");
+						} catch(Exception e) {}
+					}
 					if(addCombinationStage(root, attacker, attacking, lastDependency, lastCombination))		//uses lasdtDependency, fills lastCombination
 						found_sequence = true;
 					// DEBUG
-					try {
-						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-						file.write("--------\tEND OF COMBINATION\t--------\n");
-					} catch(Exception e) {}
+					if(DEBUG_ON) {
+						try {
+							if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+							file.write("--------\tEND OF COMBINATION\t--------\n");
+						} catch(Exception e) {}
+					}
 				}
 				// RE-CHECK AFTER COMBINATION
 				level++;
 				
 				// DEBUG
-				try {
-					file.write("ATTACKING: " + (attacking? "ATTACKER":"DEFENDER") + "\n");
-					file.write("FOUND SEQUENCE: " + found_sequence + "\n");
-					file.write("VISIT WON: " + foundWin() + "\n");
-					if(attacking) file.close();
-				} catch (Exception e) {}
+				if(DEBUG_ON) {
+					try {
+						file.write("ATTACKING: " + (attacking? "ATTACKER":"DEFENDER") + "\n");
+						file.write("FOUND SEQUENCE: " + found_sequence + "\n");
+						file.write("VISIT WON: " + foundWin() + "\n");
+						if(attacking) file.close();
+					} catch (Exception e) {}
+				}
 			}
 			// DEBUG
 			if(!attacking) {
-				try { 
-					file.write("\t\t\t\t--------\tEND OF DEFENSE\t--------\n");
-				} catch(Exception e) {}
+				if(DEBUG_ON) {
+					try { 
+						file.write("\t\t\t\t--------\tEND OF DEFENSE\t--------\n");
+					} catch(Exception e) {}
+				}
 			}
 			return found_sequence;
 		}
@@ -300,11 +317,13 @@ public static final short SHORT_INFINITE = 32767;
 		private boolean visitGlobalDefense(NodeBoard possible_win, NodeBoard root, MNKCellState attacker) {
 			//add each combination of attacker's made threats to each dependency node
 			//DEBUG
-			try {
-				file.write("\t\t\t\tWIN:\n");
-				DbTest.printBoard(possible_win.board, file, 4);
-				file.write("\t\t\t\t-----\n");
-			} catch(Exception e) {}
+			if(DEBUG_ON) {
+				try {
+					file.write("\t\t\t\tWIN:\n");
+					DbTest.printBoard(possible_win.board, file, 4);
+					file.write("\t\t\t\t-----\n");
+				} catch(Exception e) {}
+			}
 			NodeBoard new_root = createDefensiveRoot(root, possible_win.board.markedThreats);
 			int first_threat_tier = new_root.max_tier;
 			//visit for defender
@@ -327,13 +346,15 @@ public static final short SHORT_INFINITE = 32767;
 			while(it.hasNext() && !found_sequence) {
 				NodeBoard node = it.next();
 				//DEBUG
-				try {
-					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-					file.write("parent: \n");
-					DbTest.printBoard(node.board, file, attacking?0:8);
-					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-					file.write("children: \n");
-				} catch (Exception e) {}
+					if(DEBUG_ON) {
+					try {
+						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+						file.write("parent: \n");
+						DbTest.printBoard(node.board, file, attacking?0:8);
+						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+						file.write("children: \n");
+					} catch (Exception e) {}
+				}
 
 				found_sequence = addDependentChildren(node, attacker, attacking, 1, lastDependency, root, max_tier);
 			}
@@ -345,13 +366,15 @@ public static final short SHORT_INFINITE = 32767;
 			while(it.hasNext() && !found_sequence) {
 				NodeBoard node = it.next();
 				//DEBUG
-				try {
-					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-					file.write("parent: \n");
-					DbTest.printBoard(node.board, file,attacking?0:8);
-					if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-					file.write("children: \n");
-				} catch (Exception e) {}
+				if(DEBUG_ON) {
+					try {
+						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+						file.write("parent: \n");
+						DbTest.printBoard(node.board, file,attacking?0:8);
+						if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+						file.write("children: \n");
+					} catch (Exception e) {}
+				}
 
 				found_sequence = findAllCombinationNodes(node, root, attacker, attacking, lastCombination, root);
 			}
@@ -384,36 +407,42 @@ public static final short SHORT_INFINITE = 32767;
 									(atk_index = threat.nextAtk(atk_index)) != -1
 							) {
 								// DEBUG
-								try {
-									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-									file.write("\t\t\t" + threat.type + "\t" + atk_index + "\t");
-									for(int i = 0; i < threat.related.length; i++) file.write(threat.related[i] + " " + threat.uses[i] + "\t");
-									file.write("\n");
-								} catch(Exception e) {}
+								if(DEBUG_ON) {
+									try {
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("\t\t\t" + threat.type + "\t" + atk_index + "\t");
+										for(int i = 0; i < threat.related.length; i++) file.write(threat.related[i] + " " + threat.uses[i] + "\t");
+										file.write("\n");
+									} catch(Exception e) {}
+								}
 								//if a goal square is marked, returns true, as goal squares are only used for defensive search, where only score matters
 								MovePair atk_cell = threat.related[atk_index];
 								if(GOAL_SQUARES[atk_cell.i()][atk_cell.j()]) {
 									// DEBUG
-									try {
-										NodeBoard newChild = addDependentChild(node, threat, atk_index, lastDependency);
-										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-										file.write("-" + lev + "\t---\n");
-										DbTest.printBoard(newChild.board, file, lev + (attacking?0:8));
-										file.write("MARKED GOAL SQUARE " + atk_cell + "\n");
-									} catch(Exception e) {}
+									if(DEBUG_ON) {
+										try {
+											NodeBoard newChild = addDependentChild(node, threat, atk_index, lastDependency);
+											if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+											file.write("-" + lev + "\t---\n");
+											DbTest.printBoard(newChild.board, file, lev + (attacking?0:8));
+											file.write("MARKED GOAL SQUARE " + atk_cell + "\n");
+										} catch(Exception e) {}
+									}
 
 									return true;
 								}
 								else {
 									NodeBoard newChild = addDependentChild(node, threat, atk_index, lastDependency);
 									// DEBUG
-									try {
-										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-										file.write("-" + lev + "\t---\n");
-										DbTest.printBoard(newChild.board, file, lev + (attacking?0:8));
-										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-										file.write("---\n");
-									} catch (Exception e) {}
+									if(DEBUG_ON) {
+										try {
+											if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+											file.write("-" + lev + "\t---\n");
+											DbTest.printBoard(newChild.board, file, lev + (attacking?0:8));
+											if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+											file.write("---\n");
+										} catch (Exception e) {}
+									}
 
 									if(addDependentChildren(newChild, attacker, attacking, lev+1, lastDependency, root, max_tier))
 										found_sequence = true;
@@ -429,9 +458,11 @@ public static final short SHORT_INFINITE = 32767;
 			else {
 				int attacker_i = attacking? 0:1;
 				TT.setState(node.board.hash, state, attacker_i);
-				try {
-					file.write("STATE (dependency): " + state + "\n");
-				} catch(Exception e) {}
+				if(DEBUG_ON) {
+					try {
+						file.write("STATE (dependency): " + state + "\n");
+					} catch(Exception e) {}
+				}
 				if(state == MNKGameState.DRAW) return !attacking;
 				else if(state == Auxiliary.cellState2winState(attacker)) {
 					if(attacking) {
@@ -453,10 +484,12 @@ public static final short SHORT_INFINITE = 32767;
 				else {
 					MNKGameState state = node.board.gameState;
 					//DEBUG
-					if(state != MNKGameState.OPEN) {
-						try {
-							file.write("\t\t\t\tSTATE: " + state);
-						} catch(Exception e) {}
+					if(DEBUG_ON) {
+						if(state != MNKGameState.OPEN) {
+							try {
+								file.write("\t\t\t\tSTATE: " + state);
+							} catch(Exception e) {}
+						}
 					}
 
 					if(state == MNKGameState.OPEN) {
@@ -473,32 +506,38 @@ public static final short SHORT_INFINITE = 32767;
 						if(relation != BoardsRelation.CONFLICT) {
 							if(relation == BoardsRelation.USEFUL) {
 								// DEBUG
-								try {
-									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-									file.write("\t\tfirst parent: \n");
-									DbTest.printBoard(partner.board, file,attacking?2:10);
-									file.write(".\n");
-									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-									file.write("\t\tsecond parent: \n");
-									DbTest.printBoard(node.board, file,attacking?2:10);
-									file.write(".\n");
-								} catch (Exception e) {}
+								if(DEBUG_ON) {
+									try {
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("\t\tfirst parent: \n");
+										DbTest.printBoard(partner.board, file,attacking?2:10);
+										file.write(".\n");
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("\t\tsecond parent: \n");
+										DbTest.printBoard(node.board, file,attacking?2:10);
+										file.write(".\n");
+									} catch (Exception e) {}
+								}
 								//create combination with A's board (copied)
 								if(addCombinationChild(partner, node, lastCombination, root, attacker, attacking))
 									found_sequence = true;
 								//DEBUG
-								if(found_sequence) {
-									try {
-										file.write("found sequence");
-									} catch(Exception e) {}
+								if(DEBUG_ON) {
+									if(found_sequence) {
+										try {
+											file.write("found sequence");
+										} catch(Exception e) {}
+									}
 								}
 								// DEBUG
-								try {
-									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-									file.write("---\n");
-									if(!attacking) file.write("\t\t\t\t\t\t\t\t");
-									file.write("---\n");
-								} catch (Exception e) {}
+								if(DEBUG_ON) {
+									try {
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("---\n");
+										if(!attacking) file.write("\t\t\t\t\t\t\t\t");
+										file.write("---\n");
+									} catch (Exception e) {}
+								}
 
 								if(foundWin()) return true;
 							}
@@ -518,17 +557,19 @@ public static final short SHORT_INFINITE = 32767;
 			}
 			//DEBUG
 			catch(Exception e) {
-				try{
-					file.write("\nERROR\n");
-					if(partner != null)
-						DbTest.printBoard(partner.board, file, 0);
-					file.write("\n\n");
-					if(partner != null)
-						DbTest.printBoard(node.board, file, 0);
-					file.close();
-				}
-				catch(Exception e1) {}
-				throw e;
+					if(DEBUG_ON) {
+						try{
+							file.write("\nERROR\n");
+							if(partner != null)
+								DbTest.printBoard(partner.board, file, 0);
+							file.write("\n\n");
+							if(partner != null)
+								DbTest.printBoard(node.board, file, 0);
+							file.close();
+						}
+						catch(Exception e1) {}
+					}
+					throw e;
 			}
 		}
 		
@@ -581,9 +622,11 @@ public static final short SHORT_INFINITE = 32767;
 				def_root.board.setPlayer(YOUR_MNK_PLAYER);
 				def_root.board.addAllAlignments(YOUR_MNK_PLAYER, max_tier);
 				// DEBUG
-				try {
-					file.write("MAX THREAT: " + max_tier + "\n");
-				} catch(Exception e) {}
+				if(DEBUG_ON) {
+					try {
+						file.write("MAX THREAT: " + max_tier + "\n");
+					} catch(Exception e) {}
+				}
 				//add a node for each threat, each node child/dependant from the previous one
 				NodeBoard prev, node = def_root;
 				while(it.hasNext()) {
@@ -602,12 +645,14 @@ public static final short SHORT_INFINITE = 32767;
 					}
 					//the new node doesn't check alignments
 					//DEBUG
-					try {
-						file.write("\t\t\t\t" + athreat.threat.related[athreat.atk] + "\n");
-						DbTest.printBoard(prev.board, file, 4);
-						for(MovePair m : athreat.threat.related) file.write("\t\t\t\t" + m + " ");
-						file.write("\n");
-					} catch(Exception e) {}
+					if(DEBUG_ON) {
+						try {
+							file.write("\t\t\t\t" + athreat.threat.related[athreat.atk] + "\n");
+							DbTest.printBoard(prev.board, file, 4);
+							for(MovePair m : athreat.threat.related) file.write("\t\t\t\t" + m + " ");
+							file.write("\n");
+						} catch(Exception e) {}
+					}
 				}
 				//DEBUG
 				if(athreat.threat.related.length > 0) DbTest.printBoard(node.board, file, 4);
@@ -630,9 +675,11 @@ public static final short SHORT_INFINITE = 32767;
 				TranspositionElementEntry entry = TT.getState(new_board.hash);
 				if(entry != null && entry.state[attacker_i] != null) {
 					//DEBUG
-					try {
-						file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
-					} catch(Exception e) {}
+					if(DEBUG_ON) {
+						try {
+							file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
+						} catch(Exception e) {}
+					}
 					new_board.setGameState(entry.state[attacker_i]);
 				}
 				else {
@@ -653,9 +700,11 @@ public static final short SHORT_INFINITE = 32767;
 				DbBoard new_board = A.board.getCombined(B.board, attacker, max_threat);
 				NodeBoard new_child = null;
 				// DEBUG
-				try {
-					DbTest.printBoard(new_board, file,attacking?2:10);
-				} catch (Exception e) {}
+				if(DEBUG_ON) {
+					try {
+						DbTest.printBoard(new_board, file,attacking?2:10);
+					} catch (Exception e) {}
+				}
 
 				MNKGameState state = new_board.gameState();
 				TranspositionElementEntry entry = TT.getState(new_board.hash);
@@ -682,17 +731,21 @@ public static final short SHORT_INFINITE = 32767;
 							}
 						}
 						//DEBUG
-						try {
-							file.write("\t\t\t\tGAME STATE: " + state + "\n");
-						} catch(Exception e) {}
+						if(DEBUG_ON) {
+							try {
+								file.write("\t\t\t\tGAME STATE: " + state + "\n");
+							} catch(Exception e) {}
+						}
 					}
 					else {
 						//if TT has entry, update board's state (if OPEN, remains OPEN)
 						new_board.setGameState(entry.state[attacker_i]);
 						//DEBUG
-						try {
-							file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
-						} catch(Exception e) {}
+						if(DEBUG_ON) {
+							try {
+								file.write("\t\t\t\tEXISTS IN TT: " + new_board.hash + "\n");
+							} catch(Exception e) {}
+						}
 					}
 				}
 
