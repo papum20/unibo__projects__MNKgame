@@ -1,4 +1,4 @@
-package player.pnsearch;
+package ia;
 
 import java.io.File;
 import java.io.FileWriter;
