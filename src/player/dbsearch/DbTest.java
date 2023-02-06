@@ -1,4 +1,4 @@
-package player.dbsearch2;
+package player.dbsearch;
 
 import java.io.FileWriter;
 import java.util.Scanner;
@@ -6,8 +6,8 @@ import java.util.Scanner;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import player.dbsearch2.BiList.BiNode;
-import player.dbsearch2.Operators.AlignmentsMap;
+import player.dbsearch.BiList.BiNode;
+import player.dbsearch.Operators.AlignmentsMap;
 import player.pnsearch.MovePair;
 
 

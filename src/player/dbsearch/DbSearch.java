@@ -1,4 +1,4 @@
-package player.dbsearch2;
+package player.dbsearch;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -10,11 +10,11 @@ import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
-import player.dbsearch2.BiList.BiNode;
-import player.dbsearch2.NodeBoard.BoardsRelation;
-import player.dbsearch2.Operators.RankedThreats;
-import player.dbsearch2.Operators.Threat;
-import player.dbsearch2.Operators.USE;
+import player.dbsearch.BiList.BiNode;
+import player.dbsearch.NodeBoard.BoardsRelation;
+import player.dbsearch.Operators.RankedThreats;
+import player.dbsearch.Operators.Threat;
+import player.dbsearch.Operators.USE;
 import player.pnsearch.MovePair;
 
 

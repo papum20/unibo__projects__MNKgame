@@ -68,7 +68,7 @@ public class PnFinal implements mnkgame.MNKPlayer {
 			nodes_created = 0;
 			nodes_alive = 0;
 
-			//start conting time for this turn
+			//start counting time for this turn
 			timer_start = System.currentTimeMillis();
 			//update my istance of board
 			if(MC.length > 0) {

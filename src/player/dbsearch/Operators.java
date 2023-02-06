@@ -5,7 +5,7 @@
  */
 
 
-package player.dbsearch2;
+package player.dbsearch;
 
 import java.util.ArrayList;
 import java.util.HashMap;

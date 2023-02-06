@@ -1,9 +1,9 @@
-package player.dbsearch2;
+package player.dbsearch;
 
 import java.util.ArrayList;
 
 import mnkgame.MNKCellState;
-import player.dbsearch2.BiList.BiNode;
+import player.dbsearch.BiList.BiNode;
 
 
 

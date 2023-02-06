@@ -2,13 +2,13 @@
  * USED FOR DEPENDENCY STAGE IN THIS LEVEL
  */
 
-package player.dbsearch;
+package player.dbsearch_old;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
 
 import player.boards.IBoardDB;
-import player.dbsearch.structures.INodeDB;
+import player.dbsearch_old.structures.INodeDB;
 import player.pnsearch.structures.INodes.MovePair;
 
 

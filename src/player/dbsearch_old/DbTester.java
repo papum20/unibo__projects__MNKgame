@@ -1,4 +1,4 @@
-package player.dbsearch;
+package player.dbsearch_old;
 
 import java.util.Scanner;
 

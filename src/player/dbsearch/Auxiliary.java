@@ -1,4 +1,4 @@
-package player.dbsearch2;
+package player.dbsearch;
 
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;

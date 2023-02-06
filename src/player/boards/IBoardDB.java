@@ -1,7 +1,7 @@
 package player.boards;
 
 import mnkgame.MNKCellState;
-import player.dbsearch.structures.Operator;
+import player.dbsearch_old.structures.Operator;
 import player.pnsearch.structures.INodes.MovePair;
 
 

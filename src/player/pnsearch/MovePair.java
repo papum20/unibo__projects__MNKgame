@@ -1,7 +1,7 @@
 package player.pnsearch;
 
 import mnkgame.MNKCell;
-import player.dbsearch2.Auxiliary;
+import player.dbsearch.Auxiliary;
 
 
 

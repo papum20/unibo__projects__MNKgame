@@ -1,8 +1,7 @@
-package player.dbsearch2;
+package player.dbsearch;
 
 import mnkgame.MNKCellState;
-import player.dbsearch2.Operators.Threat;
-import player.pnsearch.structures.INodes.MovePair;
+import player.dbsearch.Operators.Threat;
 
 
 
