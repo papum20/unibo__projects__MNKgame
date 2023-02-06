@@ -16,9 +16,33 @@
 #define OUT_EXTENSION	".txt"
 
 #define MSG_USAGE "\
-					Usage: %s [-c command] [-j java-executable] [-o output-filename] [-p players] [-v]\n\
-					\t-v: verbose (also print moves)\
-					"
+Executes [java-executable] (which must execute java)\n\
+with fixed options/parameters stored in [command]\n\
+and variable options/parameters stored in [players],\n\
+then each execution, corresponding to each line of players (txt) file, stores the result in [output-filename]-<number>.txt.\n\
+\n\
+Usage: %s [-c command] [-j java-executable] [-o output-filename] [-p players] [-v]\n\
+\t-v: verbose (also print moves)\n\
+\n\
+Defaults:\n\
+\tjava-executable = ./myjava\n\
+\tcommand = debug/testmore/in/testcmd.txt\n\
+\tplayers = debug/testmore/in/testlist.txt\n\
+\toutput-filename = debug/testmore/out/test-<number>.txt\n\
+\n\
+Regarding java executable:\n\
+\tfor Linux: just put a (symbolic) link to java executable\n\
+\tfor Windows: create a myjava.bat, containing the following line:\n\
+\t\tstart /b cmd /c 'C:\\path\\to\\java\\Oracle\\Java\\javapath\\java.exe' %%*\n\
+\n\
+Examples:\n\
+\ttestcmd.txt:\n\
+\t\t-cp out -Xmx3g mnkgame.MNKPlayerTester 7 7 4 -r 3 -t 3\n\
+\ttestlist.txt:\n\
+\t\tplayer.pnsearch.array.obj.PnSearchADeleteD mnkgame.QuasiRandomPlayer\n\
+\t\tplayer.pnsearch.array.obj.PnSearchAUpdateD mnkgame.QuasiRandomPlayer\n\
+\n\
+"
 
 #define ARG_MAX 20
 #define ARG_LEN 50
@@ -194,7 +218,7 @@ int main(int argc, char *argv[]) {
 		if(fork() == 0) {
 			//child processs
 			char *out = malloc(sizeof(char) * ARG_LEN);
-			strcat(out, out_path);
+			strcpy(out, out_path);
 			char number[2] = {test_number+48, '\0'};
 			strcat(out, number);
 			strcat(out, OUT_EXTENSION);

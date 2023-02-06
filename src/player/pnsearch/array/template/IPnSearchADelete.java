@@ -15,7 +15,7 @@ public abstract class IPnSearchADelete<M extends IMove, V, N extends Node_ad<M,V
 				
 		}
 
-				public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
+		public MNKCell selectCell(MNKCell[] FC, MNKCell[] MC) {
 
 			// DEBUG
 			System.out.println("--------\t" + MC.length + "\t--------");

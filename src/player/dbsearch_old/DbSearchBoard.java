@@ -1,10 +1,10 @@
-package player.dbsearch;
+package player.dbsearch_old;
 
 import java.util.LinkedList;
 
 import player.boards.ArrayBoardDb;
-import player.dbsearch.structures.NodeBoard;
-import player.dbsearch.structures.Operator;
+import player.dbsearch_old.structures.NodeBoard;
+import player.dbsearch_old.structures.Operator;
 
 public class DbSearchBoard extends IDbSearchQ<ArrayBoardDb, NodeBoard> {
 

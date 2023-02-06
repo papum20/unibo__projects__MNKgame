@@ -5,7 +5,7 @@
  */
 
 
-package player.dbsearch;
+package player.dbsearch_old;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -18,8 +18,8 @@ import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
 import mnkgame.MNKPlayer;
 import player.boards.IBoardDB;
-import player.dbsearch.structures.INodeDB;
-import player.dbsearch.structures.Operator;
+import player.dbsearch_old.structures.INodeDB;
+import player.dbsearch_old.structures.Operator;
 import player.pnsearch.structures.INodes.MovePair;
 
 

@@ -16,7 +16,7 @@ package player.boards;
 import mnkgame.MNKCell;
 import mnkgame.MNKCellState;
 import mnkgame.MNKGameState;
-import player.dbsearch.structures.Operator;
+import player.dbsearch_old.structures.Operator;
 
 
 

@@ -1,3 +1,36 @@
+NUOVO!! (FEBBRAIO)
+- controlla se usate e init bene goal_squares
+- uso threat/line tier (sopr. defensive visit)
+	- eventualmente crea nuovo ranking (rispettando tesi)
+LAST:
+-	controlla se controlla draw (check alignments lo fa)
+-	mi è venuto un dubbio: non è che qualche funzione aggiunge celle a MarkedCells con markCell, anche quando queste
+	sono già marcate? ho appena corretto getCombined che lo faceva..
+	(il problema potrebbe essere che poi pensa che sia patta)
+-	in defense, non cercare threat e contro-threat da stati vinti
+-	sfrutta TT, aggiornando entry, tipo parent/children (si tramandano risultato da children a parent)
+-	fai goal squares in defense come tesi, cioe sono solo quelle delle mosse successive (anticipare)
+-	TT si deve resettare a ogni visit (per def, atk gia lo fa)
+
+	
+-	(risolto?) fai che le combinazioni "useful" sono solo se aggiungono celle dell'attaccante
+
+ENHANCEMENTS (TESI):
+	gomoku - db:
+	-	category reduction (attacker cerca solo tier < massima difesa trovata)
+	-	restricted threes (solo 2-reply 3 e ignora 3-reply 3 (solo attacker))
+	gomoku - pn:
+	-	move ordering
+		-	threat recognition (score)
+		-	move ordering in pn
+	-	relatede squares
+		-	related squares recognition
+		-	iterated related squares (espansione related squares in nodi adiacenti in pn)
+	-	implicit-threat heuristic (prima che si trovin sempre minacce)
+	-	heuristic (dis)proof number initialization
+
+-------------------
+
 ERRORI:
 	- pnsearchADeleteD :
 		- errore out of tempo con 3g mem (su macchine lab)
@@ -17,6 +50,10 @@ https://en.wikipedia.org/wiki/M,n,k-game
 http://fragrieu.free.fr/SearchingForSolutions.pdf (Victor Allis) (tesi 200 pagine pnsearch, dbsearch)
 Transpositions
 http://ggp.stanford.edu/readings/symmetry.pdf
+letti:
+https://www.chessprogramming.org/Transposition_Table
+https://www.chessprogramming.org/Zobrist_Hashing
+https://www.chessprogramming.org/Enhanced_Transposition_Cutoff
 
 MINIMAX:
 	- cambiare Board con nostra struttura (perché modifica le sue MC e FC con markCell() in modo non efficiente; in particolare non sono efficienti FC.toArray(lineare), e FC.remove (logaritmico))
@@ -38,6 +75,36 @@ PNSEARCH:
 	-	PnSearchStore.selectMostProving : serve l'else? forse non ci si arriva mai
 DBSEARCH:
 	-	enhancement addcombination: crea solo nodi dove applicabile almeno un operatore
+DBSEARCH2:
+	-	board: remove alignments improved for line / more cells at a time
+	-	NOTE: findAllCombinationNodes : doesn't check isDependencyNode(): also needs combination between combination nodes (paper says, combinations of up to k nodes, so in this way i ensure those combinations are created)
+
+	TODO:
+		-	quindi in caso di win devo ritornare il nodo finale, con la board vincente
+		-	heuristic: (non per global defense) se opponent ha threat category j, devo cercare solo threat category i
+
+		-	(done) : dbBoard.getCombined / checkCombinedThreats -> (to test)
+		
+	DONE(?):
+		-	dividi operator attacker/defender
+
+		-	parametro nel find alignments per max category
+		-	check won
+		-	converti dbboard che usa le applied threat
+		-	lines in combination stage
+		
+		-	check isLastDependency in find all comb nodes?? which nodes are dependency/comb/root??
+		-	correggi combination con la versione che parte da root?
+		-	combination tra piu nodi?
+
+		-	goal squares: inserisci come parametro; fai che se una viene occupata, ritorna win
+		-	per trovare le goal square, quelle occupate in una threat sequence, basta fare la "differenza" tra le board
+		-	global defense
+		-	only find sequences for current attacker
+
+		-	heuristic: conta win; fai max 10 (per attacker)
+
+
 
 
 

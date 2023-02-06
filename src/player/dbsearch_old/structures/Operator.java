@@ -1,4 +1,4 @@
-package player.dbsearch.structures;
+package player.dbsearch_old.structures;
 
 import mnkgame.MNKCellState;
 

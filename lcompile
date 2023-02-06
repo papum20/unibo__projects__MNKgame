@@ -2,6 +2,7 @@ javac -d out -sourcepath src src/mnkgame/*.java
 javac -d out -sourcepath src src/player/*.java
 javac -d out -sourcepath src src/player/boards/*.java
 javac -d out -sourcepath src src/player/dbsearch/*.java
+javac -d out -sourcepath src src/player/dbsearch2/*.java
 javac -d out -sourcepath src src/player/dbsearch/structures/*.java
 javac -d out -sourcepath src src/player/it_deepening/*.java
 javac -d out -sourcepath src src/player/minimax/*.java

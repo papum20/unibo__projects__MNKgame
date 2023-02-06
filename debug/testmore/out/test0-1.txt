@@ -1,0 +1,248 @@
+--------	0	--------
+[0,0]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1999
+	end =	1999
+[0,0]
+FOUND BEST NODE
+time2010
+nodes created:		10621279
+nodes alive:		10621279
+nodes created tot:	10621279
+nodes alive tot:	10621230
+my move: [0,1] -> FREE
+--------	2	--------
+found opponent move in tree.
+last/opponent: [5,1] -> P2
+[5,1]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1998
+	end =	1998
+[5,1]
+FOUND BEST NODE
+time2004
+nodes created:		11578788
+nodes alive:		11411027
+nodes created tot:	22200067
+nodes alive tot:	22032162
+my move: [0,0] -> FREE
+--------	4	--------
+found opponent move in tree.
+last/opponent: [6,1] -> P2
+[6,1]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1994
+	end =	1994
+[6,1]
+FOUND BEST NODE
+time2000
+nodes created:		14712044
+nodes alive:		14504822
+nodes created tot:	36912111
+nodes alive tot:	36536893
+my move: [6,4] -> FREE
+--------	6	--------
+found opponent move in tree.
+last/opponent: [3,0] -> P2
+[3,0]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1948
+	end =	1948
+[3,0]
+FOUND BEST NODE
+time2052
+nodes created:		17330198
+nodes alive:		15845785
+nodes created tot:	54242309
+nodes alive tot:	52382591
+my move: [6,3] -> FREE
+--------	8	--------
+found opponent move in tree.
+last/opponent: [3,4] -> P2
+[3,4]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	181
+	end =	181
+[3,4]
+FOUND BEST NODE
+time181
+nodes created:		868204
+nodes alive:		851632
+nodes created tot:	55110513
+nodes alive tot:	53234140
+my move: [0,2] -> FREE
+--------	10	--------
+found opponent move in tree.
+last/opponent: [0,3] -> P2
+[0,3]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	53
+	end =	53
+[0,3]
+FOUND BEST NODE
+time53
+nodes created:		282795
+nodes alive:		276339
+nodes created tot:	55393308
+nodes alive tot:	53510400
+my move: [6,5] -> FREE
+--------	12	--------
+found opponent move in tree.
+last/opponent: [6,2] -> P2
+[6,2]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	0
+	end =	0
+[6,2]
+FOUND BEST NODE
+time0
+nodes created:		37
+nodes alive:		37
+nodes created tot:	55393345
+nodes alive tot:	53510362
+my move: [6,6] -> FREE
+--------	0	--------
+[0,0]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1995
+	end =	1995
+[0,0]
+FOUND BEST NODE
+time2000
+nodes created:		14211649
+nodes alive:		14211649
+nodes created tot:	14211649
+nodes alive tot:	14211600
+my move: [0,1] -> FREE
+--------	2	--------
+found opponent move in tree.
+last/opponent: [2,0] -> P2
+[2,0]
+VISIT: reset board 1, reset board 2
+VISIT: last select:
+	start =	1992
+	end =	2000
+VISIT: ARRAY BOUNDS EXCEPTION
+Player 1 (PnSearchAUpdateD) interrupted due to exception
+ java.util.concurrent.ExecutionException: java.lang.ArrayIndexOutOfBoundsException: Index -1 out of bounds for length 49
+Player 1 (PnSearchAUpdateD) eventually stopped: round closed
+--------	0	--------
+[0,0]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1998
+	end =	1998
+[0,0]
+FOUND BEST NODE
+time2006
+nodes created:		16759539
+nodes alive:		16759539
+nodes created tot:	16759539
+nodes alive tot:	16759490
+my move: [0,1] -> FREE
+--------	2	--------
+found opponent move in tree.
+last/opponent: [1,1] -> P2
+[1,1]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1994
+	end =	1994
+[1,1]
+FOUND BEST NODE
+time2000
+nodes created:		11452437
+nodes alive:		11287876
+nodes created tot:	28211976
+nodes alive tot:	28047271
+my move: [0,0] -> FREE
+--------	4	--------
+found opponent move in tree.
+last/opponent: [2,1] -> P2
+[2,1]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1998
+	end =	1998
+[2,1]
+FOUND BEST NODE
+time2000
+nodes created:		17006736
+nodes alive:		16664581
+nodes created tot:	45218712
+nodes alive tot:	44711761
+my move: [6,4] -> FREE
+--------	6	--------
+found opponent move in tree.
+last/opponent: [5,2] -> P2
+[5,2]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1999
+	end =	1999
+[5,2]
+FOUND BEST NODE
+time2000
+nodes created:		15330727
+nodes alive:		13389760
+nodes created tot:	60549439
+nodes alive tot:	58101434
+my move: [6,2] -> FREE
+--------	8	--------
+found opponent move in tree.
+last/opponent: [0,5] -> P2
+[0,5]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	26
+	end =	26
+[0,5]
+FOUND BEST NODE
+time26
+nodes created:		140692
+nodes alive:		136319
+nodes created tot:	60690131
+nodes alive tot:	58237670
+my move: [0,2] -> FREE
+--------	10	--------
+found opponent move in tree.
+last/opponent: [0,3] -> P2
+[0,3]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	28
+	end =	28
+[0,3]
+FOUND BEST NODE
+time28
+nodes created:		134647
+nodes alive:		131872
+nodes created tot:	60824778
+nodes alive tot:	58369463
+my move: [6,3] -> FREE
+--------	12	--------
+found opponent move in tree.
+last/opponent: [6,5] -> P2
+[6,5]
+VISIT: ancestors up to, reset board 2
+VISIT: last select:
+	start =	1
+	end =	1
+[6,5]
+FOUND BEST NODE
+time1
+nodes created:		37
+nodes alive:		37
+nodes created tot:	60824815
+nodes alive tot:	58369425
+my move: [6,1] -> FREE
+PnSearchAUpdateD Score: 4 Won: 2 Lost: 0 Draw: 0 Error: 1
+R4nd0m++ Score: 2 Won: 0 Lost: 2 Draw: 0 Error: 0
