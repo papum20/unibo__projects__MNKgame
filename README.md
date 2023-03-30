@@ -1,3 +1,7 @@
+## MNKGame
+un-completed project for algorithm course at unibo, year 2021-2022.
+
+
 --executables...
 
 
